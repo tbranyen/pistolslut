@@ -7,7 +7,7 @@
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1464 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -39,7 +39,7 @@ Engine.initObject("Object2D", "HostObject", function() {
 /**
  * @class An object for use in a 2d environment.  Methods for getting the position, rotation
  * and scale should be implemented within the extended class.
- * 
+ *
  * @param name {String} The name of the object
  * @extends HostObject
  * @constructor
@@ -48,12 +48,14 @@ Engine.initObject("Object2D", "HostObject", function() {
 var Object2D = HostObject.extend(/** @scope Object2D.prototype */{
 
    /** @private */
-   zIndex: 20, // framechange - changed from 1,
+   zIndex: 20, // framechange - changed from 1
 
    /** @private */
    bBox: null,
 	wBox: null,
 	lastPosition: null,
+
+	origin: null,
 
    /**
     * @private
@@ -64,8 +66,9 @@ var Object2D = HostObject.extend(/** @scope Object2D.prototype */{
 		this.bBox = Rectangle2D.create(0,0,1,1);
 		this.wBox = Rectangle2D.create(0,0,1,1);
       this.zIndex = Object2D.DEFAULT_Z_INDEX; // framechange - changed from 1
+		this.origin = Point2D.create(0,0);
    },
-	
+
 	/**
 	 * Destroy the object.
 	 */
@@ -86,6 +89,24 @@ var Object2D = HostObject.extend(/** @scope Object2D.prototype */{
 		this.lastPosition = null;
    },
 
+	/**
+	 * Set the render origin of the object.  The render origin is where the object will be
+	 * centered around when drawing position and rotation.
+	 *
+	 * @param point {Point2D} The render origin (default: 0,0 - top left corner)
+	 */
+	setOrigin: function(point) {
+		this.origin = point;
+	},
+
+	/**
+	 * Get the render origin of the object.
+	 * @return {Point2D}
+	 */
+	getOrigin: function() {
+		return this.origin;
+	},
+
    /**
     * Set the bounding box of this object
     *
@@ -101,7 +122,6 @@ var Object2D = HostObject.extend(/** @scope Object2D.prototype */{
 
    /**
     * Get the bounding box of this object
-    *
     * @return {Rectangle2D} The object bounding rectangle
     */
    getBoundingBox: function() {
@@ -109,14 +129,18 @@ var Object2D = HostObject.extend(/** @scope Object2D.prototype */{
    },
 
    /**
-    * Get the world bounding box.
+    * Get the bounding box in world coordinates.
     * @return {Rectangle2D} The world bounding rectangle
     */
    getWorldBox: function() {
 		this.wBox.set(this.getBoundingBox());
-      return this.wBox.offset(this.getRenderPosition());
+		var rPos = Point2D.create(this.getRenderPosition());
+		rPos.sub(this.origin);
+		this.wBox.offset(rPos);
+		rPos.destroy();
+      return this.wBox;
    },
-   
+
    /**
     * [ABSTRACT] Get the world bounding circle.
     * @return {Circle2D}
@@ -124,7 +148,7 @@ var Object2D = HostObject.extend(/** @scope Object2D.prototype */{
    getCircle: function() {
       // ABSTRACT METHOD
    },
-   
+
    /**
     * [ABSTRACT] Get the velocity of the object.
     * @return {Vector2D}
@@ -272,7 +296,6 @@ var Object2D = HostObject.extend(/** @scope Object2D.prototype */{
       return "Object2D";
    },
 
-   // framechange - added
    DEFAULT_Z_INDEX: 20
 });
 

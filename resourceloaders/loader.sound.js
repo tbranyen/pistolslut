@@ -7,7 +7,7 @@
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1307 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -82,40 +82,48 @@ var SoundLoader = RemoteLoader.extend(/** @scope SoundLoader.prototype */{
          // directory where SM2 .SWFs live
          this.soundManager.url = Engine.getEnginePath() + '/libs/';
 			
-			// Detect the version of flash available.  If 9 or higher, use 9
-			var hasReqestedVersion = DetectFlashVer(9, 0, 0);
-			if (hasReqestedVersion) {
-				this.soundManager.flashVersion = 9;
+			if (GetSwfVer() != null) {
+				// Detect the version of flash available.  If 9 or higher, use 9
+				var hasReqestedVersion = DetectFlashVer(9, 0, 0);
+				if (hasReqestedVersion) {
+					this.soundManager.flashVersion = 9;
+				} else {
+					this.soundManager.flashVersion = 8;
+				}
+
+	         // Debugging enabled?
+	         this.soundManager.debugMode = EngineSupport.checkBooleanParam("debugSound");
+	
+	         var self = this;
+	
+	         this.soundManager.onload = function() {
+	            Engine.soundsEnabled = true;
+	            Console.warn("SoundManager loaded successfully");
+	            self.queueingSounds = false
+	            self.loadQueuedSounds();
+	         };
+	
+	         this.soundManager.onerror = function() {
+	            Engine.soundsEnabled = false;
+	            Console.warn("SoundManager not loaded");
+	            self.queueingSounds = false;
+	            self.loadQueuedSounds();
+	         };
+	
+	         if (Engine.getEnginePath().indexOf("file:") == 0) {
+	            this.soundManager.sandbox.type = "localWithFile";
+	         }
+	
+	         this.soundManager.go();
+
 			} else {
-				this.soundManager.flashVersion = 8;
+				// Flash not installed
+				Engine.soundsEnabled = false;
+				this.queueingSounds = false;
 			}
 
-         // Debugging enabled?
-         this.soundManager.debugMode = EngineSupport.checkBooleanParam("debugSound");
-
-         var self = this;
-
-         this.soundManager.onload = function() {
-            Engine.soundsEnabled = true;
-            Console.warn("SoundManager loaded successfully");
-            self.queueingSounds = false
-            self.loadQueuedSounds();
-         };
-
-         this.soundManager.onerror = function() {
-            Engine.soundsEnabled = false;
-            Console.warn("SoundManager not loaded");
-            self.queueingSounds = false;
-            self.loadQueuedSounds();
-         };
-
-         if (Engine.getEnginePath().indexOf("file:") == 0) {
-            this.soundManager.sandbox.type = "localWithFile";
-         }
-
-         this.soundManager.go();
-
       } else {
+			this.queueingSounds = false;
          Engine.soundsEnabled = false;
       }
    },

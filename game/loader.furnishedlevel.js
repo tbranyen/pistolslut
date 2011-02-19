@@ -97,7 +97,7 @@ Engine.initObject("FurnishedLevel", "Level", function() {
 	  constructor: function(name, field, levelResource, fieldWidth) {
 			var level = this.base(name, levelResource);
 			this.field = field;
-			this.frameCheapRect = new CheapRect(null, 0, 0, this.getWidth(), this.getHeight());
+			this.frameCheapRect = CheapRect.create(null, 0, 0, this.getWidth(), this.getHeight());
 			this.levelResource = levelResource;
 			this.maxScroll = this.getWidth() - fieldWidth;
 			this.wind = FurnishedLevel.BASE_WIND + (FurnishedLevel.RANDOMISED_WIND * Math.random());
@@ -193,7 +193,7 @@ Engine.initObject("FurnishedLevel", "Level", function() {
 			var signs = data.items;
 			for(var i in data.items)
 			{
-				this.signs[i] = new Sign(this.field, signs[i].text, data.color, Point2D.create(signs[i].x, signs[i].y), signs[i].width, data.letterSpacing);
+				this.signs[i] = Sign.create(this.field, signs[i].text, data.color, Point2D.create(signs[i].x, signs[i].y), signs[i].width, data.letterSpacing);
 				renderContext.add(this.signs[i]);
 			}
 		},
@@ -214,7 +214,7 @@ Engine.initObject("FurnishedLevel", "Level", function() {
 		addLanterns: function(renderContext) {
 			for(var i = 0; i < this.numberOfLanterns; i++)
 			{
-				this.lanterns[i] = new Lantern(this.field, this.wind, this.field.fieldWidth, this.field.fieldHeight);
+				this.lanterns[i] = Lantern.create(this.field, this.wind, this.field.fieldWidth, this.field.fieldHeight);
 				renderContext.add(this.lanterns[i]);
 			}
 		},
@@ -224,7 +224,7 @@ Engine.initObject("FurnishedLevel", "Level", function() {
 			var speeches = data.items;
 			for(var i in speeches)
 			{
-				this.speeches[i] = new Speech(this.field, null, speeches[i].text, speeches[i].x, speeches[i].b, speeches[i].width, Speech.DEFAULT_HIDE_DELAY);
+				this.speeches[i] = Speech.create(this.field, null, speeches[i].text, speeches[i].x, speeches[i].b, speeches[i].width, Speech.DEFAULT_HIDE_DELAY);
 				this.addToTriggerableObjects(this.speeches[i], speeches[i]);
 				renderContext.add(this.speeches[i]);
 			}
@@ -296,13 +296,13 @@ Engine.initObject("FurnishedLevel", "Level", function() {
 			var barrels = this.levelResource.info.objects.barrels;
 			for(var i in barrels)
 			{
-				this.barrels[i] = new Barrel(Point2D.create(barrels[i].x, barrels[i].y));
+				this.barrels[i] = Barrel.create(Point2D.create(barrels[i].x, barrels[i].y));
 				renderContext.add(this.barrels[i]);
 			}
 		},
 
 		inLevel: function(obj) {
-			return this.frameCheapRect.isIntersecting(new CheapRect(obj));
+			return this.frameCheapRect.isIntersecting(CheapRect.create(obj));
 		},
 
 		release: function() {

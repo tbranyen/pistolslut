@@ -8,7 +8,7 @@
  * @author: Brett Fattori (brettf@renderengine.com)
  *
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1345 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -35,7 +35,7 @@
 Engine.initObject("EventEngine", null, function() {
 
 /**
- * @class A static object for unformly handling events within all browser
+ * @class A static object for uniformly handling events within all browser
  *        platforms.  The event engine is an abstraction of the jQuery event
  *        system.  Methods are provided for adding and removing events in
  *        a programmatic way.  Additionally the engine has key codes for
@@ -120,7 +120,7 @@ var EventEngine = Base.extend(/** @scope EventEngine.prototype */{
    /** No mouse button pressed. 
     * @type {Number}
     */
-   MOUSE_NO_BUTTON: 0,
+   MOUSE_NO_BUTTON: -1,
 
    /** Left mouse button.
     * @type {Number}

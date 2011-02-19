@@ -7,7 +7,7 @@
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1324 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -71,10 +71,13 @@ var BitmapFontLoader = ImageLoader.extend(/** @scope BitmapFontLoader.prototype 
          var thisObj = this;
 
          // Get the file from the server
-         $.getScript(path + url, function(data) {
-            data = BitmapFontLoader.font;
-				Console.log("Acquired font info: ", data);
-            thisObj.load(name, null, data);
+			Engine.loadJSON(path + url, function(fontInfo, status) {
+				if (status == 200) {
+					Console.log("Acquired font info: ", fontInfo);
+	            thisObj.load(name, null, fontInfo);
+				} else {
+					Console.error("Error loading font for name '" + name + "', due to: " + status);
+				}
          });
       }
       else

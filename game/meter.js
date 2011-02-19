@@ -263,8 +263,9 @@ Engine.initObject("ImageCaret", "Caret", function() {
 		},
 
         setupGraphics: function() {
-            this.add(ImageComponent.create("draw", null, this.field.imageLoader, this.imageName));
-            this.getDrawComponent().setImage(this.imageName);
+            var image = this.field.imageLoader.getImage(this.imageName);
+            this.add(ImageComponent.create("draw", image));
+            this.getDrawComponent().setImage(image);
             this.getDrawComponent().setDrawMode(RenderComponent.NO_DRAW);
         },
 	}, {

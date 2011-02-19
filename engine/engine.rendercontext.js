@@ -6,7 +6,7 @@
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1449 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -40,7 +40,9 @@ Engine.initObject("RenderContext", "Container", function() {
 /**
  * @class A base rendering context.  Game objects are rendered to a context
  * during engine runtime.  A render context is a container of all of the objects
- * added to it so that each object is given the chance to render.
+ * added to it so that each object is given the chance to render.  A render context
+ * is logically a scene graph.  While each context can have multiple contexts associated
+ * with it, the root of the scene graph is always located at {@link Engine#getDefaultContext}.
  *
  * @param contextName {String} The name of this context.  Default: RenderContext
  * @param [surface] {HTMLElement} The surface node that all objects will be rendered to.
@@ -57,7 +59,9 @@ var RenderContext = Container.extend(/** @scope RenderContext.prototype */{
    worldPosition: null,
    worldRotation: null,
    worldScale: null,
-	staticCtx: null,
+   staticCtx: null,
+	
+	safeRemoveList: null,
 
    /**
     * @private
@@ -70,7 +74,8 @@ var RenderContext = Container.extend(/** @scope RenderContext.prototype */{
       this.worldPosition = Point2D.create(0, 0);
       this.worldRotation = 0;
       this.viewport = Rectangle2D.create(0, 0, 100, 100);
-		this.staticCtx = false;
+      this.staticCtx = false;
+		this.safeRemoveList = [];
    },
 
    /**
@@ -83,14 +88,17 @@ var RenderContext = Container.extend(/** @scope RenderContext.prototype */{
       this.worldScale = null;
       this.worldPosition = null;
       this.worldRotation = null;
-		this.staticCtx = null;
+      this.staticCtx = null;
+		this.safeRemoveList = null;
    },
 
    /**
-    * Destroy the rendering context, and detach the surface from its
-    * parent container.
+    * Destroy the rendering context, any objects within the context, and detach 
+    * the surface from its parent container.
     */
    destroy: function() {
+      // Destroy all of the objects
+      this.cleanUp();
       this.base();
       this.surface = null;
    },
@@ -113,26 +121,26 @@ var RenderContext = Container.extend(/** @scope RenderContext.prototype */{
       return this.surface;
    },
 
-	/**
-	 * Set the context to be static.  Setting a context to be static effectively removes 
-	 * it from the automatic update when the world is updated.  The user will need to call
-	 * {@link render}, passing the world time (gotten with {@link Engine#worldTime})
-	 * to manually render the context.  Any objects within the context will then render
-	 * to the context.
-	 * 
-	 * @param state {Boolean} <tt>true</tt> to set the context to static
-	 */
-	setStatic: function(state) {
-		this.staticCtx = state;
-	},
-	
-	/**
-	 * Determine if the context is static.
-	 * @return {Boolean}
-	 */
-	isStatic: function() {
-		return this.staticCtx;
-	},
+   /**
+    * Set the context to be static.  Setting a context to be static effectively removes 
+    * it from the automatic update when the world is updated.  The user will need to call
+    * {@link render}, passing the world time (gotten with {@link Engine#worldTime})
+    * to manually render the context.  Any objects within the context will then render
+    * to the context.
+    * 
+    * @param state {Boolean} <tt>true</tt> to set the context to static
+    */
+   setStatic: function(state) {
+      this.staticCtx = state;
+   },
+   
+   /**
+    * Determine if the context is static.
+    * @return {Boolean}
+    */
+   isStatic: function() {
+      return this.staticCtx;
+   },
 
    /**
     * [ABSTRACT] Set the scale of the rendering context.
@@ -240,6 +248,45 @@ var RenderContext = Container.extend(/** @scope RenderContext.prototype */{
    },
 
    /**
+    * Remove an object from the render context.  The object is
+    * not destroyed when it is removed from the container.  The removal
+    * occurs after each update to avoid disrupting the flow of object
+    * traversal.
+    *
+    * @param obj {Object} The object to remove from the container.
+    * @return {Object} The object that was removed
+    */
+   remove: function(obj) {
+		this.safeRemoveList.push(obj);
+   },
+
+   /**
+    * Remove an object from the render context at the specified index.
+    * The object is not destroyed when it is removed.  The removal
+    * occurs after each update to avoid disrupting the flow of object
+    * traversal.
+    *
+    * @param idx {Number} An index between zero and the size of the container minus 1.
+    * @return {Object} The object removed from the container.
+    */
+   removeAtIndex: function(idx) {
+		this.safeRemoveList.push(this._find(idx));
+	},
+
+	/**
+	 * This method is called after the update to remove items from the
+	 * context.
+	 * @private
+	 */
+	_safeRemove: function() {
+		var obj;
+		while ((obj = this.safeRemoveList.shift()) != null) {
+			Container.prototype.remove.call(this, obj);
+		}
+		this.safeRemoveList.length = 0;
+	},
+
+   /**
     * Returns the structure that contains information held about
     * the rendering context.  This object allows a context to store
     * extra information on an object that an object wouldn't know about.
@@ -280,11 +327,11 @@ var RenderContext = Container.extend(/** @scope RenderContext.prototype */{
     */
    update: function(parentContext, time)
    {
-		if (!this.staticCtx) {
-	      // Clear and render world
-	      this.reset();
-	      this.render(time);
-		}
+      if (!this.staticCtx) {
+         // Clear and render world
+         this.reset();
+         this.render(time);
+      }
    },
 
    /**
@@ -293,22 +340,40 @@ var RenderContext = Container.extend(/** @scope RenderContext.prototype */{
     * @param time {Number} The current render time in milliseconds from the engine.
     */
    render: function(time) {
-      // Push the world transform
-      this.pushTransform();
-
+   
+		/* pragma:DEBUG_START */
 		try {
-	      this.setupWorld(time);
-	
-	      // Run the objects if they are visible
-	      var objs = this.getObjects();
-	      for (var o in objs)
-	      {
-	         this.renderObject(objs[o], time);
-	      }
+			Profiler.enter("RenderContext.render(time)");
+		/* pragma:DEBUG_END */
+
+			// Push the world transform
+			this.pushTransform();
+
+			this.setupWorld(time);
+
+			// Run the objects if they are visible
+			var objs = this.iterator();
+			while (objs.hasNext()) {
+				var o = objs.next();
+				this.renderObject(o, time);
+			}
+
+			objs.destroy();   
+
+			// Restore the world transform
+			this.popTransform();
+
+			// Safely remove any objects that were removed from
+			// the context while it was rendering
+			if (this.safeRemoveList.length > 0) {
+				this._safeRemove();
+			}
+		
+		/* pragma:DEBUG_START */
 		} finally {
-	      // Restore the world transform
-	      this.popTransform();
+			Profiler.exit();
 		}
+		/* pragma:DEBUG_END */
    },
 
    /**
@@ -317,7 +382,18 @@ var RenderContext = Container.extend(/** @scope RenderContext.prototype */{
     * @param time {Number} The world time, in milliseconds
     */
    renderObject: function(obj, time) {
-      obj.update(this, time);
+		/* pragma:DEBUG_START */
+		try {
+			Profiler.enter("RenderContext.renderObject(obj, time)");
+		/* pragma:DEBUG_END */
+	
+			obj.update(this, time);
+			
+		/* pragma:DEBUG_START */
+		} finally {
+			Profiler.exit();
+		}
+		/* pragma:DEBUG_END */
    },
 
    /**
@@ -358,17 +434,16 @@ var RenderContext = Container.extend(/** @scope RenderContext.prototype */{
    }
 }, /** @scope RenderContext.prototype */{ 
 
-	// framechange - rewrote method to actually fucking sort things by z index
    /**
     * Sort the objects to draw from objects with the lowest
     * z-index to the highest z-index.
     * @static
     */
    sortFn: function(obj1, obj2) {
-      if (obj1 instanceof Object2D && obj2 instanceof Object2D)
-	      return obj1.getZIndex() - obj2.getZIndex();
-			else
-         return 0;
+      if (obj1.getZIndex && obj2.getZIndex) {
+         return obj1.getZIndex() - obj2.getZIndex();
+      }
+      return 0
    },
 
    /**

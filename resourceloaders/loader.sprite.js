@@ -7,7 +7,7 @@
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1402 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -40,28 +40,38 @@ Engine.initObject("SpriteLoader", "ImageLoader", function() {
 
 /**
  * @class Loads sprites and makes them available to the system.  Sprites are
- *        defined by an external resource that consist of the follwing definition.
- *        The definition file must include the source bitmap, the width and height
- *        of the bitmap, and a section that defines each sprite.
+ *        defined by an external JSON resource file.  A sprite definition file
+ *        is a JSON file which can support single-line comments.  The format
+ *        describes the image which contains the bitmap, the size of the bitmap,
+ *        the version of the file, and the sprites.  Sprites can be either single
+ *        frames or animations.  Animations are expected to be sequentially organized
+ *        in the bitmap from left to right.  Each frame of an animation must be the exact
+ *        same dimensions.
  *        <p/>
- *        Sprites can either be single frames, or animations:
+ *        A frame is simply defined by the upper left corner of the sprite and the
+ *        width and height of the frame.  For an animation, the first four arguments are
+ *        the same as a frame, followed by the frame count, the millisecond delay between
+ *        frames, and the type of animation (either "loop" or "toggle").  A looped animation
+ *        will play all frames, indicated by the frame count, and then start again from the
+ *        beginning of the animation.  A toggled animation will play from the first to
+ *        the last frame, then play from the last to the first, and then repeat.  The
+ *        first and last frame will not be repeated in a toggled animation.  Thus, if
+ *        the frames are A, B, C, then the toggle will play as A, B, C, B, A, B...
  * <pre>
  * {
- *    // Frame (f): left, top, frameWidth, frameHeight
- *    // Animation (a): left, top, frameWidth, frameHeight, frameCount, speedMS, loop/toggle
- *    bitmapImage: "bitmapFile.ext",
- *    bitmapWidth: 320,
- *    bitmapHeight: 320,
- *    sprites: {
- *        "stand": {
- *           "f" : [0, 0, 32, 32]
- *        },
- *        "walk": {
- *           "a" : [32, 0, 32, 32, 3, 150, "loop"]
- *        }
+ *    // Sprite definition file v2
+ *    "bitmapImage": "bitmapFile.ext",
+ *    "bitmapSize": [320, 320],
+ *    "version": 2
+ *    "sprites": {
+ *        "stand": [0, 0, 32, 32],
+ *        "walk": [32, 0, 32, 32, 3, 150, "loop"]
  *    }
  * }
  * </pre>
+ *        <i>Note:</i> The new file structure is a bit more compact, and is indicated with
+ *        the "version" key in the file, set to the value 2.  Version 1 will be deprecated
+ *        and will not be supported in a future release of The Render Engine.
  *
  * @constructor
  * @param name {String=SpriteLoader} The name of the resource loader
@@ -70,7 +80,7 @@ Engine.initObject("SpriteLoader", "ImageLoader", function() {
 var SpriteLoader = ImageLoader.extend(/** @scope SpriteLoader.prototype */{
 
    sprites: null,
-   
+
    queuedSprites: 0,
 
    constructor: function(name) {
@@ -98,8 +108,7 @@ var SpriteLoader = ImageLoader.extend(/** @scope SpriteLoader.prototype */{
          var thisObj = this;
 
          // Get the file from the server
-         $.get(url, function(data, status) {
-            var spriteInfo = EngineSupport.evalJSON(data);
+         Engine.loadJSON(url, function(spriteInfo, status) {
             // get the path to the resource file
             var path = url.substring(0, url.lastIndexOf("/"));
             thisObj.load(name, null, spriteInfo, path + "/");
@@ -111,7 +120,11 @@ var SpriteLoader = ImageLoader.extend(/** @scope SpriteLoader.prototype */{
          Console.info("Loading sprite: " + name + " @ " + info.bitmapImage);
 
          // Load the sprite image file
-         this.base(name, info.bitmapImage, info.bitmapWidth, info.bitmapHeight);
+			if (!info.version || info.version == 1) {
+	         this.base(name, info.bitmapImage, info.bitmapWidth, info.bitmapHeight);
+			} else if (info.version == 2) {
+	         this.base(name, info.bitmapImage, info.bitmapSize[0], info.bitmapSize[1]);
+			}
 
          // Store the sprite info
          this.sprites[name] = info;
@@ -147,7 +160,7 @@ var SpriteLoader = ImageLoader.extend(/** @scope SpriteLoader.prototype */{
       if (this.queuedSprites > 0) {
          return false;
       }
-      
+
       return this.base(name);
    },
 
@@ -159,7 +172,8 @@ var SpriteLoader = ImageLoader.extend(/** @scope SpriteLoader.prototype */{
     * @return {Sprite} A {@link Sprite} instance
     */
    getSprite: function(resource, sprite) {
-      return Sprite.create(sprite, this.get(resource).info.sprites[sprite], this.get(resource));
+		var info = this.get(resource).info;
+      return Sprite.create(sprite, info.sprites[sprite], this.get(resource), info.version || 1);
    },
 
    /**
@@ -176,6 +190,15 @@ var SpriteLoader = ImageLoader.extend(/** @scope SpriteLoader.prototype */{
       }
       return s;
    },
+
+	exportAll: function(resource) {
+		var o = this.base();
+		var sprites = this.getSpriteNames(resource);
+		for (var i in sprites) {
+			o[sprites[i]] = this.getSprite(resource, sprites[i]);
+		}
+		return o;
+	},
 
    /**
     * The name of the resource this loader will get.
@@ -237,21 +260,24 @@ var Sprite = PooledObject.extend(/** @scope Sprite.prototype */{
    /**
     * @private
     */
-   constructor: function(name, spriteObj, spriteResource) {
+   constructor: function(name, spriteObj, spriteResource, fileVersion) {
       this.base(name);
-      this.type = (spriteObj["a"] ? Sprite.TYPE_ANIMATION : Sprite.TYPE_SINGLE);
 
-      var s = (this.type == Sprite.TYPE_ANIMATION ? spriteObj["a"] : spriteObj["f"]);
+		if (fileVersion == 1) {
+	  		this.type = (spriteObj["a"] ? Sprite.TYPE_ANIMATION : Sprite.TYPE_SINGLE);
+		} else if (fileVersion == 2) {
+			this.type = (spriteObj.length == 4 ? Sprite.TYPE_SINGLE : Sprite.TYPE_ANIMATION);
+		}
+
+      var s;
+		if (fileVersion == 1) {
+			s = (this.type == Sprite.TYPE_ANIMATION ? spriteObj["a"] : spriteObj["f"]);
+		} else if (fileVersion == 2) {
+			s = spriteObj;
+		}
+
       if (this.type == Sprite.TYPE_ANIMATION) {
-         //this.mode = (s[Sprite.INDEX_TYPE] == "loop" ? Sprite.MODE_LOOP : Sprite.MODE_TOGGLE);
-				 // frame change - removed line above and added the stuff below
-				 if(s[Sprite.INDEX_TYPE] == "loop")
-				 	 this.mode = Sprite.MODE_LOOP;
-				 else if(s[Sprite.INDEX_TYPE] == "toggle")
-					 this.mode = Sprite.MODE_TOGGLE; 
-				 else if(s[Sprite.INDEX_TYPE] == "once")
-					 this.mode = Sprite.MODE_ONCE;
-				
+         this.mode = (s[Sprite.INDEX_TYPE] == "loop" ? Sprite.MODE_LOOP : Sprite.MODE_TOGGLE);
          this.count = s[Sprite.INDEX_COUNT];
          this.speed = s[Sprite.INDEX_SPEED];
       }
@@ -260,6 +286,15 @@ var Sprite = PooledObject.extend(/** @scope Sprite.prototype */{
       this.frame = Rectangle2D.create(s[Sprite.INDEX_LEFT], s[Sprite.INDEX_TOP], s[Sprite.INDEX_WIDTH], s[Sprite.INDEX_HEIGHT]);
       this.bbox = Rectangle2D.create(0, 0, s[Sprite.INDEX_WIDTH], s[Sprite.INDEX_HEIGHT]);
    },
+
+	/**
+	 * @private
+	 */
+	destroy: function() {
+		this.bbox.destroy();
+		this.frame.destroy();
+		this.base();
+	},
 
    /**
     * @private
@@ -299,8 +334,8 @@ var Sprite = PooledObject.extend(/** @scope Sprite.prototype */{
       return (this.isAnimation() && this.mode == Sprite.MODE_TOGGLE);
    },
 
-	 //framechange - added
-	 isOnce: function() { return (this.isAnimation() && this.mode == Sprite.MODE_ONCE); },
+   //framechange - added
+   isOnce: function() { return (this.isAnimation() && this.mode == Sprite.MODE_ONCE); },
 
    /**
     * Get the bounding box for the sprite.
@@ -320,10 +355,18 @@ var Sprite = PooledObject.extend(/** @scope Sprite.prototype */{
     */
    getFrame: function(time) {
       if (!this.isAnimation()) {
-         return this.frame;
+         return Rectangle2D.create(this.frame);
       } else {
          var f = Rectangle2D.create(this.frame);
-         var fn = this.getFrameNumber(time); // moved code from here to getFrameNumber()
+         var fn;
+         if (this.isLoop()) {
+            fn = Math.floor(time / this.speed) % this.count;
+         } else {
+            fn = Math.floor(time / this.speed) % (this.count * 2);
+            if (fn > this.count - 1) {
+               fn = this.count - (fn - (this.count - 1));
+            }
+         }
          return f.offset(f.dims.x * fn, 0);
       }
    },
@@ -408,14 +451,14 @@ var Sprite = PooledObject.extend(/** @scope Sprite.prototype */{
     */
    MODE_LOOP: 0,
 
+   //framechange - added
+   MODE_ONCE: 2,
+
    /** The sprite animation toggles - Plays from the first to the last frame
     *  then plays backwards to the first frame and repeats.
     * @type Number
     */
    MODE_TOGGLE: 1,
-
-	 //framechange - added
-	 MODE_ONCE: 2,
 
    /** The sprite is a single frame
     * @type Number
@@ -460,7 +503,7 @@ var Sprite = PooledObject.extend(/** @scope Sprite.prototype */{
    /** The field in the sprite definition file for the type of sprite animation
     * @private
     */
-   INDEX_TYPE: 6,
+   INDEX_TYPE: 6
 });
 
 return Sprite;

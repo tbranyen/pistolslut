@@ -2,7 +2,6 @@ Engine.include("/engine/engine.math2d.js");
 Engine.include("/engine/engine.particles.js");
 
 Engine.initObject("BloodParticle", "Particle", function() {
-
 	var BloodParticle = Particle.extend(/** @scope BloodParticle.prototype */{
 
 		pos: null,
@@ -97,16 +96,14 @@ Engine.initObject("BurnoutParticle", "Particle", function() {
 
 Engine.initObject("ColoredParticle", "Particle", function() {
 	var ColoredParticle = Particle.extend({
-
-		pos: null,
 		vec: null,
 		color: null,
 
 		constructor: function(color, pos, ttl, angle, spread, velocity) {
-			this.pos = pos;
-			this.color = color;
-
 			this.base(ttl);
+            var p = pos.get();
+			this.setPosition(pos.x, pos.y);
+			this.color = color;
 
 			var a = (angle - (spread / 2)) + (Math.random() * spread);
 			this.vec = Math2D.getDirectionVector(Point2D.ZERO, ColoredParticle.UP, a);
@@ -115,18 +112,8 @@ Engine.initObject("ColoredParticle", "Particle", function() {
 
 		release: function() {
 			this.base();
-			this.pos = null;
 			this.vec = null;
 		},
-
-		draw: function(renderContext, time) {
-			this.pos.add(this.vec);
-			this.pos.x = this.pos.x - renderContext.getHorizontalScroll();
-
-			renderContext.setFillStyle(this.color);
-			renderContext.drawPoint(this.pos);
-		}
-
 	}, {
 		getClassName: function() { return "ColoredParticle"; },
 
@@ -134,38 +121,6 @@ Engine.initObject("ColoredParticle", "Particle", function() {
 	});
 
 	return ColoredParticle;
-});
-
-Engine.initObject("SnowParticle", "ColoredParticle", function() {
-	var SnowParticle = ColoredParticle.extend({
-
-		constructor: function(levelWidth) {
-			var angle = Math.floor((180) + (Math.random() * 10));
-			var position = Point2D.create(Math.floor(Math.random() * levelWidth), 0);
-			var velocity = 2 + (Math.random() * 0.5);
-			this.base("#fff", position, 8000, angle, 0, velocity);
-		},
-
-	}, {
-		getClassName: function() { return "SnowParticle"; },
-	});
-
-	return SnowParticle;
-});
-
-Engine.initObject("ContrailParticle", "ColoredParticle", function() {
-	var ContrailParticle = ColoredParticle.extend({
-
-		constructor: function(position, ttl, angle, spread) {
-			var velocity = 3 + Math.random();
-			this.base("#ffc", position, ttl, angle, spread, velocity);
-		},
-
-	}, {
-		getClassName: function() { return "ContrailParticle"; },
-	});
-
-	return ContrailParticle;
 });
 
 Engine.initObject("FireworkExplosionParticle", "ColoredParticle", function() {
@@ -177,8 +132,8 @@ Engine.initObject("FireworkExplosionParticle", "ColoredParticle", function() {
 		},
 
 		draw: function(renderContext, time) {
-			this.pos.add(this.vec);
-			this.pos.x = this.pos.x - renderContext.getHorizontalScroll();
+			this.getPosition().add(this.vec);
+			this.setPosition(this.getPosition().x - renderContext.getHorizontalScroll(), this.getPosition().y);
 
 			var newColor = ParticleColorChanger.explosion(time, this.birth, this.life)
 			if(this.color != newColor)
@@ -187,7 +142,7 @@ Engine.initObject("FireworkExplosionParticle", "ColoredParticle", function() {
 				renderContext.setFillStyle(this.color);
 			}
 
-			renderContext.drawPoint(this.pos);
+			renderContext.drawPoint(this.getPosition());
 		}
 
 	}, {

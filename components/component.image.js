@@ -2,12 +2,12 @@
  * The Render Engine
  * ImageComponent
  *
- * @fileoverview An extension of the render component which handles
+ * @fileoverview An extension of the render component which handles 
  *               image resource rendering.
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1408 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -38,12 +38,13 @@ Engine.include("/components/component.render.js");
 Engine.initObject("ImageComponent", "RenderComponent", function() {
 
 /**
- * @class A render component that renders an image.
+ * @class A {@link RenderComponent} that draws an image to the render context.
+ *        Images used by this component are loaded via an {@link ImageLoader}
+ *        so that client-side caching can be implemented.
  *
  * @param name {String} The name of the component
  * @param [priority=0.1] {Number} The render priority
- * @param imageLoader {ImageLoader} The image loader to get images from
- * @param [imageName] {String} The name of the image resource from the loader
+ * @param image {Image} The image object, acquired with {@link ImageLoader#getImage}.
  * @extends RenderComponent
  * @constructor
  * @description Creates a component which renders images from an {@link ImageLoader}.
@@ -57,18 +58,15 @@ var ImageComponent = RenderComponent.extend(/** @scope ImageComponent.prototype 
    /**
     * @private
     */
-   constructor: function(name, priority, imageLoader, imageName) {
-      if (priority instanceof ImageLoader) {
-         imageName = imageLoader;
-         imageLoader = priority;
+   constructor: function(name, priority, image) {
+      if (Image.isInstance(priority)) {
+         image = priority;
          priority = 0.1;
       }
       this.base(name, priority);
-      this.imageLoader = imageLoader;
-      if (imageName != null) {
-         this.currentImage = imageLoader.get(imageName);
-         var dims = imageLoader.getDimensions(imageName);
-         this.bbox = Rectangle2D.create(0,0,dims.x,dims.y);
+      if (image != null) {
+         this.currentImage = image;
+         this.bbox = this.currentImage.getBoundingBox();
       }
    },
 
@@ -95,13 +93,11 @@ var ImageComponent = RenderComponent.extend(/** @scope ImageComponent.prototype 
     * specified when creating the component.  This allows the user to change
     * the image on the fly.
     *
-    * @param imageName {String} The image to render
+    * @param image {Image} The image to render
     */
-   setImage: function(imageName) {
-      this.currentImage = this.imageLoader.get(imageName);
-      var dims = this.imageLoader.getDimensions(imageName);
-      this.bbox.setWidth(dims.x);
-      this.bbox.setHeight(dims.y);
+   setImage: function(image) {
+      this.currentImage = image;
+      this.bbox = image.getBoundingBox();
    },
 
    /**
@@ -126,10 +122,12 @@ var ImageComponent = RenderComponent.extend(/** @scope ImageComponent.prototype 
       }
 
       if (this.currentImage) {
-         renderContext.drawImage(this.bbox, this.currentImage, null, this.getHostObject());
+			this.transformOrigin(renderContext, true);
+         renderContext.drawImage(this.bbox, this.currentImage.getImage(), null, this.getHostObject());
+			this.transformOrigin(renderContext, false);
       }
    }
-}, /** @scope ImageComponent.prototype */{
+}, /** @scope ImageComponent.prototype */{ 
    /**
     * Get the class name of this object
     * @return {String} "ImageComponent"

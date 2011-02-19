@@ -7,7 +7,7 @@
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1374 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -44,6 +44,17 @@ Engine.initObject("HostObject", "HashContainer", function() {
  *        can have any number of components of any type within it.  Components provide
  *        functionality for things like rendering, collision detection, effects, or 
  *        transformations. This way, an object can be anything, depending on it's components.
+ *        <p/>
+ *        A <tt>HostObject</tt> is the logical foundation for all in-game objects.  It is
+ *        through this mechanism that game objects can be created without having to manipulate
+ *        large, monolithic objects.  A <tt>HostObject</tt> contains {@link BaseComponent Components},
+ *        which are the building blocks for complex functionality and ease of development.
+ *        <p/>
+ *        By building a <tt>HostObject</tt> from multiple components, the object gains the
+ *        component's functionality without having to necessarily implement anything.  Many
+ *        components already exist in the engine, but you are only limited by your imagination
+ *        when it comes to developing new components.
+ *
  * @extends HashContainer
  * @constructor
  * @description Create a host object.
@@ -68,6 +79,7 @@ var HostObject = HashContainer.extend(/** @scope HostObject.prototype */{
       if (this.getRenderContext()) {
          this.getRenderContext().remove(this);
       }
+		this.cleanUp();
       this.base();
    },
 
@@ -100,11 +112,13 @@ var HostObject = HashContainer.extend(/** @scope HostObject.prototype */{
    update: function(renderContext, time) {
 
       // Run the components
-      var components = this.getObjects();
+      var components = this.iterator();
 
-      for (var c in components) {
-         components[c].execute(renderContext, time);
+      while (components.hasNext()) {
+         components.next().execute(renderContext, time);
       }
+
+		components.destroy();
 
       this.base(renderContext, time);
    },

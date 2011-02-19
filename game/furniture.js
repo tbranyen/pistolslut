@@ -27,7 +27,7 @@ Engine.initObject("Furniture", "Mover", function() {
 		},
 
 		finalSetup: function() {
-			this.rect = new CheapRect(this);
+			this.rect = CheapRect.create(this);
 		},
 
 		shot: function(projectile) {

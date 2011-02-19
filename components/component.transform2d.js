@@ -6,7 +6,7 @@
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1456 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -49,7 +49,7 @@ var Transform2DComponent = BaseComponent.extend(/** @scope Transform2DComponent.
 
    position: null,
    rotation: 0,
-   scale: 1.0,
+   scale: null,
    lastPosition: null,
    lastRenderPosition: null,
 	worldPos: null,
@@ -64,7 +64,7 @@ var Transform2DComponent = BaseComponent.extend(/** @scope Transform2DComponent.
       this.lastPosition = Point2D.create(0,0);
       this.lastRenderPosition = Point2D.create(0,0);
       this.rotation = 0;
-      this.scale = 1.0;
+      this.scale = [1.0,1.0];
    },
 	
 	destroy: function() {
@@ -83,7 +83,7 @@ var Transform2DComponent = BaseComponent.extend(/** @scope Transform2DComponent.
       this.base();
       this.position = null;
       this.rotation = 0;
-      this.scale = 1.0;
+      this.scale = null;
       this.lastPosition = null;
       this.lastRenderPosition = null;
 		this.worldPos = null;
@@ -100,7 +100,7 @@ var Transform2DComponent = BaseComponent.extend(/** @scope Transform2DComponent.
    },
 
    /**
-    * Returns the position of the transform.
+    * Returns the position of the transformation relative to the world.
     * @return {Point2D}
     */
    getPosition: function() {
@@ -108,7 +108,9 @@ var Transform2DComponent = BaseComponent.extend(/** @scope Transform2DComponent.
    },
 
    /**
-    * Returns the render position of the transform.
+    * Returns the position of the transformation relative to the viewport.  If the world is
+    * comprised of multiple viewports (wide and/or tall) the render position
+    * is relative to the current viewport's position.
     * @return {Point2D}
     */
    getRenderPosition: function() {
@@ -118,7 +120,7 @@ var Transform2DComponent = BaseComponent.extend(/** @scope Transform2DComponent.
    },
 
    /**
-    * Set the last position that the transform was at.
+    * Set the last position that the transformation was at.
     *
     * @param point {Point2D} The last position
     */
@@ -127,7 +129,7 @@ var Transform2DComponent = BaseComponent.extend(/** @scope Transform2DComponent.
    },
 
    /**
-    * Get the last position of the transform.
+    * Get the last position of the transformation relative to the world.
     * @return {Point2D}
     */
    getLastPosition: function() {
@@ -135,7 +137,7 @@ var Transform2DComponent = BaseComponent.extend(/** @scope Transform2DComponent.
    },
 
    /**
-    * Get the last position of the transform.
+    * Get the last position of the transformation relative to the viewport.
     * @return {Point2D}
     */
    getLastRenderPosition: function() {
@@ -143,7 +145,7 @@ var Transform2DComponent = BaseComponent.extend(/** @scope Transform2DComponent.
    },
 
    /**
-    * Set the rotation of the transform.
+    * Set the rotation of the transformation.
     *
     * @param rotation {Number} The rotation
     */
@@ -152,7 +154,7 @@ var Transform2DComponent = BaseComponent.extend(/** @scope Transform2DComponent.
    },
 
    /**
-    * Get the rotation of the transform.
+    * Get the rotation of the transformation.
     * @return {Number}
     */
    getRotation: function() {
@@ -160,40 +162,80 @@ var Transform2DComponent = BaseComponent.extend(/** @scope Transform2DComponent.
    },
 
    /**
-    * Get the render rotation of the transform.
+    * Get the rotation of the transformation relative to the viewport.
     * @return {Number}
     */
    getRenderRotation: function() {
       var wR = this.getHostObject().getRenderContext().getWorldRotation();
-      return wR + this.rotation;
+      return wR + this.getRotation();
    },
 
    /**
-    * Set the uniform scale of the transform.  The uniform
-    * scale applies to both the X and Y axis.
+    * Set the scale of the transform.  You can apply a uniform scale by
+    * assigning only the first argument a value.  To use a non-uniform scale,
+    * use both the X and Y arguments.
     *
-    * @param scale {Number} The scale of the transform with 1.0 being 100%
+    * @param scaleX {Number} The scale of the transformation along the X-axis with 1.0 being 100%
+    * @param [scaleY] {Number} The scale of the transformation along the Y-axis. If provided, a 
+    *			non-uniform scale can be achieved by using a number which differs from the X-axis.
     */
-   setScale: function(scale) {
-      this.scale = scale;
+   setScale: function(scaleX, scaleY) {
+   	scaleX = scaleX || 1.0;
+      this.scale = [scaleX, scaleY || scaleX];
    },
 
    /**
-    * Get the uniform scale of the transform.
+    * Get the uniform scale of the transformation.
     * @return {Number}
     */
    getScale: function() {
-      return this.scale;
+      return this.getScaleX();
    },
 
+	/**
+	 * Get the non-uniform scale along the X-axis of the transformation.
+	 * @return {Number}
+	 */
+	getScaleX: function() {
+		return this.scale[0];
+	},
+	
+	/**
+	 * Get the non-uniform scale along the Y-axis of the transformation.
+	 * @return {Number}
+	 */
+	getScaleY: function() {
+		return this.scale[1];
+	},
+
    /**
-    * Get the uniform render scale of the transform.
+    * Get the uniform scale of the transformation relative to the viewport.
     * @return {Number}
     */
    getRenderScale: function() {
 //    var wS = this.getHostObject().getRenderContext().getWorldScale();
 //      return wS * this.scale;
-      return this.scale;
+      return this.scale[0];
+   },
+
+   /**
+    * Get the uniform scale of the transformation relative to the viewport along the X-axis.
+    * @return {Number}
+    */
+   getRenderScaleX: function() {
+//    var wS = this.getHostObject().getRenderContext().getWorldScale();
+//      return wS * this.scale;
+      return this.scale[0];
+   },
+
+   /**
+    * Get the uniform scale of the transformation relative to the viewport along the Y-axis.
+    * @return {Number}
+    */
+   getRenderScaleY: function() {
+//    var wS = this.getHostObject().getRenderContext().getWorldScale();
+//      return wS * this.scale;
+      return this.scale[1];
    },
 
    /**
@@ -207,9 +249,9 @@ var Transform2DComponent = BaseComponent.extend(/** @scope Transform2DComponent.
    execute: function(renderContext, time) {
       renderContext.setPosition(this.getRenderPosition());
       renderContext.setRotation(this.getRenderRotation());
-      var s = this.getRenderScale();
-      renderContext.setScale(s);
+      renderContext.setScale(this.getRenderScaleX(), this.getRenderScaleY());
    }
+   
 }, /** @scope Transform2DComponent.prototype */{
    /**
     * Get the class name of this object

@@ -8,7 +8,7 @@
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1319 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -91,9 +91,7 @@ var LevelLoader = ImageLoader.extend(/** @scope LevelLoader.prototype */{
          var thisObj = this;
 
          // Get the file from the server
-         $.get(url, function(data) {
-            var levelInfo = EngineSupport.evalJSON(data);
-
+         Engine.loadJSON(url, function(levelInfo) {
             // get the path to the resource file
             var path = url.substring(0, url.lastIndexOf("/"));
             thisObj.load(name, null, levelInfo, path + "/");

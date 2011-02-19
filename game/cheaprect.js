@@ -1,5 +1,5 @@
-Engine.initObject("CheapRect", "Base", function() {
-	var CheapRect = Base.extend({
+Engine.initObject("CheapRect", "PooledObject", function() {
+	var CheapRect = PooledObject.extend({
 
 		constructor: function(obj, x, y, r, b) {
 			if(obj != null)

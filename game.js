@@ -197,8 +197,9 @@ Engine.initObject("PistolSlut", "Game", function() {
 		},
 
 		loadComponents: function() {
-			// We'll need something to detect collisions
 			this.collisionModel = SpatialGrid.create(this.level.getWidth(), this.level.getHeight(), 1);
+            this.collisionModel.setAccuracy(SpatialGrid.GOOD_ACCURACY);
+
 			this.collider = new Collider(this);
 			this.physics = new Physics(this);
 
@@ -207,7 +208,6 @@ Engine.initObject("PistolSlut", "Game", function() {
 
 			// Start up the particle engine
 			this.pEngine = ParticleEngine.create();
-			this.pEngine.setMaximum(100);
 			this.renderContext.add(this.pEngine);
 		},
 
@@ -275,7 +275,7 @@ Engine.initObject("PistolSlut", "Game", function() {
 		},
 
 		inView: function(obj) {
-			return (new CheapRect(null, this.renderContext.getHorizontalScroll(), 0, this.renderContext.getHorizontalScroll() + this.fieldWidth, this.fieldHeight)).isIntersecting(new CheapRect(obj));
+			return (CheapRect.create(null, this.renderContext.getHorizontalScroll(), 0, this.renderContext.getHorizontalScroll() + this.fieldWidth, this.fieldHeight)).isIntersecting(CheapRect.create(obj));
 		},
 
 		// updates the position of the view frame

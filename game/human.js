@@ -58,20 +58,6 @@ Engine.initObject("Human", "Mover", function() {
             this.grenadeLauncher.handleDischarge(time);
 		},
 
-
-		notifyGrenadeNearby: function(grenade) {
-			var add = true;
-			for(var i in this.nearbyGrenades)
-				if(this.nearbyGrenades[i] == grenade)
-				{
-					add = false;
-					break;
-				}
-
-			if(add == true)
-				this.nearbyGrenades.push(grenade);
-		},
-
 		move: function(time) {
 			if(this.getSprite().isSinglePlayOver(time) == true) // on a single play anim and it's over
 			{
@@ -86,7 +72,6 @@ Engine.initObject("Human", "Mover", function() {
 
 			this.field.applyGravity(this);
             this.handleLift();
-			this.handleFriction();
 			this.setPosition(this.getPosition().add(this.getVelocity()));
 		},
 
@@ -356,31 +341,6 @@ Engine.initObject("Human", "Mover", function() {
                 this.shooter = null;
             }
         },
-
-		// if dead, carry on moving. A bit.
-		friction: 0.1,
-		handleFriction: function() {
-			newX = null;
-			if(this.isDying())
-			{
-				var x = this.getVelocity().x;
-				if(x == 0)
-					return;
-				else if(x > 0)
-				{
-					newX = x - this.friction;
-					if(newX < 0)
-						newX = 0;
-				}
-				else // x < 0
-				{
-					newX = x + this.friction;
-					if(newX < 0)
-						newX = 0;
-				}
-				this.getVelocity().setX(newX);
-			}
-		},
 
 		// sets sprite to reflect whatever human is doing
 		updateSprite: function() {

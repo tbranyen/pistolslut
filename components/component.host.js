@@ -7,7 +7,7 @@
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1231 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -39,7 +39,9 @@ Engine.initObject("HostComponent", "LogicComponent", function() {
 
 /**
  * @class A component that can execute host objects.  Allows embedding
- *        of multiple objects into one object.
+ *        of multiple objects into one object.  This is logically
+ *        a method to embed further {@link HostObject HostObjects} within
+ *        an existing <tt>HostObject</tt>.
  *
  * @param name {String} The name of the component
  * @param [priority=1.0] {Number} The priority of this component

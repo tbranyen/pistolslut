@@ -7,8 +7,8 @@
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  *
- * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @author: $Author: bfattori@gmail.com $
+ * @version: $Revision: 1455 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -39,7 +39,8 @@ Engine.initObject("CircleColliderComponent", "CircleColliderComponent", function
 
 /**
  * @class An extension of the {@link ColliderComponent} which will check if the
- *        object's are colliding based on a bounding circle.  
+ *        object's are colliding based on a bounding circle.  If the bounding circle method
+ *			 isn't available, the bounding box will be used to approximate a bounding circle.
  *
  * @param name {String} Name of the component
  * @param collisionModel {SpatialCollection} The collision model
@@ -47,117 +48,101 @@ Engine.initObject("CircleColliderComponent", "CircleColliderComponent", function
  *
  * @extends ColliderComponent
  * @constructor
- * @description For this component to function, a movement vector must be available on the 
- *        host object by implementing the {@link Object2D#getVelocity} method which returns 
- *        a {@link Vector2D} instance.  Additionally the host object and collision object 
- *        must implement the {@link Object2D#getCircle} method which returns a 
- *        {@link Circle2D} instance.
+ * @description Creates a collider component for circle-circle collision testing.  Each object
+ *              must implement either the {@link Object2D#getWorldBox} or
+ *              {@link Object2D#getCircle} method and return a world-oriented bounding box or
+ *              circle, respectively.
  */
 var CircleColliderComponent = ColliderComponent.extend(/** @scope CircleColliderComponent.prototype */{
 
+	hasMethods: null,
+
    /**
-    * Call the host object's <tt>onCollide()</tt> method, passing the time of the collision
-    * and the potential collision object.  The return value should either tell the collision
-    * tests to continue, or to stop.
+    * Releases the component back into the pool for reuse.  See {@link PooledObject#release}
+    * for more information.
+    */
+   release: function() {
+      this.base();
+		this.hasMethod = null;		
+	},
+
+	/**
+    * Establishes the link between this component and its host object.
+    * When you assign components to a host object, it will call this method
+    * so that each component can refer to its host object, the same way
+    * a host object can refer to a component with {@link HostObject#getComponent}.
+    *
+    * @param hostObject {HostObject} The object which hosts this component
+	 */
+	setHostObject: function(hostObj) {
+		this.base(hostObj);
+		this.hasMethods = [hostObj.getCircle != undefined, hostObj.getWorldBox != undefined]; // getCircle, getWorldBox
+		/* pragma:DEBUG_START */
+		AssertWarn(this.hasMethods[0] || this.hasMethods[1], "Object " + hostObj.toString() + " does not have getCircle() or getWorldBox() methods");
+		/* pragma:DEBUG_END */
+	},
+
+   /**
+    * Call the host object's <tt>onCollide()</tt> method, passing the time of the collision,
+    * the potential collision object, and the host and target masks.  The return value should 
+    * either tell the collision tests to continue, or to stop.
     * <p/>
     * A circular bounding area collision must occur to trigger the <tt>onCollide()</tt> method.
     *
     * @param time {Number} The engine time (in milliseconds) when the potential collision occurred
     * @param collisionObj {HostObject} The host object with which the collision potentially occurs
+    * @param hostMask {Number} The collision mask for the host object
+    * @param targetMask {Number} The collision mask for <tt>collisionObj</tt>
     * @return {Number} A status indicating whether to continue checking, or to stop
     */
-   testCollision: function(time, collisionObj) {
+   testCollision: function(time, collisionObj, hostMask, targetMask) {
       
       var host = this.getHostObject();
-      
-      // Check for the required methods and see if a collision will occur
-      if (host.getCircle && collisionObj.getCircle && host.getVelocity &&
-          this.isPotentialCollision(collisionObj)) {
-
-         return this.base(collisionObj, time);
+      var hCircle = Circle2D.create(0,0,1);
+		var oCircle = Circle2D.create(0,0,1);
+		var wBox, r;
+		
+		// Check for easy methods
+		if (this.hasMethods[0]) {
+			hCircle.set(host.getCircle());
+		} else {
+			// Approximate a circle with the world box
+			wBox = this.hasMethods[1] ? host.getWorldBox() : null;
+			if (wBox == null) {
+				hCircle.destroy();
+				oCircle.destroy();
+				return ColliderComponent.CONTINUE;	// Can't perform check
+			}
+			r = wBox.get();
+			hCircle.set(wBox.getCenter(), r.w > r.h ? r.w / 2 : r.h / 2); 
+		}
+		
+		if (collisionObj.getCircle) {
+			oCircle.set(collisionObj.getCircle());
+		} else {
+			// Approximate a circle with the world box
+			wBox = collisionObj.getWorldBox ? collisionObj.getWorldBox() : null;
+			if (wBox == null) {
+				hCircle.destroy();
+				oCircle.destroy();
+				return ColliderComponent.CONTINUE;	// Can't perform check
+			}
+			r = wBox.get();
+			oCircle.set(wBox.getCenter(), r.w > r.h ? r.w / 2 : r.h / 2); 
+		}
+		
+      // See if a collision will occur
+      if (hCircle.isIntersecting(oCircle)) {
+      	hCircle.destroy();
+      	oCircle.destroy();
+         return this.base(time, collisionObj, hostMask, targetMask);
       }
       
+		hCircle.destroy();
+		oCircle.destroy();
       return ColliderComponent.CONTINUE;
-   },
-   
-   /**
-    * Check for a potential collision between the host object's circle and the
-    * collision object's circle.  Returns <tt>true</tt> if a collision will occur.
-    * @private
-    */
-   isPotentialCollision: function(collisionObj) {
-      
-      var host = this.getHostObject();
-      
-      // Early out test
-      var dist = collisionObj.getCircle().getCenter().dist(host.getCircle().getCenter());
-      var sumRad = collisionObj.getCircle().getRadius() + host.getCircle().getRadius();
-      dist -= sumRad;
-      if (host.getVelocity().len() < dist) {
-         // No collision possible
-         return false;
-      }
-
-      var norm = Vector2D.create(host.getVelocity()).normalize();
-
-      // Find C, the vector from the center of the moving
-      // circle A to the center of B
-      var c = Vector2D.create(collisionObj.getCircle().getCenter().sub(host.getCircle().getCenter()));
-      var dot = norm.dot(c);
-
-      // Another early escape: Make sure that A is moving
-      // towards B! If the dot product between the movevec and
-      // B.center - A.center is less that or equal to 0,
-      // A isn't isn't moving towards B
-      if (dot <= 0) {
-        return false;
-      }
-
-      var lenC = c.len();
-      var f = (lenC * lenC) - (dot * dot);
-
-      // Escape test: if the closest that A will get to B
-      // is more than the sum of their radii, there's no
-      // way they are going collide
-      var sumRad2 = sumRad * sumRad;
-      if (f >= sumRad2) {
-        return false;
-      }
-
-      // We now have F and sumRadii, two sides of a right triangle.
-      // Use these to find the third side, sqrt(T)
-      var t = sumRad2 - f;
-
-      // If there is no such right triangle with sides length of
-      // sumRadii and sqrt(f), T will probably be less than 0.
-      // Better to check now than perform a square root of a
-      // negative number.
-      if (t < 0) {
-        return false;
-      }
-
-      // Therefore the distance the circle has to travel along
-      // movevec is D - sqrt(T)
-      var distance = dot - Math.sqrt(t);
-
-      // Get the magnitude of the movement vector
-      var mag = host.getVelocity().len();
-
-      // Finally, make sure that the distance A has to move
-      // to touch B is not greater than the magnitude of the
-      // movement vector.
-      if (mag < distance) {
-        return false;
-      }
-
-      // Set the length of the movevec so that the circles will just
-      // touch
-      //var moveVec = host.getVelocity().normalize();
-      //movevec = moveVec.mul(distance);
-
-      return true;         
    }
-
+	
 }, { /** @scope CircleColliderComponent.prototype */
 
    /**

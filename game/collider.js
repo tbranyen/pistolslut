@@ -19,7 +19,7 @@ Engine.initObject("Collider", "Base", function() {
 				safetyMargin = inSafetyMargin;
 
 			var muzzlePosition = shooter.weapon.getGunTip();
-			var targetRect = new CheapRect(target);
+			var targetRect = CheapRect.create(target);
 			if(muzzlePosition.y <= targetRect.b + safetyMargin && muzzlePosition.y >= targetRect.y - safetyMargin) // intersecting on y-axis
 			{
 				if(shooter.direction == Collider.LEFT)
@@ -32,32 +32,32 @@ Engine.initObject("Collider", "Base", function() {
 		},
 
 		aFallingThroughB: function(a, b) {
-			var aRect = new CheapRect(a);
-			var bRect = new CheapRect(b);
+			var aRect = CheapRect.create(a);
+			var bRect = CheapRect.create(b);
 			return a.getVelocity().y >= 0 && aRect.b > bRect.y && aRect.b < bRect.y + 16;
 		},
 
 		aOnB: function(a, b) {
-			var aRect = new CheapRect(a);
-			var bRect = new CheapRect(b);
+			var aRect = CheapRect.create(a);
+			var bRect = CheapRect.create(b);
 			return aRect.b == bRect.y;
 		},
 
 		aOnLeftAndBumpingB: function(a, b) {
-			var aRect = new CheapRect(a);
-			var bRect = new CheapRect(b);
+			var aRect = CheapRect.create(a);
+			var bRect = CheapRect.create(b);
 			return aRect.r >= bRect.x && aRect.x < bRect.x && !this.aOnB(a, b);
 		},
 
 		aOnRightAndBumpingB: function(a, b) {
-			var aRect = new CheapRect(a);
-			var bRect = new CheapRect(b);
+			var aRect = CheapRect.create(a);
+			var bRect = CheapRect.create(b);
 			return aRect.x <= bRect.r && aRect.r > bRect.r && !this.aOnB(a, b);
 		},
 
 		aOnBottomAndBumpingB: function(a, b) {
-			var aRect = new CheapRect(a);
-			var bRect = new CheapRect(b);
+			var aRect = CheapRect.create(a);
+			var bRect = CheapRect.create(b);
 			return a.getVelocity().y <= 0 && aRect.y < bRect.b && aRect.y > bRect.b - 16;
 		},
 
@@ -70,7 +70,7 @@ Engine.initObject("Collider", "Base", function() {
 		colliding: function(subject, objects, clazz) {
 			for(var i in objects)
 				if(clazz == null || objects[i] instanceof clazz)
-					if(new CheapRect(subject).isIntersecting(new CheapRect(objects[i])))
+					if(CheapRect.create(subject).isIntersecting(CheapRect.create(objects[i])))
 						return true;
 			return false;
 		},
@@ -83,7 +83,7 @@ Engine.initObject("Collider", "Base", function() {
 			if(obj instanceof Furniture)
 				return obj.rect;
 			else
-				return new CheapRect(obj);
+				return CheapRect.create(obj);
 		},
 
 		objectAtLeastDistanceAway: function(obj1, obj2, distance) {
@@ -139,7 +139,7 @@ Engine.initObject("Collider", "Base", function() {
 		},
 
         sideHit: function(movingObj, staticObj) {
-          	var mORect = new CheapRect(movingObj);
+          	var mORect = CheapRect.create(movingObj);
 			var sOPos = staticObj.getPosition();
 			var sODims = staticObj.getBoundingBox().dims;
 

@@ -10,7 +10,7 @@
  * @author: Brett Fattori (brettf@renderengine.com)
  *
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1402 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -41,9 +41,9 @@ Engine.include("/rendercontexts/context.canvascontext.js");
 Engine.initObject("ScrollingBackground", "CanvasContext", function() {
 
 /**
- * @class A scrolling background render context with an associated
- *        collision map.  The render context loads a level which defines
- *        the image that will be displayed within a rendering context.
+ * @class A scrolling background render context.  The render context loads
+ * 		 a level which defines the image that will be displayed within the context
+ * 		 as its background.
  *
  * @constructor
  * @param name {String} The name of the object
@@ -119,12 +119,14 @@ var ScrollingBackground = CanvasContext.extend(/** @scope ScrollingBackground.pr
    },
 
    // framechange - removed this function because background image is now blank because of parallax
-   // setupWorld: function(time) {
-   //    this.base(time);
-   // 
+   //setupWorld: function(time) {
+   //   this.base(time);
+
    //    // Render the slice of the level image first
-   //    this.drawImage(this.getViewport(), this.level.getSourceImage(), this.visRect);
-   // }
+   //   this.drawImage(this.getViewport(), this.level.getSourceImage(), this.visRect);
+   //}
+
+
 
 }, /** @scope ScrollingBackground.prototype */{
 

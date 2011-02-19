@@ -8,7 +8,7 @@ Engine.initObject("FireworkLauncher", "Base", function() {
 			this.x = x;
 			this.y = y;
 			this.launch(name, field, renderContext, x, y, angle, spread); // initial launch
-			
+
 			// setup launch timer
 			var fireworkLauncher = this;
 			this.contrailTimer = Interval.create(name, interval,
@@ -17,18 +17,18 @@ Engine.initObject("FireworkLauncher", "Base", function() {
 						fireworkLauncher.launch(name, field, renderContext, x, y, angle, spread);
 			});
 		},
-		
+
 		launch: function(name, field, renderContext, x, y, angle, spread) {
 			var launchAngle = (angle - (spread / 2)) + (Math.random() * spread);
-			var firework = new Firework(name, field, x, y, launchAngle);	
+			var firework = Firework.create(name, field, x, y, launchAngle);
 			renderContext.add(firework);
 		},
-		
+
 		getPosition: function() { return Point2D.create(this.x, this.y); },
 		getBoundingBox: function() { return new Rectangle2D(this.x, this.y, 1, 1); },
-		
+
 	}, {
-		
+
 		getClassName: function() { return "FireworkLauncher"; },
 	});
 

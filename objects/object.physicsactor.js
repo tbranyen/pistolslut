@@ -53,8 +53,8 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 	 * 		 <p/>
 	 * 		 A <code>PhysicsActor</code> acts just like an {@link Object2D}, but it is special
 	 * 		 in that it's rigid bodies are animated via a {@link Simulation}.  Without being added to a
-	 * 		 {@link Simulation}, none of the physical bodies will be updated. 
-	 * 
+	 * 		 {@link Simulation}, none of the physical bodies will be updated.
+	 *
 	 * @param name {String} The name of the actor object
 	 * @extends Object2D
 	 * @constructor
@@ -93,7 +93,7 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 			this.rPos.destroy();
 	      this.base();
 	   },
-		
+
 		/**
 		 * Get the collection of rigid body components within the actor.
 		 * @return {Array}
@@ -102,11 +102,11 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 			if (!this.rigidBodies) {
 				this.rigidBodies = this.getObjects(function(el) {
 					return (el instanceof BaseBodyComponent);
-				});			
+				});
 			}
 			return this.rigidBodies;
 		},
-		
+
 		/**
 		 * Get the collection of joint components within the actor.
 		 * @return {Array}
@@ -115,11 +115,11 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 			if (!this.joints) {
 				this.joints = this.getObjects(function(el) {
 					return (el instanceof BaseJointComponent);
-				});			
+				});
 			}
-			return this.joints;			
+			return this.joints;
 		},
-		
+
 		/**
 		 * Set the rigid body component which is considered to be the root
 		 * body.  When setting the position of a <tt>PhysicsActor</tt>, all positions
@@ -127,14 +127,14 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 		 * <p/>
 		 * It is not necessary to set the root body if there is only one rigid body
 		 * in the actor.
-		 * 
+		 *
 		 * @param body {BaseBodyComponent} The body to assign as the root
 		 */
 		setRootBody: function(body) {
 			Assert(BaseBodyComponent.isInstance(body), "Root body is not a BaseBodyComponent");
 			this.rootBody = body;
 		},
-		
+
 		/**
 		 * Get the root body of the <tt>PhysicsActor</tt>.  If no root object has been assigned,
 		 * the first rigid body component will be used.
@@ -142,7 +142,7 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 		 */
 		getRootBody: function() {
 			if (!this.rootBody) {
-				// Get all of the bodies and select the first to be the root 
+				// Get all of the bodies and select the first to be the root
 				this.rootBody = this.getRigidBodies()[0];
 			}
 			return this.rootBody;
@@ -155,7 +155,7 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
       getPosition: function() {
          return this.getRootBody().getPosition();
       },
-		
+
       /**
        * Get the render position of the actor
        * @return {Point2D}
@@ -172,7 +172,7 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 		getRotation: function() {
 			return this.getRootBody().getRotation();
 		},
-		
+
 		/**
 		 * Get the uniform scale of the toy from the "physics" component.
 		 * @return {Number}
@@ -180,11 +180,11 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 		getScale: function() {
 			return this.getRootBody().getScale();
 		},
-		
+
 		/**
 		 * Set the position of the actor.  If the actor is comprised of multiple rigid bodies,
 		 * the position will be set for all rigid bodies and joints, relative to the root body.
-		 * 
+		 *
 		 * @param x {Number|Point2D} The X position, or a <tt>Point2D</tt>
 		 * @param y {Number} The Y position, or <tt>null</tt> if X is a <tt>Point2D</tt>
 		 */
@@ -192,40 +192,40 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 			var pt = Point2D.create(x,y);
 			var pos = Point2D.create(this.getRootBody().getPosition());
 			pt.sub(pos);
-			
-			var bodies = this.getRigidBodies();			
+
+			var bodies = this.getRigidBodies();
 			for (var b in bodies) {
 		 		var bPos = bodies[b].getPosition();
 				bPos.add(pt);
 				bodies[b].setPosition(bPos);
 		 	}
-			
+
 			var joints = this.getJoints();
 			for (var j in joints) {
 				var jPos = joints[j];
 			}
-			
+
 			pt.destroy();
 			pos.destroy();
 		},
-		
+
 		/**
-		 * Set the <code>Simulation</code> this actor participates within.  When a <code>PhysicsActor</code> 
+		 * Set the <code>Simulation</code> this actor participates within.  When a <code>PhysicsActor</code>
 		 * is part of a running <code>Simulation</code>, you must set the simulation so the physics components
 		 * can be properly added to the simulated world.
-		 * 
+		 *
 		 * @param simulation {Simulation} The simulation this object is within
 		 */
 		setSimulation: function(simulation) {
 			this.simulation = simulation;
 		},
-		
+
 		/**
 		 * Get the <code>Simulation</code> this object participates within.
 		 * @return {Simulation}
 		 */
 		getSimulation: function() {
-			return this.simulation;	
+			return this.simulation;
 		},
 
 		/**
@@ -233,18 +233,18 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 		 */
 		simulate: function() {
 			// Start simulation on bodies first
-			var bodies = this.getRigidBodies();			
+			var bodies = this.getRigidBodies();
 			for (var b in bodies) {
 		 		bodies[b].startSimulation();
 		 	}
-			
+
 			// Follow up with simulation of joints
 			var joints = this.getJoints();
 			for (var j in joints) {
 		 		joints[j].startSimulation();
 		 	}
 		},
-		
+
 	   /**
 	    * Add a component to the physics actor.  The components will be
 	    * sorted based on their type then their priority within that type.
@@ -265,16 +265,16 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 	    */
 		add: function(component, renderComponent) {
 			if (BaseBodyComponent.isInstance(component)) {
-				
+
 				// Reset the list of rigid bodies so the list will be rebuilt
 				this.rigidBodies = null;
-				
+
 				// Assure that there's a renderer for the body and then link the two
 				Assert(renderComponent == null || RenderComponent.isInstance(renderComponent), "Adding non-render component to body component");
-				
+
 				// Link the two so that when the body (transform) occurs, the renderer does its thing
 				component.setRenderComponent(renderComponent);
-			}	
+			}
 
 			if (BaseJointComponent.isInstance(component)) {
 				// Reset the list of joints so the list will be rebuilt
@@ -284,7 +284,7 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 			// Add the component
 			this.base(component);
 		},
-		
+
 	   /**
 	    * Update this object within the render context, at the specified timeslice.
 	    *
@@ -292,10 +292,10 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 	    * @param time {Number} The global time within the engine.
 	    */
 	   update: function(renderContext, time) {
-	
+
 	      // Run the components
 	      var components = this.iterator();
-	
+
 	      while (components.hasNext()) {
 				var nextComponent = components.next();
 				var isPhysicsComponent = BaseBodyComponent.isInstance(nextComponent);
@@ -310,13 +310,13 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 					pt.mul(1/nextComponent.getScale());
 					pt.neg();
 					renderContext.setPosition(pt);
-					
+
 					/* pragma:DEBUG_START */
-					if (Engine.getDebugMode()) {
+					if (true) {
 			   		renderContext.drawFilledArc(pt.neg(), 10, 0, 360);
 			   	}
 					/* pragma:DEBUG_END */
-					
+
 					nextComponent.getRenderComponent().execute(renderContext, time);
 					pt.destroy();
 				}
@@ -324,13 +324,13 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 					renderContext.popTransform();
 				}
 	      }
-	
+
 			components.destroy();
-	
+
 			// Special case so we can skip the super class (HostObject)
 	      HashContainer.prototype.update.call(this, renderContext, time);
 	   },
-		
+
 		/**
 		 * @private
 		 */
@@ -339,9 +339,9 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 			// for the static methods below.
 			var q = ObjectLoader.create("dummy");
 		}
-		
+
 	}, /** @scope PhysicsActor.prototype */{ // Static
-	
+
 	   /**
 	    * Get the class name of this object
 	    * @return The string <tt>PhysicsActor</tt>
@@ -350,7 +350,7 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 	   getClassName: function() {
 	      return "PhysicsActor";
 	   },
-		
+
 		/**
 		 * Resource loader for physics actor objects
 		 * @private
@@ -363,7 +363,7 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 		resolved: function() {
 			PhysicsActor.actorLoader = ObjectLoader.create("ActorLoader");
 		},
-		
+
 		/**
 		 * Helper method to load a physics object file which describes the objects
 		 * and joints which comprise the object.  The format consists of "parts"
@@ -376,18 +376,18 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 		 * <p/>
 		 * An example <tt>PhysicsActor</tt> file can be found in the "/demos/physics2/"
 		 * demo game.
-		 * 
-		 * @param name {String} The unique reference name of the actor object 
+		 *
+		 * @param name {String} The unique reference name of the actor object
 	    * @param url {String} The URL where the resource is located
 	    * @static
 		 */
 		load: function(name, url) {
 			PhysicsActor.actorLoader.load(name, url);
 		},
-		
+
 		/**
 		 * Determine the ready state of a physics actor loaded with {@link PhysicsActor#load}.
-		 * 
+		 *
 		 * @param name {String} The unique reference name of the actor object
 		 * @return {Boolean} <code>true</code> if the object is ready for use
 		 * @static
@@ -395,11 +395,11 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 		isReady: function(name) {
 			return PhysicsActor.actorLoader.isReady(name);
 		},
-		
+
 		/**
 		 * Get a unique instance of the actor defined by the reference name provided.
 		 * You can call this method multiple times to retrieve new instances of the object.
-		 * 
+		 *
 		 * @param name {String} The unique reference name of the actor object
 		 * @param [objName] {String} The name to assign to the instance when created
 		 * @return {PhysicsActor} A new instance of the actor defined by "name"
@@ -409,7 +409,7 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 			var toP2d = function(arr) {
 				return Point2D.create(arr[0], arr[1]);
 			};
-			
+
 			var getRelativePosition = function(aV, obj) {
 				if ($.isArray(aV) && aV.length == 2) {
 					// An absolute position
@@ -421,7 +421,7 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 					var rel = ($.isArray(aV) && aV.length == 3 ? aV[2] : aV);
 					var offs = ($.isArray(aV) && aV.length == 3 ? toP2d(aV) : Point2D.create(0, 0));
 					var rPos = Point2D.create(0,0);
-					
+
 					// Calculate the anchor, relative to the position of the object provided
 					var bb = obj.getBoundingBox().offset(obj.getPosition());
 					var c = obj.getCenter().get();
@@ -437,16 +437,16 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 						case "leftmiddle": rPos.set(r.x, c.y); break;
 						case "rightmiddle": rPos.set(r.x + r.h, c.y); break;
 					}
-					
+
 					// Perform the offset
 					return rPos.add(offs);
 				}
 			}
-			
-			var def = PhysicsActor.actorLoader.get(name), 
+
+			var def = PhysicsActor.actorLoader.get(name),
 				 actor = PhysicsActor.create(objName), jointParts = [], relParts = [];
 			var props = {"friction":"setFriction","restitution":"setRestitution","density":"setDensity"};
-			
+
 			// Loop through the parts and build each component
 			for (var p in def.parts) {
 				var part = def.parts[p], bc;
@@ -461,23 +461,23 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 					bc = BoxBodyComponent.create(part.name, ext);
 					ext.destroy();
 				}
-				
+
 				// Set friction, restitution, or density properties.  Both
 				// defaults and per-part
 				for (var p in props) {
 					if (def[p]) {
 						bc[props[p]](def[p]);
 					}
-					
+
 					if (part[p]) {
 						bc[props[p]](part[p]);
 					}
 				}
-				
+
 				// Add the component to the actor.  We'll let the developer set the renderer
 				// for each body component.
 				actor.add(bc);
-				
+
 				// Position the parts relative to each other, in world coordinates with the
 				// origin at the top left corner of the world
 				if ($.isArray(part.position) && part.position.length == 2) {
@@ -494,16 +494,16 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 					// the value contains a relative positioning string and possibly an offset
 					relParts.push(part);
 				}
-				
+
 				// Is there a joint defined?  Defer it until later when all the parts are loaded
 				// This way we don't have to worry about invalid body references
 				if (part.joint) {
 					jointParts.push(part);
 				}
 			}
-			
+
 			// Now that all the parts are created we need to perform 2 final steps
-			// 1) Position any parts that are relative to others 
+			// 1) Position any parts that are relative to others
 			for (var rp in relParts) {
 				// Get the component it is relative to and calculate it's position
 				part = relParts[rp];
@@ -514,7 +514,7 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 				if (def.scale) {
 					bc.setScale(def.scale);
 					pos.mul(def.scale);
-				}					
+				}
 				bc.setPosition(pos);
 				pos.destroy();
 			}
@@ -525,7 +525,7 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 					 fromPart = (part.joint.linkFrom ? part.joint.linkFrom : part.name),
 					 toPart = (part.joint.linkTo ? part.joint.linkTo : part.name),
 					 jointName = fromPart + "_" + toPart;
-				
+
 				if (part.joint.type == "distance") {
 					jc = DistanceJointComponent.create(jointName,
 													  actor.getComponent(fromPart),
@@ -540,39 +540,39 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 													  actor.getComponent(fromPart),
 													  actor.getComponent(toPart),
 													  anchor);
-					
-					// Joint rotational limits							
+
+					// Joint rotational limits
 					var upLim = part.joint.maxLim,
-						 lowLim = part.joint.minLim;													  
+						 lowLim = part.joint.minLim;
 					jc.setUpperLimitAngle(upLim ? upLim : 0);
 					jc.setLowerLimitAngle(lowLim ? lowLim : 0);
-					
+
 					// Motor torque and speed
 					if (part.joint.motorTorque) {
 						jc.setMotorTorque(part.joint.motorTorque);
 					}
-					
+
 					if (part.joint.motorSpeed) {
 						jc.setMotorSpeed(part.joint.motorSpeed);
 					}
-					
+
 					anchor.destroy();
 				}
-				
+
 				// Add the joint to the actor
 				actor.add(jc);
 			}
-			
+
 			Assert(actor.getComponent(def.root) != null, "'root' of actor definition is not a valid part");
 			if (def.root) {
 				actor.setRootBody(actor.getComponent(def.root));
 			}
-		
+
 			// Done, give them their actor
 			return actor;
 		}
 	});
-	
+
 	return PhysicsActor;
 
 });

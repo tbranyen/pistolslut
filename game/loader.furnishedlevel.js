@@ -116,19 +116,19 @@ Engine.initObject("FurnishedLevel", "Level", function() {
 
 		addObjects: function(renderContext) {
 			this.addLevelBlockers(renderContext);
-			this.addSpriteFurniture(renderContext);
-			this.addBlockFurniture(renderContext);
-			this.addEnemies(renderContext);
-			this.addSigns(renderContext);
-			this.addFires();
-			this.addFireworkLaunchers(renderContext);
+			//this.addSpriteFurniture(renderContext);
+			//this.addBlockFurniture(renderContext);
+			//this.addEnemies(renderContext);
+			//this.addSigns(renderContext);
+			//this.addFires();
+			//this.addFireworkLaunchers(renderContext);
 			this.addSky(renderContext);
 			this.addParallaxes(renderContext);
-			this.addLanterns(renderContext);
-			this.addSpeeches(renderContext);
-			this.addLifts(renderContext);
-            this.addBarrels(renderContext);
-			this.addTriggers(); // must be called last so that all the triggerable objs have been added to this.triggerableObjects
+			//this.addLanterns(renderContext);
+			//this.addSpeeches(renderContext);
+			//this.addLifts(renderContext);
+            //this.addBarrels(renderContext);
+			//this.addTriggers(); // must be called last so that all the triggerable objs have been added to this.triggerableObjects
             this.setPlayerData();
 		},
 
@@ -156,14 +156,21 @@ Engine.initObject("FurnishedLevel", "Level", function() {
 
 		// automatically adds block furniture to cover bottom of level and add sides to stop player running outside level
 		addLevelBlockers: function(renderContext) {
+            // floor
 			var floorBlockHeight = 34;
-			var shapeData = { x: 0, y: this.getHeight() - floorBlockHeight, w: this.getWidth(), h: floorBlockHeight };
-			var furniturePiece = this.createPieceOfBlockFurniture(renderContext, "floor", shapeData);
-			furniturePiece.setZIndex(this.field.frontZIndex);
+			var shapeData = Vector2DComponent.calculateBox2DShape({ x: 0, y: this.getHeight() - floorBlockHeight, w: this.getWidth(), h: floorBlockHeight });
+			this.createPieceOfBlockFurniture(renderContext, "floor", shapeData);
+
+            // left wall
+			shapeData = Vector2DComponent.calculateBox2DShape({ x: -11, y: 0, w: 10, h: this.getHeight() });
+			this.createPieceOfBlockFurniture(renderContext, "leftwall", shapeData);
+
+            // right wall
 		},
 
 		createPieceOfBlockFurniture: function(renderContext, name, shapeData) {
 			var furnitureBlock = BlockFurniture.create("block", shapeData);
+			furnitureBlock.setZIndex(this.field.frontZIndex);
 			this.furniture[this.furniture.length] = furnitureBlock;
 			renderContext.add(furnitureBlock);
 			return furnitureBlock;

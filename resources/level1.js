@@ -164,6 +164,10 @@
 				name: "daffsingles", x: 4300, y: 387, scrollAttenuation: 0, zIndex: 2001,
 				sprite: { bitmapImage: "daffsingles.png", sprites: { "main": { "f" : [0, 0, 60, 8] } } }
 			},
+			{
+				name: "vorwien", x: 4800, y: 55, scrollAttenuation: 0,
+				sprite: { bitmapImage: "vorwien.gif", sprites: { "main": { "f" : [0, 0, 250, 340] } } }
+			},
 		]
 	}
 }

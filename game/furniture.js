@@ -3,31 +3,22 @@ Engine.include("/components/component.vector2d.js");
 Engine.include("/components/component.collider.js");
 Engine.include("/engine/engine.object2d.js");
 
-Engine.initObject("Furniture", "Mover", function() {
-	var Furniture = Mover.extend({
+Engine.initObject("Furniture", "PhysicsObject", function() {
+	var Furniture = PhysicsObject.extend({
 		field: null,
-		rect: null,
 
-		constructor: function(name, position) {
+		constructor: function(name) {
 			this.base(name);
 			this.field = PistolSlut;
 
-			// Add components to move and draw
-			this.add(Mover2DComponent.create("move"));
-			this.add(ColliderComponent.create("collide", this.field.collisionModel));
-
-			this.setPosition(position);
-			this.getComponent("move").setCheckLag(false);
+            this.setSimulation(this.field.simulation);
+            this.simulate();
 		},
 
 		update: function(renderContext, time) {
 			renderContext.pushTransform();
 			this.base(renderContext, time);
 			renderContext.popTransform();
-		},
-
-		finalSetup: function() {
-			this.rect = CheapRect.create(this);
 		},
 
 		shot: function(projectile) {

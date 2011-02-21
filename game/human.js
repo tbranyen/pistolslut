@@ -4,10 +4,12 @@ Engine.include("/engine/engine.object2d.js");
 Engine.include("/components/component.collider.js");
 Engine.include("/engine/engine.timers.js");
 Engine.include("/components/component.sprite.js");
+Engine.include("/components/component.boxbody.js");
 
-Engine.initObject("Human", "Mover", function() {
-	var Human = Mover.extend({
+Engine.initObject("Human", "PhysicsObject", function() {
+	var Human = PhysicsObject.extend({
 		field: null,
+        boxSize: null,
 
 		weapon: null,
 		grenadeLauncher: null,
@@ -28,22 +30,38 @@ Engine.initObject("Human", "Mover", function() {
 			this.grenadeThrower = grenadeThrower;
 			this.stateOfBeing = Human.ALIVE;
 			this.standState = Human.STANDING;
+
+            this.setSimulation(this.field.simulation);
+            this.simulate();
+
 			this.loadSprites();
 
-			this.add(Mover2DComponent.create("move"));
-			this.setVelocity(Vector2D.create(0, 0));
 			this.stopWalk();
 
             this.setupWeapons(weapons);
 
 			// Add components to move and draw the human
-			this.add(SpriteComponent.create("draw"));
-			this.add(ColliderComponent.create("collide", this.field.collisionModel));
+			this.getComponent("physics").setRenderComponent(SpriteComponent.create("draw"));
 
-            this.getComponent("move").setPosition(position);
+            this.setPosition(position);
 			this.updateSprite();
+            this.updatePhysicalBodySize();
+		},
 
-			this.getComponent("move").setCheckLag(false);
+        updatePhysicalBodySize: function() {
+            var bBoxDims = this.getSprite().getBoundingBox().dims;
+            this.getComponent("physics").getShapeDef().extents.Set(bBoxDims.x / 2, bBoxDims.y / 2);
+        },
+
+		createPhysicalBody: function(componentName, scale) {
+			this.boxSize = Point2D.create(46, 41);
+			this.boxSize.mul(scale);
+			this.add(BoxBodyComponent.create(componentName, this.boxSize));
+
+			this.getComponent(componentName).setFriction(0.3);
+			this.getComponent(componentName).setRestitution(0);
+			this.getComponent(componentName).setDensity(2);
+            this.getComponent(componentName).getBodyDef().preventRotation = true;
 		},
 
 		update: function(renderContext, time) {
@@ -69,10 +87,6 @@ Engine.initObject("Human", "Mover", function() {
 			}
 
 			this.updateSprite();
-
-			this.field.applyGravity(this);
-            this.handleLift();
-			this.setPosition(this.getPosition().add(this.getVelocity()));
 		},
 
 		setOnLift: function(lift) {
@@ -218,33 +232,22 @@ Engine.initObject("Human", "Mover", function() {
 
 		walking: false,
 		walk: function(direction) {
-			this.setNotOnLift();
+			//this.setNotOnLift();
 			if(!this.walking && !this.isCrouching())
 			{
 				this.walking = true;
 				this.direction = direction;
+                this.getPhysicsBody().WakeUp();
 				if(direction == Collider.LEFT)
-					this.getVelocity().setX(this.getVelocity().x - Human.WALK_SPEED);
-				else if(direction == Collider.RIGHT)
-					this.getVelocity().setX(this.getVelocity().x + Human.WALK_SPEED);
+					this.getPhysicsBody().m_linearVelocity.x = -Human.WALK_SPEED;
+			    else if(direction == Collider.RIGHT)
+				    this.getPhysicsBody().m_linearVelocity.x = Human.WALK_SPEED;
 			}
 		},
 
 		stopWalk: function() {
-			this.getVelocity().setX(0);
+			this.getPhysicsBody().m_linearVelocity.x = 0;
 			this.walking = false;
-		},
-
-		endFall: function(groundObj) {
-			this.getPosition().setY(groundObj.getPosition().y - this.getBoundingBox().dims.y);
-			this.getVelocity().setY(0);
-			this.jumping = false;
-		},
-
-		endRise: function(ceilingObj) {
-			this.getPosition().setY(ceilingObj.getPosition().y + ceilingObj.getBoundingBox().dims.y + 2);
-			if(this.getVelocity().y < 0)
-				this.getVelocity().setY(0);
 		},
 
 		shot: function(ordinance) {
@@ -376,7 +379,7 @@ Engine.initObject("Human", "Mover", function() {
 	}, {
 		getClassName: function() { return "Human"; },
 
-		WALK_SPEED: 3,
+		WALK_SPEED: 500,
 
 		// states of being
 		ALIVE: "Alive",

@@ -49,7 +49,7 @@ Engine.initObject("RenderComponent", "BaseComponent", function() {
 var RenderComponent = BaseComponent.extend(/** @scope RenderComponent.prototype */{
 
    drawMode: 0,
-   
+
    oldDisplay: null,
 
    /**
@@ -90,7 +90,7 @@ var RenderComponent = BaseComponent.extend(/** @scope RenderComponent.prototype 
 
 	/**
 	 * Adjust the local transformation to accommodate the origin.
-	 * 
+	 *
 	 * @param renderContext {RenderContext} The render context
 	 * @param before {Boolean} <code>true</code> if the transform is occurring before rendering
 	 */
@@ -98,7 +98,7 @@ var RenderComponent = BaseComponent.extend(/** @scope RenderComponent.prototype 
 		if (this.getHostObject().getOrigin().isZero()) {
 			return;
 		}
-		
+
 		if (before) {
 			renderContext.pushTransform();
 			var origin = Point2D.create(this.getHostObject().getOrigin());
@@ -121,13 +121,15 @@ var RenderComponent = BaseComponent.extend(/** @scope RenderComponent.prototype 
       // Check visibility
       if ((this.drawMode == RenderComponent.NO_DRAW) ||
           this.getHostObject().getWorldBox &&
-          (!renderContext.getViewport().isIntersecting(this.getHostObject().getWorldBox())))
+          (!renderContext.visRect.isIntersecting(this.getHostObject().getWorldBox())))
+      //if(false)
       {
          if (this.getHostObject().getElement() && !this.oldDisplay) {
             this.oldDisplay = this.getHostObject().jQ().css("display");
             this.getHostObject().jQ().css("display", "none");
          }
 
+              console.log(renderContext.visRect.get().x, renderContext.visRect.get().y, renderContext.visRect.get().r, renderContext.visRect.get().b);
          return false;
       }
 
@@ -141,7 +143,7 @@ var RenderComponent = BaseComponent.extend(/** @scope RenderComponent.prototype 
       return true;
    }
 
-}, /** @scope RenderComponent.prototype */{ 
+}, /** @scope RenderComponent.prototype */{
 
    /**
     * Get the class name of this object

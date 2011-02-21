@@ -11,6 +11,7 @@ Engine.include("/resourceloaders/loader.level.js");
 Engine.include("/resourceloaders/loader.image.js");
 Engine.include("/components/component.image.js");
 Engine.include("/components/component.notifier.js");
+Engine.include("/physics/physics.simulation.js")
 
 // Load game objects
 Game.load("/game/mover.js");
@@ -53,6 +54,7 @@ Game.load("/game/grenadelauncher.js");
 Game.load("/game/lift.js");
 Game.load("/game/barrel.js");
 Game.load("/game/machine.js");
+Game.load("/game/physicsobject.js");
 
 Engine.initObject("PistolSlut", "Game", function() {
 
@@ -71,6 +73,7 @@ Engine.initObject("PistolSlut", "Game", function() {
 		engineFPS: 30,
 
 		collisionModel: null,
+        simulation: null,
 
 		collider: null,
 		physics: null,
@@ -102,8 +105,9 @@ Engine.initObject("PistolSlut", "Game", function() {
         remoteFileLoader: null,
 		loadTimeout: null,
         enemyTypesDataIdentifier: "enemytypes",
+        mtp: 30.0,
 
-		gravityVector: Vector2D.create(0, 0.6),
+		//gravityVector: Vector2D.create(0, 0.6),
 
 		/**
 		 * Called to set up the game, download any resources, and initialize
@@ -115,8 +119,7 @@ Engine.initObject("PistolSlut", "Game", function() {
 			// Set the FPS of the game
 			Engine.setFPS(this.engineFPS);
 
-			// Create the 2D context
-			this.playerCenterX = this.fieldWidth / 4;
+            this.playerCenterX = this.fieldWidth / 4;
 
 		    this.imageLoader = ImageLoader.create();
 			this.spriteLoader = SpriteLoader.create();
@@ -185,6 +188,7 @@ Engine.initObject("PistolSlut", "Game", function() {
         loadLevelBasics: function() {
 		    // load level
 	        this.level = this.levelLoader.getLevel("level1", this, this.fieldWidth);
+            this.fieldBox = Rectangle2D.create(0, 0, this.level.getWidth(), this.level.getHeight());
 	        this.renderContext = ScrollingBackground.create("bkg", this.level, this.fieldWidth, this.fieldHeight);
 		    this.renderContext.setWorldScale(this.areaScale);
 		    Engine.getDefaultContext().add(this.renderContext);
@@ -197,8 +201,15 @@ Engine.initObject("PistolSlut", "Game", function() {
 		},
 
 		loadComponents: function() {
-			this.collisionModel = SpatialGrid.create(this.level.getWidth(), this.level.getHeight(), 1);
-            this.collisionModel.setAccuracy(SpatialGrid.GOOD_ACCURACY);
+            this.simulation = Simulation.create("simulation", this.fieldBox, Vector2D.create(0, 650));
+			this.simulation.setIntegrations(3);
+
+            // Add the simulation to the scene graph so the physical
+            // world is stepped (updated) in sync with each frame generated
+            this.renderContext.add(this.simulation);
+
+			//this.collisionModel = SpatialGrid.create(this.level.getWidth(), this.level.getHeight(), 1);
+            //this.collisionModel.setAccuracy(SpatialGrid.GOOD_ACCURACY);
 
 			this.collider = new Collider(this);
 			this.physics = new Physics(this);
@@ -252,10 +263,10 @@ Engine.initObject("PistolSlut", "Game", function() {
 			this.meters.push(this.grenadeMeter);
         },
 
-		applyGravity: function(obj) {
-			if(!this.collider.colliding(obj, this.collider.getPCL(obj), Furniture))
-				obj.getVelocity().add(this.gravityVector);
-        },
+		// applyGravity: function(obj) {
+		// 	if(!this.collider.colliding(obj, this.collider.getPCL(obj), Furniture))
+		// 		obj.getVelocity().add(this.gravityVector);
+        // },
 
 	    waitForResources: function() {
 	        if (PistolSlut.imageLoader.isReady() && PistolSlut.spriteLoader.isReady() && PistolSlut.levelLoader.isReady())
@@ -280,21 +291,24 @@ Engine.initObject("PistolSlut", "Game", function() {
 
 		// updates the position of the view frame
 		updateFramePosition: function(vector, centralObj) {
-			var centralObjWindowX = centralObj.getRenderPosition().x;
+			var centralObjWindowX = centralObj.getViewPosition().x;
 
-            if(vector === null) // just want to zip straight to a place - used if player is warped to start position
-                vector = Point2D.create(centralObjWindowX - this.playerCenterX, 0);
+            var vectorX = 0;
+            if(vector === null) // just want to zip straight to player
+                vectorX = centralObjWindowX - this.playerCenterX;
+            else
+                vectorX = vector.x / PistolSlut.mtp;  // convert from gay box2d metre unit to pixels
 
 			var movingPastCentrePoint = false;
-			if(vector.x > 0 && centralObjWindowX > this.playerCenterX)
+			if(vectorX > 0 && centralObjWindowX > this.playerCenterX)
 				movingPastCentrePoint = true;
-			else if(vector.x < 0 && centralObjWindowX < this.playerCenterX)
+			else if(vectorX < 0 && centralObjWindowX < this.playerCenterX)
 				movingPastCentrePoint = true;
 
-			var potentialNewHorizontalScroll = this.renderContext.getHorizontalScroll() + vector.x;
+			var potentialNewHorizontalScroll = this.renderContext.getHorizontalScroll() + vectorX;
 			if(movingPastCentrePoint
-				 && potentialNewHorizontalScroll >= this.level.minScroll
-				 && potentialNewHorizontalScroll <= this.level.maxScroll)
+			   && potentialNewHorizontalScroll >= this.level.minScroll
+			   && potentialNewHorizontalScroll <= this.level.maxScroll)
 			{
 				this.renderContext.setHorizontalScroll(potentialNewHorizontalScroll);
 
@@ -303,21 +317,21 @@ Engine.initObject("PistolSlut", "Game", function() {
 				{
                     var parallax = this.level.parallaxesToMove[i];
                     if(this.inView(parallax))
-					   parallax.getPosition().setX(parallax.getPosition().x + (parallax.scrollAttenuation * vector.x));
+					   parallax.getPosition().setX(parallax.getPosition().x + (parallax.scrollAttenuation * vectorX));
 				}
 
 				// move meters
 				for(var i in this.meters)
 				{
 					var meter = this.meters[i];
-					meter.updatePosition(vector.x);
+					meter.updatePosition(vectorX);
 				}
 
 				// move lanterns (they are like little parallaxes)
 				for(var i in this.level.lanterns)
 				{
 					var lantern = this.level.lanterns[i];
-					lantern.getPosition().setX(lantern.getPosition().x + (Lantern.SCROLL_ATTENUATION * vector.x));
+					lantern.getPosition().setX(lantern.getPosition().x + (Lantern.SCROLL_ATTENUATION * vectorX));
 				}
 			}
 		},

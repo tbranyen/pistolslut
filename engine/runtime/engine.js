@@ -2345,7 +2345,7 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
    shutdownCallbacks: [],		// Methods to call when the engine is shutting down
 
    // Issue #18 - Intrinsic loading dialog
-   loadingCSS: "<style type='text/css'>div.loadbox {width:325px;height:30px;padding:10px;font:10px Arial;border:1px outset gray;-moz-border-radius:10px;-webkit-border-radius:10px} #engine-load-progress { position:relative;border:1px inset gray;width:300px;height:5px} #engine-load-progress .bar {background:silver;}</style>",
+   loadingCSS: "<style type='text/css'>div.loadbox {width:325px;height:30px;padding:10px;font:10px Arial;border:1px outset gray;-moz-border-radius:10px;-webkit-border-radius:10px} #engine-load-progress { position:absolute;border:1px inset gray;width:300px;height:5px} #engine-load-progress .bar {background:silver;}</style>",
 
    //====================================================================================================
    //====================================================================================================
@@ -3593,7 +3593,7 @@ var Engine = Engine.extend(/** @lends Engine.prototype */{
             // They haven't, so create one for them
             $("head").append($(Engine.loadingCSS));
 
-            var loadingDialog = "<span id='loading' class='intrinsic'><table border='0' style='width:100%;height:100%;'><tr>";
+            var loadingDialog = "<span id='loading' class='intrinsic'><table border='0' style='height:100%;'><tr>";
             loadingDialog += "<td style='width:100%;height:100%;' valign='middle' align='center'><div class='loadbox'>Loading ";
             loadingDialog += gameDisplayName + "...<div id='engine-load-progress'></div><span id='engine-load-info'></span></div>";
             loadingDialog += "</td></tr></table></span>";

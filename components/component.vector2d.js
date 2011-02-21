@@ -121,7 +121,7 @@ var Vector2DComponent = RenderComponent.extend(/** @scope Vector2DComponent.prot
 
 		this.getHostObject().setBoundingBox(x1, y1, Math.abs(x1) + x2, Math.abs(y1) + y2);
 		var bbox = this.getHostObject().getBoundingBox();
-		
+
       // Figure out longest axis
       if (bbox.len_x() > bbox.len_y)
       {
@@ -264,7 +264,12 @@ var Vector2DComponent = RenderComponent.extend(/** @scope Vector2DComponent.prot
     */
    getClassName: function() {
       return "Vector2DComponent";
-   }
+   },
+
+   // framechange - added to turns points into ones that will work with Box2D's centre and half-width/half-height way of doing things
+   calculateBox2DShape: function(shape) {
+       return { x: shape.x + (shape.w / 2), y: shape.y + (shape.h / 2), w: shape.w, h: shape.h };
+   },
 });
 
 return Vector2DComponent;

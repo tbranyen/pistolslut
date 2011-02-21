@@ -51,9 +51,9 @@ Engine.initObject("b2Settings", null, function() {
             nullVec.x++;
          }
       }
-      
+
    });
 
-   return b2Settings;   
-   
+   return b2Settings;
+
 });

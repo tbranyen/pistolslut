@@ -66,7 +66,7 @@ var Transform2DComponent = BaseComponent.extend(/** @scope Transform2DComponent.
       this.rotation = 0;
       this.scale = [1.0,1.0];
    },
-	
+
 	destroy: function() {
 		this.position.destroy();
 		this.worldPos.destroy();
@@ -176,7 +176,7 @@ var Transform2DComponent = BaseComponent.extend(/** @scope Transform2DComponent.
     * use both the X and Y arguments.
     *
     * @param scaleX {Number} The scale of the transformation along the X-axis with 1.0 being 100%
-    * @param [scaleY] {Number} The scale of the transformation along the Y-axis. If provided, a 
+    * @param [scaleY] {Number} The scale of the transformation along the Y-axis. If provided, a
     *			non-uniform scale can be achieved by using a number which differs from the X-axis.
     */
    setScale: function(scaleX, scaleY) {
@@ -199,7 +199,7 @@ var Transform2DComponent = BaseComponent.extend(/** @scope Transform2DComponent.
 	getScaleX: function() {
 		return this.scale[0];
 	},
-	
+
 	/**
 	 * Get the non-uniform scale along the Y-axis of the transformation.
 	 * @return {Number}
@@ -251,7 +251,7 @@ var Transform2DComponent = BaseComponent.extend(/** @scope Transform2DComponent.
       renderContext.setRotation(this.getRenderRotation());
       renderContext.setScale(this.getRenderScaleX(), this.getRenderScaleY());
    }
-   
+
 }, /** @scope Transform2DComponent.prototype */{
    /**
     * Get the class name of this object

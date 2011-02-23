@@ -291,7 +291,8 @@ Engine.initObject("PistolSlut", "Game", function() {
 
 		// updates the position of the view frame
 		updateFramePosition: function(vector, centralObj) {
-			var centralObjWindowX = centralObj.getViewPosition().x;
+			var centralObjWindowX = centralObj.getRenderPosition().x;
+            console.log(centralObjWindowX)
 
             var vectorX = 0;
             if(vector === null) // just want to zip straight to player

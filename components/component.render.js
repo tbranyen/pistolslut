@@ -129,7 +129,6 @@ var RenderComponent = BaseComponent.extend(/** @scope RenderComponent.prototype 
             this.getHostObject().jQ().css("display", "none");
          }
 
-              console.log(renderContext.visRect.get().x, renderContext.visRect.get().y, renderContext.visRect.get().r, renderContext.visRect.get().b);
          return false;
       }
 

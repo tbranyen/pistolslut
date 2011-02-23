@@ -5,11 +5,9 @@ Engine.initObject("PhysicsObject", "PhysicsActor", function() {
 		sprites: {},
 		currentSpriteKey: null,
 		renderScale: 1,
-	    worldPos: null,
 
 		constructor: function(name) {
 			this.base(name);
-		    this.worldPos = Point2D.create(0,0);
 
 			// Create the physical body object which will move the toy object
 			this.createPhysicalBody("physics", this.renderScale);
@@ -21,12 +19,6 @@ Engine.initObject("PhysicsObject", "PhysicsActor", function() {
 		applyForce: function(amt, loc) {
 			this.getComponent("physics").applyForce(amt, loc);
 		},
-
-        getViewPosition: function() {
-		    this.worldPos.set(this.getPosition());
-		    this.worldPos.sub(PistolSlut.renderContext.getWorldPosition());
-            return this.worldPos;
-        },
 
         setPosition: function(point) {
             this.base(point);

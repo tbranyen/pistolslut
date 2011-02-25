@@ -121,7 +121,7 @@ var RenderComponent = BaseComponent.extend(/** @scope RenderComponent.prototype 
       // Check visibility
       if ((this.drawMode == RenderComponent.NO_DRAW) ||
           this.getHostObject().getWorldBox &&
-          (!renderContext.visRect.isIntersecting(this.getHostObject().getWorldBox())))
+          (!renderContext.getViewport().isIntersecting(this.getHostObject().getWorldBox())))
       //if(false)
       {
          if (this.getHostObject().getElement() && !this.oldDisplay) {

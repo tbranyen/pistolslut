@@ -44,10 +44,6 @@
 			{ x: 5989, y: 328, spriteName: "fenceright.gif" },
 		],
 
-		blockFurniture: [
-			{ name: "longbuildingbody1", shape: { x: 2300, y: 196, w: 400, h: 112 } },
-		],
-
 		enemies: [
 			{ name: "enemy", clazz: Enemy, x: 795, y: 350, type: "cannonfodder", direction: "Right" },
 			{ name: "enemy", clazz: Enemy, x: 1120, y: 350, type: "grenadier" },
@@ -167,6 +163,10 @@
 			{
 				name: "vorwien", x: 4800, y: 55, scrollAttenuation: 0,
 				sprite: { bitmapImage: "vorwien.gif", sprites: { "main": { "f" : [0, 0, 250, 340] } } }
+			},
+			{
+				name: "floor", x: 0, y: 396, scrollAttenuation: 0,
+				sprite: { bitmapImage: "floor.gif", sprites: { "main": { "f" : [0, 0, 6000, 34] } } }
 			},
 		]
 	}

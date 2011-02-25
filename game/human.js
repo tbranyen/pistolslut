@@ -31,6 +31,9 @@ Engine.initObject("Human", "PhysicsObject", function() {
 			this.stateOfBeing = Human.ALIVE;
 			this.standState = Human.STANDING;
 
+			this.getComponent("physics").setRenderComponent(SpriteComponent.create("draw"));
+            this.setPosition(position);
+
             this.setSimulation(this.field.simulation);
             this.simulate();
 
@@ -41,17 +44,10 @@ Engine.initObject("Human", "PhysicsObject", function() {
             this.setupWeapons(weapons);
 
 			// Add components to move and draw the human
-			this.getComponent("physics").setRenderComponent(SpriteComponent.create("draw"));
 
-            this.setPosition(position);
 			this.updateSprite();
             this.updatePhysicalBodySize();
 		},
-
-        updatePhysicalBodySize: function() {
-            var bBoxDims = this.getSprite().getBoundingBox().dims;
-            this.getComponent("physics").getShapeDef().extents.Set(bBoxDims.x / 2, bBoxDims.y / 2);
-        },
 
 		createPhysicalBody: function(componentName, scale) {
 			this.boxSize = Point2D.create(46, 41);
@@ -87,11 +83,6 @@ Engine.initObject("Human", "PhysicsObject", function() {
 			}
 
 			this.updateSprite();
-		},
-
-		setOnLift: function(lift) {
-            this.base(lift);
-			this.jumping = false;
 		},
 
 		canStand: function() { return this.weapon.canStand(); },
@@ -213,11 +204,6 @@ Engine.initObject("Human", "PhysicsObject", function() {
 				this.jumping = true;
 
 				var newVelocityY = this.jumpSpeed;
-				if(this.isOnLift())
-					newVelocityY += this.lift.getVelocity().y;
-
-				this.setNotOnLift();
-
 				this.getVelocity().setY(newVelocityY);
 				this.setPosition(this.getPosition().add(this.postJumpAdjustmentVector));
 			}
@@ -232,7 +218,6 @@ Engine.initObject("Human", "PhysicsObject", function() {
 
 		walking: false,
 		walk: function(direction) {
-			//this.setNotOnLift();
 			if(!this.walking && !this.isCrouching())
 			{
 				this.walking = true;

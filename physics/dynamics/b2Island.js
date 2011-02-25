@@ -121,7 +121,7 @@ Engine.initObject("b2Island", null, function() {
       m_contactCapacity: 0,
       m_jointCapacity: 0,
 
-      m_positionError: null,   
+      m_positionError: null,
 
       constructor: function(bodyCapacity, contactCapacity, jointCapacity, allocator) {
          var i = 0;
@@ -151,7 +151,7 @@ Engine.initObject("b2Island", null, function() {
 
          this.m_allocator = allocator;
       },
-      
+
       Clear: function() {
          this.m_bodyCount = 0;
          this.m_contactCount = 0;
@@ -324,13 +324,13 @@ Engine.initObject("b2Island", null, function() {
          //b2Settings.b2Assert(this.m_jointCount < this.m_jointCapacity);
          this.m_joints[this.m_jointCount++] = joint;
       }
-      
+
    }, {
-      
+
       m_positionIterationCount: 0
-      
+
    });
-   
+
    return b2Island;
-   
+
 });

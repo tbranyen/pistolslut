@@ -12,7 +12,7 @@ Engine.initObject("Mac10", "Weapon", function() {
 			this.projectileVelocityVariability = 0.5;
 			this.dischargeDelay = 0;
 			this.timeRequiredForDeadAim = 1000;
-			this.ordinanceBaseSpeed = 15;
+			this.ordinanceBaseSpeed = 1000;
             this.hasMuzzleFlash = true;
 		},
 

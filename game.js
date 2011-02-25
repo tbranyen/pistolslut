@@ -72,7 +72,6 @@ Engine.initObject("PistolSlut", "Game", function() {
 
 		engineFPS: 30,
 
-		collisionModel: null,
         simulation: null,
 
 		collider: null,
@@ -208,10 +207,6 @@ Engine.initObject("PistolSlut", "Game", function() {
             // world is stepped (updated) in sync with each frame generated
             this.renderContext.add(this.simulation);
 
-			//this.collisionModel = SpatialGrid.create(this.level.getWidth(), this.level.getHeight(), 1);
-            //this.collisionModel.setAccuracy(SpatialGrid.GOOD_ACCURACY);
-
-			this.collider = new Collider(this);
 			this.physics = new Physics(this);
 
 			// inter object event notifier
@@ -292,7 +287,6 @@ Engine.initObject("PistolSlut", "Game", function() {
 		// updates the position of the view frame
 		updateFramePosition: function(vector, centralObj) {
 			var centralObjWindowX = centralObj.getRenderPosition().x;
-            console.log(centralObjWindowX)
 
             var vectorX = 0;
             if(vector === null) // just want to zip straight to player

@@ -16,14 +16,21 @@ Engine.initObject("Bullet", "Ordinance", function() {
 			c_draw.setFillStyle("white");
 		},
 
-		update: function(renderContext, time) {
-			this.base(renderContext, time);
+		createPhysicalBody: function(componentName, scale) {
+			this.boxSize = Point2D.create(1, 1);
+			this.boxSize.mul(scale);
+			this.add(BoxBodyComponent.create(componentName, this.boxSize));
+
+			this.getComponent(componentName).setFriction(0);
+			this.getComponent(componentName).setRestitution(0);
+			this.getComponent(componentName).setDensity(0.01);
+            this.getComponent(componentName).getBodyDef().preventRotation = true;
 		},
 
 		onCollide: function(obj) {
 			if(obj instanceof Furniture) {
-				if(this.field.collider.objsColliding(this, obj))
-			  {
+			    if(this.field.collider.objsColliding(this, obj))
+			    {
 					obj.shot(this);
 					this.destroy();
 					return ColliderComponent.STOP;
@@ -45,7 +52,7 @@ Engine.initObject("Bullet", "Ordinance", function() {
 	}, {
 		getClassName: function() { return "Bullet"; },
 
-		SHAPE: [ new Point2D(0, 0), new Point2D(1, 0), new Point2D(0,  1), new Point2D(1,  1)],
+		SHAPE: [ new Point2D(0, 0), new Point2D(1, 0), new Point2D(1,  1), new Point2D(0,  1)],
 	});
 
 	return Bullet;

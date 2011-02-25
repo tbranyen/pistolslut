@@ -13,8 +13,8 @@ Engine.initObject("BlockFurniture", "Furniture", function() {
 		setupGraphics: function(s) {
 			var shape = [ new Point2D(0, 0), new Point2D(0, s.h), new Point2D(s.w, s.h), new Point2D(s.w, 0)];
 			this.getDrawComponent().setPoints(shape);
-			//this.getDrawComponent().setLineStyle("black");
-			//this.getDrawComponent().setFillStyle("black");
+			this.getDrawComponent().setLineStyle("black");
+			this.getDrawComponent().setFillStyle("black");
 		},
 
 		createPhysicalBody: function(componentName, scale) {

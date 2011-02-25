@@ -3,11 +3,12 @@ Engine.include("/components/component.vector2d.js");
 Engine.include("/components/component.collider.js");
 Engine.include("/engine/engine.object2d.js");
 
-Engine.initObject("Ordinance", "Mover", function() {
-	var Ordinance = Mover.extend({
+Engine.initObject("Ordinance", "PhysicsObject", function() {
+	var Ordinance = PhysicsObject.extend({
 		field: null,
 		weapon: null,
 		shooter: null,
+        boxSize: null,
 
 		constructor: function(weapon) {
 			this.base("Ordinance");
@@ -17,15 +18,16 @@ Engine.initObject("Ordinance", "Mover", function() {
 			this.weapon = weapon;
 			this.shooter = this.weapon.owner;
 
-			// Add components to move and draw the mortar round
-			this.add(Mover2DComponent.create("move"));
-			this.add(ColliderComponent.create("collide", this.field.collisionModel));
+			this.getComponent("physics").setRenderComponent(SpriteComponent.create("draw"));
+			this.setPosition(Point2D.create(this.weapon.getGunTip()));
 
-			var c_mover = this.getComponent("move");
-			c_mover.setPosition(Point2D.create(this.weapon.getGunTip()));
-			c_mover.setVelocity(this.weapon.ordinancePhysics.call(this.weapon));
-			c_mover.setCheckLag(false);
-			this.setupGraphics();
+            this.setSimulation(this.field.simulation);
+            this.simulate();
+
+			this.getPhysicsComponent().applyForce(this.weapon.ordinancePhysics.call(this.weapon), this.getPosition());
+
+
+            this.setupGraphics();
 		},
 
 		setupGraphics: function() { },

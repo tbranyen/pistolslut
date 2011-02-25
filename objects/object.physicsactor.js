@@ -156,14 +156,16 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
          return this.getRootBody().getPosition();
       },
 
+        //framechange - removed because returns in world coords rather than window
+        // computed in a method with same name in objects.physicsactor.js
       /**
        * Get the render position of the actor
        * @return {Point2D}
        */
-      getRenderPosition: function() {
-         this.rPos.set(this.getPosition());
-			return this.rPos;
-      },
+      //getRenderPosition: function() {
+      //   this.rPos.set(this.getPosition());
+	//		return this.rPos;
+      //},
 
 		/**
 		 * Get the rotation of the toy from the "physics" component.

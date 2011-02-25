@@ -16,13 +16,9 @@ Engine.initObject("PhysicsObject", "PhysicsActor", function() {
 
 		createPhysicalBody: function(componentName, scale) { },
 
-		applyForce: function(amt, loc) {
-			this.getComponent("physics").applyForce(amt, loc);
-		},
-
-        setPosition: function(point) {
-            this.base(point);
-            this.getComponent("physics").setPosition(point);
+        updatePhysicalBodySize: function() {
+            var bBoxDims = this.getSprite().getBoundingBox().dims;
+            this.getComponent("physics").getShapeDef().extents.Set(bBoxDims.x / 2, bBoxDims.y / 2);
         },
 
         getVelocity: function() { return this.getPhysicsBody().m_linearVelocity; },
@@ -33,7 +29,7 @@ Engine.initObject("PhysicsObject", "PhysicsActor", function() {
                 //console.log(spriteKey)
 			    var newSprite = this.sprites[spriteKey];
 				if(this.currentSpriteKey != null)
-				{
+				{1
 					var heightAdjustment = this.getSprite().getBoundingBox().dims.y - newSprite.getBoundingBox().dims.y;
 					if(heightAdjustment != 0)
 						this.getPosition().setY(this.getPosition().y + heightAdjustment);
@@ -55,7 +51,8 @@ Engine.initObject("PhysicsObject", "PhysicsActor", function() {
 			this.sprites[name] = sprite;
 		},
 
-        getPhysicsBody: function() { return this.getComponent("physics").body; },
+        getPhysicsComponent: function() { return this.getComponent("physics"); },
+        getPhysicsBody: function() { return this.getPhysicsComponent().body; },
         getDrawComponent: function() { return this.getComponent("physics").getRenderComponent(); },
 
 		release: function() {

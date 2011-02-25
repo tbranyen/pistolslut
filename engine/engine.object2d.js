@@ -173,12 +173,17 @@ var Object2D = HostObject.extend(/** @scope Object2D.prototype */{
       return Point2D.ZERO;
    },
 
+    // framechange now returns real renderpos (window pos) of obj - removed func with
+    // same name from object.physicsactor.js
    /**
     * Get the render position of the object.
     * @return {Point2D}
     */
    getRenderPosition: function() {
-      return Point2D.ZERO;
+       //return Point2D.ZERO;
+	   this.worldPos = Point2D.create(this.getPosition());
+	   this.worldPos.sub(this.getRenderContext().getWorldPosition());
+      return this.worldPos;
    },
 
    /**

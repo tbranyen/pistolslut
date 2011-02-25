@@ -9,10 +9,10 @@ Engine.initObject("M9", "Weapon", function() {
 			this.roundsPerMinute = 180;
 			this.projectilesPerShot = 1;
 			this.timeToReload = 1000;
-			this.projectileVelocityVariability = 0.4;
+			this.projectileVelocityVariability = 0.1;
 			this.dischargeDelay = 0;
 			this.timeRequiredForDeadAim = 1000;
-			this.ordinanceBaseSpeed = 15;
+			this.ordinanceBaseSpeed = 1000;
             this.hasMuzzleFlash = false;
 		},
 

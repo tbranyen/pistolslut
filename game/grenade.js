@@ -33,9 +33,6 @@ Engine.initObject("Grenade", "Ordinance", function() {
 				return;
 			}
 
-            if(!this.isSweeping())
-			    this.field.applyGravity(this);
-
 			renderContext.pushTransform();
 			this.base(renderContext, time);
 			renderContext.popTransform();

@@ -151,25 +151,27 @@ Engine.initObject("FurnishedLevel", "Level", function() {
 		addBlockFurniture: function(renderContext) {
 			var data = this.levelResource.info.objects.blockFurniture;
 			for(var i in data)
-				this.createPieceOfBlockFurniture(renderContext, data[i].name, data[i].shape)
+				this.createPieceOfBlockFurniture(renderContext, data[i].name, Vector2DComponent.calculateBox2DShape(data[i].shape));
 		},
 
 		// automatically adds block furniture to cover bottom of level and add sides to stop player running outside level
 		addLevelBlockers: function(renderContext) {
             // floor
 			var floorBlockHeight = 34;
-			var shapeData = Vector2DComponent.calculateBox2DShape({ x: 0, y: this.getHeight() - floorBlockHeight, w: this.getWidth(), h: floorBlockHeight });
+			var shapeData = { x: 0, y: this.getHeight() - floorBlockHeight, w: this.getWidth(), h: floorBlockHeight };
 			this.createPieceOfBlockFurniture(renderContext, "floor", shapeData);
 
             // left wall
-			shapeData = Vector2DComponent.calculateBox2DShape({ x: -11, y: 0, w: 10, h: this.getHeight() });
+			shapeData = { x: -11, y: 0, w: 10, h: this.getHeight() };
 			this.createPieceOfBlockFurniture(renderContext, "leftwall", shapeData);
 
             // right wall
+			shapeData = { x: this.getWidth(), y: 0, w: 10, h: this.getHeight() };
+			this.createPieceOfBlockFurniture(renderContext, "rightwall", shapeData);
 		},
 
 		createPieceOfBlockFurniture: function(renderContext, name, shapeData) {
-			var furnitureBlock = BlockFurniture.create("block", shapeData);
+			var furnitureBlock = BlockFurniture.create("block", Vector2DComponent.calculateBox2DShape(shapeData));
 			furnitureBlock.setZIndex(this.field.frontZIndex);
 			this.furniture[this.furniture.length] = furnitureBlock;
 			renderContext.add(furnitureBlock);

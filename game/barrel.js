@@ -25,11 +25,6 @@ Engine.initObject("Barrel", "Mover", function() {
 		},
 
 		update: function(renderContext, time) {
-            if(!this.isOnLift())
-			    this.field.applyGravity(this);
-
-            this.handleLift();
-
 			renderContext.pushTransform();
 			this.base(renderContext, time);
 			renderContext.popTransform();

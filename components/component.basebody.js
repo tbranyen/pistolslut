@@ -41,7 +41,7 @@ Engine.initObject("BaseBodyComponent", "Transform2DComponent", function() {
 
 /**
  * @class The base rigid body component which initializes rigid bodies
- * 		 for use in a {@link Simulation}.  
+ * 		 for use in a {@link Simulation}.
  *
  * @param name {String} Name of the component
  * @param shapeDef {b2ShapeDef} The shape definition. Either {@link b2CircleDef}, {@link b2BoxDef}, or
@@ -67,7 +67,7 @@ var BaseBodyComponent = Transform2DComponent.extend(/** @scope BaseBodyComponent
     * @private
     */
 	constructor: function(name, shapeDef) {
-		this.base(name || "BaseBody");	
+		this.base(name || "BaseBody");
 
 		this.shapeDef = shapeDef;
 		this.shapeDef.restitution = BaseBodyComponent.DEFAULT_RESTITUTION;
@@ -83,14 +83,14 @@ var BaseBodyComponent = Transform2DComponent.extend(/** @scope BaseBodyComponent
 		if (this.renderComponent != null) {
 			this.renderComponent.destroy();
 		}
-		
+
 		this.rotVec.destroy();
 		this.bodyPos.destroy();
 		this.origin.destroy();
-		
+
 		this.base();
 	},
-	
+
 	release: function() {
 		this.base();
 
@@ -109,7 +109,7 @@ var BaseBodyComponent = Transform2DComponent.extend(/** @scope BaseBodyComponent
 			this.body = this.simulation.addBody(this.getBodyDef());
 		}
 	},
-	
+
 	/**
 	 * Stop simulating the body.  If the body is a part of a simulation,
 	 * it is removed and simulation stops.  The position and rotation of
@@ -117,7 +117,7 @@ var BaseBodyComponent = Transform2DComponent.extend(/** @scope BaseBodyComponent
 	 */
 	stopSimulation: function() {
 		if (this.simulation) {
-			this.simulation.removeBody(this.getBody());			
+			this.simulation.removeBody(this.getBody());
 			this.simulation = null;
 		}
 	},
@@ -126,7 +126,7 @@ var BaseBodyComponent = Transform2DComponent.extend(/** @scope BaseBodyComponent
 	 * Set the associated render component for this body.  This is typically used by the
 	 * {@link PhysicsActor} to link a body to a renderer so that each body can have an
 	 * associated renderer applied.
-	 * 
+	 *
 	 * @param renderComponent {RenderComponent} The render component to associate with this body
 	 */
 	setRenderComponent: function(renderComponent) {
@@ -135,7 +135,7 @@ var BaseBodyComponent = Transform2DComponent.extend(/** @scope BaseBodyComponent
 			this.renderComponent.setHostObject(this.getHostObject());
 		}
 	},
-	
+
 	/**
 	 * Get the associated render component for this body.
 	 * @return {RenderComponent} or <code>null</code>
@@ -143,19 +143,19 @@ var BaseBodyComponent = Transform2DComponent.extend(/** @scope BaseBodyComponent
 	getRenderComponent: function() {
 		return this.renderComponent;
 	},
-	
+
 	/**
 	 * Set the origin of the rigid body.  By default, the origin is the top left corner of
 	 * the bounding box for the body.  Most times the origin should be set to the center
 	 * of the body.
-	 * 
+	 *
 	 * @param x {Number|Point2D} The X coordinate or a <tt>Point2D</tt>
 	 * @param y {Number} The Y coordinate or <tt>null</tt> if X is a <tt>Point2D</tt>
 	 */
 	setLocalOrigin: function(x, y) {
 		this.origin.set(x, y);
 	},
-	
+
 	/**
 	 * Get the local origin of the body.
 	 * @return {Point2D}
@@ -163,7 +163,7 @@ var BaseBodyComponent = Transform2DComponent.extend(/** @scope BaseBodyComponent
 	getLocalOrigin: function() {
 		return this.origin;
 	},
-	
+
 	/**
 	 * Get the center of the body.
 	 * @return {Point2D}
@@ -171,7 +171,7 @@ var BaseBodyComponent = Transform2DComponent.extend(/** @scope BaseBodyComponent
 	getCenter: function() {
 		return Point2D.create(this.getPosition()).add(this.getLocalOrigin());
 	},
-	
+
 	/**
 	 * [ABSTRACT] Get a box which bounds the body.
 	 * @return {Rectangle2D}
@@ -179,7 +179,7 @@ var BaseBodyComponent = Transform2DComponent.extend(/** @scope BaseBodyComponent
 	getBoundingBox: function() {
 		return Rectangle2D.create(0,0,1,1);
 	},
-	
+
 	/**
 	 * Get the Box2d shape definition object.
 	 * @return {b2ShapeDef}
@@ -187,7 +187,7 @@ var BaseBodyComponent = Transform2DComponent.extend(/** @scope BaseBodyComponent
 	getShapeDef: function() {
 		return this.shapeDef;
 	},
-	
+
 	/**
 	 * Get the Box2d body definition object.
 	 * @return {b2BodyDef}
@@ -199,7 +199,7 @@ var BaseBodyComponent = Transform2DComponent.extend(/** @scope BaseBodyComponent
 		}
 		return this.bodyDef;
 	},
-	
+
 	/**
 	 * Get the Box2d body object which was added to the simulation.
 	 * @return {b2Body}
@@ -207,35 +207,35 @@ var BaseBodyComponent = Transform2DComponent.extend(/** @scope BaseBodyComponent
 	getBody: function() {
 		return this.body;
 	},
-	
+
 	/**
 	 * Set the resitution (bounciness) of the body.  The value should be between
 	 * zero and one.  Values higher than one are accepted, but produce objects which
 	 * are unrealistically bouncy.
-	 * 
+	 *
 	 * @param restitution {Number} A value between 0.0 and 1.0
 	 */
 	setRestitution: function(restitution) {
-		this.shapeDef.resitution = restitution
+		this.shapeDef.restitution = restitution; // framechange - restitution misspelt.
 	},
-	
+
 	/**
 	 * Get the resitution (bounciness) value for the body.
 	 * @return {Number}
 	 */
 	getRestitution: function() {
-		return this.shapeDef.resitution;
+		return this.shapeDef.restitution; // framechange - restitution misspelt.
 	},
-	
+
 	/**
 	 * Set the density of the body.
-	 * 
+	 *
 	 * @param density {Number} The density of the body
 	 */
 	setDensity: function(density) {
 		this.shapeDef.density = density;
 	},
-	
+
 	/**
 	 * Get the density of the body.
 	 * @return {Number}
@@ -243,19 +243,19 @@ var BaseBodyComponent = Transform2DComponent.extend(/** @scope BaseBodyComponent
 	getDensity: function() {
 		return this.shapeDef.density;
 	},
-	
+
 	/**
 	 * Set the friction of the body.  Lower values slide easily across other bodies.
 	 * Higher values will cause a body to stop moving as it slides across other bodies.
 	 * However, even a body which has high friction will keep sliding across a body
 	 * with no friction.
-	 * 
+	 *
 	 * @param friction {Number} The friction of the body
 	 */
 	setFriction: function(friction) {
 		this.shapeDef.friction = friction;
 	},
-	
+
 	/**
 	 * Get the friction of the body.
 	 * @return {Number}
@@ -263,19 +263,19 @@ var BaseBodyComponent = Transform2DComponent.extend(/** @scope BaseBodyComponent
 	getFriction: function() {
 		return this.shapeDef.friction;
 	},
-	
+
 	/**
 	 * Set the initial position of the body.  Once a body is in motion, updating
 	 * its position should be avoided since it doesn't fit with physical simulation.
 	 * To change an object's position, try applying forces or impulses to the body.
-	 * 
+	 *
 	 * @param point {Point2D} The initial position of the body
 	 */
 	setPosition: function(point) {
 		var pos = point.get();
 		this.getBodyDef().position.Set(pos.x, pos.y);
 	},
-	
+
 	/**
 	 * Get the position of the body during simulation.  This value is updated
 	 * as the simulation is stepped.
@@ -287,9 +287,9 @@ var BaseBodyComponent = Transform2DComponent.extend(/** @scope BaseBodyComponent
 		} else {
 			this.bodyPos.set(this.getBodyDef().position.x, this.getBodyDef().position.y);
 		}
-		return this.bodyPos;	
+		return this.bodyPos;
 	},
-	
+
 	/**
 	 * Get the rotation of the body during simulation.  This value is updated
 	 * as the simulation is stepped.
@@ -303,13 +303,13 @@ var BaseBodyComponent = Transform2DComponent.extend(/** @scope BaseBodyComponent
 		var ab = this.rotVec.angleBetween(cV) - md;
 		return ab - 90;
 	},
-	
+
 	/**
 	 * Apply a force to the body.  Forces are comprised of a force vector and
 	 * a position.  The force vector is the direction in which the force is
 	 * moving, while the position is where on the body the force is acting.
 	 * Forces act upon a body from world coordinates.
-	 * 
+	 *
 	 * @param forceVector {Vector2D} The force vector
 	 * @param position {Point2D} The position where the force is acting upon the body
 	 */
@@ -319,15 +319,15 @@ var BaseBodyComponent = Transform2DComponent.extend(/** @scope BaseBodyComponent
 		var d = position.get();
 		var fv = new b2Vec2(f.x, f.y);
 		var dv = new b2Vec2(d.x, d.y);
-		this.getBody().ApplyForce(fv, dv);	
+		this.getBody().ApplyForce(fv, dv);
 	},
-	
+
 	/**
 	 * Apply an impulse to the body.  Impulses are comprised of a force vector and
 	 * a position.  The impulse vector is the direction of the impulse, while the position
 	 * is where on the body the impulse will be applied.
 	 * Impulses act upon a body locally, adjusting its velocity.
-	 * 
+	 *
 	 * @param impulseVector {Vector2D} The impulse vectory
 	 * @param position {Point2D} the position where the impulse is originating from in the body
 	 */
@@ -339,17 +339,17 @@ var BaseBodyComponent = Transform2DComponent.extend(/** @scope BaseBodyComponent
 		var dv = new b2Vec2(d.x, d.y);
 		this.getBody().ApplyImpulse(iv, dv);
 	},
-	
+
 	/**
 	 * Apply torque to the body.
-	 * 
+	 *
 	 * @param torque {Number} The amount of torque to apply to the body
 	 */
 	applyTorque: function(torque) {
 		this.getBody().WakeUp();
 		this.getBody().ApplyTorque(torque);
 	},
-	
+
 	/**
 	 * Get the computed mass of the body.
 	 * @return {Number} The mass of the body
@@ -357,16 +357,16 @@ var BaseBodyComponent = Transform2DComponent.extend(/** @scope BaseBodyComponent
 	getMass: function() {
 		return this.getBody().getMass();
 	},
-	
+
 	/**
 	 * Returns <code>true</code> if the body is static.  A body is static if it
 	 * isn't updated part of the simulation during contacts.
 	 * @return {Boolean}
 	 */
 	isStatic: function() {
-		return this.getBody().IsStatic();	
+		return this.getBody().IsStatic();
 	},
-	
+
 	/**
 	 * Returns <code>true</code> if the body is sleeping.  A body is sleeping if it
 	 * has settled to the point where no movement is being calculated.  If you want
@@ -375,9 +375,9 @@ var BaseBodyComponent = Transform2DComponent.extend(/** @scope BaseBodyComponent
 	 * @return {Boolean}
 	 */
 	isSleeping: function() {
-		return this.getBody().IsSleeping();	
+		return this.getBody().IsSleeping();
 	},
-	
+
 	/**
 	 * Returns <code>true</code> if the body is frozen.  A frozen body can still be
 	 * collided with, but will not, itself, be updated.  Once a body is frozen, it cannot
@@ -385,9 +385,9 @@ var BaseBodyComponent = Transform2DComponent.extend(/** @scope BaseBodyComponent
 	 * @return {Boolean}
 	 */
 	isFrozen: function() {
-		return this.getBody().IsFrozen();	
+		return this.getBody().IsFrozen();
 	},
-	
+
 	/**
 	 * Wake up a body, adding it back into the collection of bodies being simulated.
 	 * Acting upon a body without first waking it up will do nothing.
@@ -395,15 +395,15 @@ var BaseBodyComponent = Transform2DComponent.extend(/** @scope BaseBodyComponent
 	wakeUp: function() {
 		this.getBody().WakeUp();
 	},
-	
+
 	/**
 	 * Freeze a body, permanently taking it out of simulation, except for collisions.
 	 */
 	freeze: function() {
-		this.getBody().Freeze();	
+		this.getBody().Freeze();
 	}
-	
-	
+
+
 }, { /** @scope BaseBodyComponent.prototype */
 
    /**
@@ -414,29 +414,29 @@ var BaseBodyComponent = Transform2DComponent.extend(/** @scope BaseBodyComponent
    getClassName: function() {
       return "BaseBodyComponent";
    },
-	
+
 	/**
 	 * The default restitution (bounciness) of a body
 	 */
 	DEFAULT_RESTITUTION: 0.48,
-	
+
 	/**
 	 * The default density of a body
 	 */
 	DEFAULT_DENSITY: 1.0,
-	
+
 	/**
 	 * The default friction of a body
 	 */
 	DEFAULT_FRICTION: 0,
-	
+
 	/**
 	 * A simple up (0, -1) vector to calculate rotation
 	 * @private
 	 */
 	UP_VECTOR: new Vector2D(0, -1),
 	DOWN_VECTOR: new Vector2D(0, 1)
-   
+
 });
 
 return BaseBodyComponent;

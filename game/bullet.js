@@ -15,15 +15,20 @@ Engine.initObject("Bullet", "Ordinance", function() {
 			c_draw.setFillStyle("white");
 		},
 
-		createPhysicalBody: function(componentName, scale) {
+		createPhysicalBody: function() {
 			this.boxSize = Point2D.create(1, 1);
-			this.boxSize.mul(scale);
-			this.add(BoxBodyComponent.create(componentName, this.boxSize));
+			this.add(BoxBodyComponent.create("physics", this.boxSize));
+            this.getPhysicsComponent().setRenderComponent(Vector2DComponent.create("draw"));
+            this.setSimulation(this.field.simulation);
 
-			this.getComponent(componentName).setFriction(0);
-			this.getComponent(componentName).setRestitution(0);
-			this.getComponent(componentName).setDensity(0.01);
-            this.getComponent(componentName).getBodyDef().preventRotation = true;
+			this.setPosition(Point2D.create(this.weapon.getGunTip()));
+
+			this.getPhysicsComponent().setFriction(0);
+			this.getPhysicsComponent().setRestitution(0);
+			this.getPhysicsComponent().setDensity(0.01);
+            this.getPhysicsComponent().getBodyDef().preventRotation = true;
+
+            this.simulate();
 		},
 	}, {
 		getClassName: function() { return "Bullet"; },

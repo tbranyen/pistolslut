@@ -6,18 +6,35 @@ Engine.include("/engine/engine.object2d.js");
 Engine.initObject("Grenade", "Ordinance", function() {
 	var Grenade = Ordinance.extend({
 		timeThrown: null,
-		pinTimer: 3000, // how long the grenade takes to explode
+		pinTimer: 20000, // how long the grenade takes to explode
 		safeDistance: 40,
 
 		constructor: function(weapon) {
 			this.base(weapon);
 			this.timeThrown = new Date().getTime();
+
+			this.createPhysicalBody(5);
 		},
 
 		setupGraphics: function() {
 			this.add(SpriteComponent.create("draw"));
 			this.addSprite("main", this.field.spriteLoader.getSprite("grenade.gif", "main"));
 			this.setSprite("main");
+		},
+
+		createPhysicalBody: function() {
+			this.add(CircleBodyComponent.create("physics", Grenade.RADIUS));
+            this.getPhysicsComponent().setRenderComponent(SpriteComponent.create("draw"));
+            this.setSimulation(this.field.simulation);
+
+			this.setPosition(Point2D.create(this.weapon.getGunTip()));
+
+			this.getPhysicsComponent().setFriction(0.5);
+			this.getPhysicsComponent().setRestitution(0.5);
+			this.getPhysicsComponent().setDensity(0.01);
+            this.getPhysicsComponent().getBodyDef().preventRotation = true;
+
+            this.simulate();
 		},
 
 		release: function() {
@@ -29,7 +46,7 @@ Engine.initObject("Grenade", "Ordinance", function() {
 		update: function(renderContext, time) {
 			if(this.timeThrown + this.pinTimer < new Date().getTime())
 			{
-				this.explode();
+				//this.explode();
 				return;
 			}
 
@@ -38,45 +55,11 @@ Engine.initObject("Grenade", "Ordinance", function() {
 			renderContext.popTransform();
 		},
 
-		onCollide: function(obj) {
-			if(obj instanceof Furniture || obj instanceof Lift)
-				return this.handleBounce(obj);
-
-			return ColliderComponent.CONTINUE;
-		},
-
 		getCenter: function(obj) {
 			var objCentre = Point2D.create(obj.getPosition());
 			objCentre.setX(objCentre.x + (obj.getBoundingBox().dims.x / 2));
 			objCentre.setY(objCentre.y + (obj.getBoundingBox().dims.y / 2));
 			return objCentre;
-		},
-
-		// bounce the grenade
-		bounciness: 0.5,
-		handleBounce: function(obj) {
-			if(this.field.collider.objsColliding(this, obj) == true)
-			{
-                var sideHit = this.field.collider.sideHit(this, obj);
-				if(sideHit !== null)
-				{
-                    this.field.collider.moveToEdge(this, obj, sideHit);
-
-                    this.stopSweeping();
-					this.setVelocity(this.field.physics.bounce(this.getVelocity(), this.bounciness, sideHit));
-
-                    this.field.notifier.post(AIComponent.SOUND, this);
-
-                    return ColliderComponent.STOP;
-				}
-				else
-				{
-					this.sweepPosition();
-					return this.handleBounce(obj);
-				}
-			}
-
-			return ColliderComponent.CONTINUE;
 		},
 
 		shrapnelCount: 30,
@@ -91,6 +74,7 @@ Engine.initObject("Grenade", "Ordinance", function() {
 		getClassName: function() { return "Grenade"; },
 
 		tip: new Point2D(0, -1),
+        RADIUS: 5,
 	});
 
 	return Grenade;

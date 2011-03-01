@@ -40,7 +40,6 @@ Engine.initObject("Human", "PhysicsObject", function() {
 		},
 
 		createPhysicalBody: function(dimensions, position) {
-
             if(!this.getPhysicsComponent())
             {
 			    this.add(BoxBodyComponent.create("physics", dimensions)); // old gets auto removed if present
@@ -204,19 +203,19 @@ Engine.initObject("Human", "PhysicsObject", function() {
 				}
 		},
 
-		jumping: false,
-		jumpSpeed: -6.0,
-		postJumpAdjustmentVector: Vector2D.create(0, -1),
 		jump: function() {
-			if(!this.jumping && !this.isCrouching())
+			if(!this.isJumping() && !this.isCrouching())
 			{
 				this.jumping = true;
-
-				var newVelocityY = this.jumpSpeed;
-				this.getVelocity().setY(newVelocityY);
-				this.setPosition(this.getPosition().add(this.postJumpAdjustmentVector));
+                this.getPhysicsComponent().wakeUp();
+                this.getPhysicsBody().m_linearVelocity.y = Human.JUMP_SPEED;
 			}
 		},
+
+		jumping: false,
+        isJumping: function() {
+            return !this.getPhysicsBody().m_linearVelocity.y == 0;
+        },
 
 		turn: function(direction) {
             if(this.walking == true)
@@ -231,7 +230,7 @@ Engine.initObject("Human", "PhysicsObject", function() {
 			{
 				this.walking = true;
 				this.direction = direction;
-                this.getPhysicsBody().WakeUp();
+                this.getPhysicsComponent().wakeUp();
 				if(direction == Collider.LEFT)
 					this.getPhysicsBody().m_linearVelocity.x = -Human.WALK_SPEED;
 			    else if(direction == Collider.RIGHT)
@@ -374,6 +373,7 @@ Engine.initObject("Human", "PhysicsObject", function() {
 		getClassName: function() { return "Human"; },
 
 		WALK_SPEED: 500,
+        JUMP_SPEED: -250,
 
 		// states of being
 		ALIVE: "Alive",
@@ -401,32 +401,32 @@ Engine.initObject("Human", "PhysicsObject", function() {
 		COORDINATES: {
 			"Left": {
 			 	"Standing": {
-					"GrenadeLauncher": { "gunTip": new Point2D(23, 2),  "gunAngle": 330 },
-					"M9": 	           { "gunTip": new Point2D(-27, -14), "gunAngle": 270 },
-					"Mac10":           { "gunTip": new Point2D(-27, -15), "gunAngle": 270 },
-					"SPAS":            { "gunTip": new Point2D(-27, -12), "gunAngle": 270 }
+					"GrenadeLauncher": { "gunTip": new Point2D(10, 2),  "gunAngle": 330 },
+					"M9": 	           { "gunTip": new Point2D(-30, -14), "gunAngle": 270 },
+					"Mac10":           { "gunTip": new Point2D(-30, -15), "gunAngle": 270 },
+					"SPAS":            { "gunTip": new Point2D(-30, -12), "gunAngle": 270 }
 				},
 				"Crouching": {
-					"GrenadeLauncher": { "gunTip": new Point2D(10, 0),  "gunAngle": 330 },
-					"M9": 	           { "gunTip": new Point2D(07, 05), "gunAngle": 270 },
-					"Mac10":           { "gunTip": new Point2D(07, 04), "gunAngle": 270 },
-					"SPAS":            { "gunTip": new Point2D(07, 08), "gunAngle": 270 },
-					"Mortar":          { "gunTip": new Point2D(11, 08), "gunAngle": 345 },
+					"GrenadeLauncher": { "gunTip": new Point2D(18, 0),  "gunAngle": 330 },
+					"M9": 	           { "gunTip": new Point2D(-30, -08), "gunAngle": 270 },
+					"Mac10":           { "gunTip": new Point2D(-27, -11), "gunAngle": 270 },
+					"SPAS":            { "gunTip": new Point2D(-27, -07), "gunAngle": 270 },
+					"Mortar":          { "gunTip": new Point2D(-27, -07), "gunAngle": 345 },
 				}
 			},
 			"Right": {
 				"Standing": {
 					"GrenadeLauncher": { "gunTip": new Point2D(10, 2),  "gunAngle": 30 },
 					"M9": 	           { "gunTip": new Point2D(30, -14), "gunAngle": 90 },
-					"Mac10":           { "gunTip": new Point2D(30, -15), "gunAngle": 90 },
-					"SPAS":            { "gunTip": new Point2D(30, -12), "gunAngle": 90 },
+					"Mac10":           { "gunTip": new Point2D(25, -17), "gunAngle": 90 },
+					"SPAS":            { "gunTip": new Point2D(25, -12), "gunAngle": 90 },
 				},
 				"Crouching": {
-					"GrenadeLauncher": { "gunTip": new Point2D(23, 0),  "gunAngle": 30 },
-					"M9":              { "gunTip": new Point2D(40, 05), "gunAngle": 90 },
-					"Mac10":           { "gunTip": new Point2D(40, 04), "gunAngle": 90 },
-					"SPAS":            { "gunTip": new Point2D(40, 08), "gunAngle": 90 },
-					"Mortar":          { "gunTip": new Point2D(40, 08), "gunAngle": 15 },
+					"GrenadeLauncher": { "gunTip": new Point2D(10, 0),  "gunAngle": 30 },
+					"M9":              { "gunTip": new Point2D(30, -10), "gunAngle": 90 },
+					"Mac10":           { "gunTip": new Point2D(30, -11), "gunAngle": 90 },
+					"SPAS":            { "gunTip": new Point2D(30, -07), "gunAngle": 90 },
+					"Mortar":          { "gunTip": new Point2D(30, -07), "gunAngle": 15 },
 				}
 			}
 		},

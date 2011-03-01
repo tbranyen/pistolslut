@@ -79,6 +79,7 @@ Engine.initObject("PistolSlut", "Game", function() {
 		notifier: null,
 
 		groundY: 395,
+        gravityY: 650,
 		alwaysVisibleZIndex: 2001,
 		frontZIndex: 2000,
 		moverZIndex: 1000,

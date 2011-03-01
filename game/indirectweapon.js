@@ -119,8 +119,8 @@ Engine.initObject("IndirectWeapon", "Weapon", function() {
 			var diff = Vector2D.create(this.getX(), gunToGroundY);
 
 		 	var velocity = Vector2D.create(0, 0);
-		 	velocity.setX(diff.x / fpsFlightTime);
-		 	velocity.setY(-(-(diff.y / fpsFlightTime) + (0.5 * this.field.gravityVector.y * fpsFlightTime)));
+		 	velocity.setX((diff.x * IndirectWeapon.VELOCITY_BOOST) / fpsFlightTime);
+		 	velocity.setY(-(-((diff.y * IndirectWeapon.VELOCITY_BOOST) / fpsFlightTime) + (0.5 * this.field.gravityY * fpsFlightTime)));
 
 			return velocity;
 		},
@@ -128,6 +128,7 @@ Engine.initObject("IndirectWeapon", "Weapon", function() {
 	}, {
 		getClassName: function() { return "IndirectWeapon"; },
 
+        VELOCITY_BOOST: 540,
         MIN_RANGE: "min_range",
 		MAX_RANGE: "max_range",
 	});

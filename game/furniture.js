@@ -10,9 +10,6 @@ Engine.initObject("Furniture", "PhysicsObject", function() {
 		constructor: function(name) {
 			this.base(name);
 			this.field = PistolSlut;
-
-            this.setSimulation(this.field.simulation);
-            this.simulate();
 		},
 
 		update: function(renderContext, time) {

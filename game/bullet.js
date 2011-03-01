@@ -9,8 +9,7 @@ Engine.initObject("Bullet", "Ordinance", function() {
 		},
 
 		setupGraphics: function() {
-			this.add(Vector2DComponent.create("draw"));
-			var c_draw = this.getComponent("draw");
+			var c_draw = this.getDrawComponent();
 			c_draw.setPoints(Bullet.SHAPE);
 			c_draw.setLineStyle("white");
 			c_draw.setFillStyle("white");
@@ -26,33 +25,10 @@ Engine.initObject("Bullet", "Ordinance", function() {
 			this.getComponent(componentName).setDensity(0.01);
             this.getComponent(componentName).getBodyDef().preventRotation = true;
 		},
-
-		onCollide: function(obj) {
-			if(obj instanceof Furniture) {
-			    if(this.field.collider.objsColliding(this, obj))
-			    {
-					obj.shot(this);
-					this.destroy();
-					return ColliderComponent.STOP;
-				}
-			}
-			else if(obj instanceof Human) {
-				if(obj.isAlive() || obj.isDying())
-				{
-					if(this.field.collider.objsColliding(this, obj))
-				    {
-						obj.shot(this);
-						this.destroy();
-						return ColliderComponent.STOP;
-					}
-				}
-			}
-			return ColliderComponent.CONTINUE;
-		},
 	}, {
 		getClassName: function() { return "Bullet"; },
 
-		SHAPE: [ new Point2D(0, 0), new Point2D(1, 0), new Point2D(1,  1), new Point2D(0,  1)],
+		SHAPE: [ new Point2D(0, 0), new Point2D(1, 0), new Point2D(1,  1), new Point2D(0, 1)],
 	});
 
 	return Bullet;

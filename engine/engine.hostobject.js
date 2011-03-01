@@ -42,7 +42,7 @@ Engine.initObject("HostObject", "HashContainer", function() {
  * @class A host object is a container for components.  Each component within
  *        the host provides a portion of the overall functionality.  A host object
  *        can have any number of components of any type within it.  Components provide
- *        functionality for things like rendering, collision detection, effects, or 
+ *        functionality for things like rendering, collision detection, effects, or
  *        transformations. This way, an object can be anything, depending on it's components.
  *        <p/>
  *        A <tt>HostObject</tt> is the logical foundation for all in-game objects.  It is
@@ -141,7 +141,7 @@ var HostObject = HashContainer.extend(/** @scope HostObject.prototype */{
    add: function(component) {
 
       Assert((BaseComponent.isInstance(component)), "Cannot add a non-component to a HostObject");
-      Assert(!this.isInHash(component.getName()), "Components must have a unique name within the host");
+      Assert(!this.isInHash(component), "Components must have a unique name within the host"); // framechange - used to pass component.getName() which would get strinified and evaled differently to when other isInHash evaled
 
       this.base(component.getName(), component);
 
@@ -161,7 +161,7 @@ var HostObject = HashContainer.extend(/** @scope HostObject.prototype */{
    getComponent: function(name) {
       return this.get(name.toUpperCase());
    },
-   
+
    /**
     * Returns a property object with accessor methods.
     * @return {Object}

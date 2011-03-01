@@ -6,8 +6,15 @@ Engine.initObject("BlockFurniture", "Furniture", function() {
             this.shapeData = shapeData;
 			this.base(name);
 
+			this.createPhysicalBody("physics", this.renderScale);
+			this.getComponent("physics").setScale(this.renderScale);
             this.getComponent("physics").setRenderComponent(Vector2DComponent.create("draw"));
 			this.setupGraphics(shapeData);
+
+			this.setPosition(Point2D.create(this.shapeData.x, this.shapeData.y));
+
+            this.setSimulation(this.field.simulation);
+            this.simulate();
 		},
 
 		setupGraphics: function(s) {
@@ -25,8 +32,6 @@ Engine.initObject("BlockFurniture", "Furniture", function() {
 			this.getComponent(componentName).setFriction(0);
 			this.getComponent(componentName).setRestitution(0);
 			this.getComponent(componentName).setDensity(0);
-
-			this.setPosition(Point2D.create(this.shapeData.x, this.shapeData.y));
 		},
 	}, {
 		getClassName: function() { return "BlockFurniture"; },

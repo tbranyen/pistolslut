@@ -247,6 +247,21 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 		 	}
 		},
 
+        // framechange - added
+        stopSimulate: function() {
+			// Follow up with simulation of joints
+			var joints = this.getJoints();
+			for (var j in joints) {
+		 		joints[j].stopSimulation();
+		 	}
+
+			// stop simulation on bodies first
+			var bodies = this.getRigidBodies();
+			for (var b in bodies) {
+		 		bodies[b].stopSimulation();
+		 	}
+        },
+
 	   /**
 	    * Add a component to the physics actor.  The components will be
 	    * sorted based on their type then their priority within that type.
@@ -314,7 +329,7 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 					renderContext.setPosition(pt);
 
 					/* pragma:DEBUG_START */
-					if (true) {
+					if (PistolSlut.showPhysicsObjectsO == true) {
 			   		renderContext.drawFilledArc(pt.neg(), 10, 0, 360);
 			   	}
 					/* pragma:DEBUG_END */

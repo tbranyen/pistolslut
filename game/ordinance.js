@@ -18,14 +18,16 @@ Engine.initObject("Ordinance", "PhysicsObject", function() {
 			this.weapon = weapon;
 			this.shooter = this.weapon.owner;
 
-			this.getComponent("physics").setRenderComponent(SpriteComponent.create("draw"));
+			this.createPhysicalBody("physics", this.renderScale);
+			this.getComponent("physics").setScale(this.renderScale);
+
+			this.getComponent("physics").setRenderComponent(Vector2DComponent.create("draw"));
 			this.setPosition(Point2D.create(this.weapon.getGunTip()));
 
             this.setSimulation(this.field.simulation);
             this.simulate();
 
 			this.getPhysicsComponent().applyForce(this.weapon.ordinancePhysics.call(this.weapon), this.getPosition());
-
 
             this.setupGraphics();
 		},

@@ -104,7 +104,9 @@ Engine.initObject("PistolSlut", "Game", function() {
         remoteFileLoader: null,
 		loadTimeout: null,
         enemyTypesDataIdentifier: "enemytypes",
+
         mtp: 30.0,
+        showPhysicsObjects: false,
 
 		//gravityVector: Vector2D.create(0, 0.6),
 

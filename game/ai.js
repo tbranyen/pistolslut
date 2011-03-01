@@ -8,7 +8,7 @@ Engine.initObject("AIComponent", "LogicComponent", function() {
 		// I know it's insane to pass the host in the constructer, but it doesn't seem to be available at this point
 		constructor: function(name, priority, field, host, behaviourTreeName) {
 	  	    this.base(name, priority || 1.0);
-			this.field = field;
+		    this.field = field;
 
             this.state = new Machine(this.field.remoteFileLoader.getData(behaviourTreeName)).generateTree(this);
 

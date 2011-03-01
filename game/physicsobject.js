@@ -8,38 +8,42 @@ Engine.initObject("PhysicsObject", "PhysicsActor", function() {
 
 		constructor: function(name) {
 			this.base(name);
-
-			// Create the physical body object which will move the toy object
-			this.createPhysicalBody("physics", this.renderScale);
-			this.getComponent("physics").setScale(this.renderScale);
 		},
 
-		createPhysicalBody: function(componentName, scale) { },
-
-        updatePhysicalBodySize: function() {
-            var bBoxDims = this.getSprite().getBoundingBox().dims;
-            this.getComponent("physics").getShapeDef().extents.Set(bBoxDims.x / 2, bBoxDims.y / 2);
+        getVelocity: function() {
+            if(this.getPhysicsComponent())
+                return this.getPhysicsBody().m_linearVelocity;
+            else
+                return 0;
         },
-
-        getVelocity: function() { return this.getPhysicsBody().m_linearVelocity; },
 
 	    setSprite: function(spriteKey) {
 			if(spriteKey != this.currentSpriteKey)
 			{
-                //console.log(spriteKey)
-			    var newSprite = this.sprites[spriteKey];
-				if(this.currentSpriteKey != null)
-				{1
-					var heightAdjustment = this.getSprite().getBoundingBox().dims.y - newSprite.getBoundingBox().dims.y;
-					if(heightAdjustment != 0)
-						this.getPosition().setY(this.getPosition().y + heightAdjustment);
-				}
+				this.currentSpriteKey = spriteKey;
+			    var newSprite = this.sprites[this.currentSpriteKey];
+
+                var oldSprite = null;
+                if(this.alreadyHasPhysicsBody())
+                    oldSprite = this.getSprite();
+
+                if(oldSprite)
+                {
+                    var oldBBoxDims = oldSprite.getBoundingBox().dims;
+                    var newBBoxDims = newSprite.getBoundingBox().dims;
+                    if(oldBBoxDims.x != newBBoxDims.x || oldBBoxDims.y != newBBoxDims.y)
+                    {
+                        var dimensions = Point2D.create(newBBoxDims.x, newBBoxDims.y);
+                        var curPos = this.getPosition();
+                        var newPos = Point2D.create(curPos.x + ((oldBBoxDims.x - newBBoxDims.x) / 2), curPos.y + ((oldBBoxDims.y - newBBoxDims.y) / 2));
+                        this.createPhysicalBody(dimensions, newPos);
+                    }
+                }
 
 			    this.setBoundingBox(newSprite.getBoundingBox());
                 this.getDrawComponent().setSprite(newSprite);
 
 				newSprite.play(Engine.worldTime);
-				this.currentSpriteKey = spriteKey;
 			}
 	    },
 
@@ -51,6 +55,7 @@ Engine.initObject("PhysicsObject", "PhysicsActor", function() {
 			this.sprites[name] = sprite;
 		},
 
+        alreadyHasPhysicsBody: function() { return this.getPhysicsComponent() !== undefined; },
         getPhysicsComponent: function() { return this.getComponent("physics"); },
         getPhysicsBody: function() { return this.getPhysicsComponent().body; },
         getDrawComponent: function() { return this.getComponent("physics").getRenderComponent(); },

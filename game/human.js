@@ -31,33 +31,42 @@ Engine.initObject("Human", "PhysicsObject", function() {
 			this.stateOfBeing = Human.ALIVE;
 			this.standState = Human.STANDING;
 
-			this.getComponent("physics").setRenderComponent(SpriteComponent.create("draw"));
-            this.setPosition(position);
-
-            this.setSimulation(this.field.simulation);
-            this.simulate();
-
+            this.setupWeapons(weapons);
 			this.loadSprites();
 
-			this.stopWalk();
-
-            this.setupWeapons(weapons);
-
-			// Add components to move and draw the human
+			this.createPhysicalBody(Point2D.create(46, 41), position);
 
 			this.updateSprite();
-            this.updatePhysicalBodySize();
 		},
 
-		createPhysicalBody: function(componentName, scale) {
-			this.boxSize = Point2D.create(46, 41);
-			this.boxSize.mul(scale);
-			this.add(BoxBodyComponent.create(componentName, this.boxSize));
+		createPhysicalBody: function(dimensions, position) {
 
-			this.getComponent(componentName).setFriction(0.3);
-			this.getComponent(componentName).setRestitution(0);
-			this.getComponent(componentName).setDensity(2);
-            this.getComponent(componentName).getBodyDef().preventRotation = true;
+            if(!this.getPhysicsComponent())
+            {
+			    this.add(BoxBodyComponent.create("physics", dimensions)); // old gets auto removed if present
+                this.getPhysicsComponent().setRenderComponent(SpriteComponent.create("draw"));
+                this.setPosition(position);
+                this.setSimulation(this.field.simulation);
+            }
+            else
+            {
+                this.stopSimulate();
+
+                this.setPosition(position);
+		        var dimensions = Point2D.create(dimensions);
+		        var e = dimensions.get();
+		        this.getPhysicsComponent().getShapeDef().extents.Set(e.x / 2, e.y / 2);
+		        this.getPhysicsComponent().setLocalOrigin(e.x / 2, e.y / 2);
+            }
+
+			this.boxSize = dimensions;
+            var physicsComponent = this.getPhysicsComponent();
+			physicsComponent.setFriction(0.3);
+			physicsComponent.setRestitution(0);
+			physicsComponent.setDensity(2);
+            physicsComponent.getBodyDef().preventRotation = true;
+
+            this.simulate();
 		},
 
 		update: function(renderContext, time) {
@@ -90,10 +99,10 @@ Engine.initObject("Human", "PhysicsObject", function() {
 		getStandState: function() { return this.standState; },
 
 		getMoveState: function() {
-			if(this.getVelocity().x != 0)
-				return Human.RUNNING;
-			else
+            if(this.isCrouching() || this.getVelocity().x == 0)
 				return Human.STILL;
+			else
+				return Human.RUNNING;
 		},
 
 		die: function(ordinance) {
@@ -393,9 +402,9 @@ Engine.initObject("Human", "PhysicsObject", function() {
 			"Left": {
 			 	"Standing": {
 					"GrenadeLauncher": { "gunTip": new Point2D(23, 2),  "gunAngle": 330 },
-					"M9": 	           { "gunTip": new Point2D(07, 06), "gunAngle": 270 },
-					"Mac10":           { "gunTip": new Point2D(07, 04), "gunAngle": 270 },
-					"SPAS":            { "gunTip": new Point2D(07, 09), "gunAngle": 270 }
+					"M9": 	           { "gunTip": new Point2D(-27, -14), "gunAngle": 270 },
+					"Mac10":           { "gunTip": new Point2D(-27, -15), "gunAngle": 270 },
+					"SPAS":            { "gunTip": new Point2D(-27, -12), "gunAngle": 270 }
 				},
 				"Crouching": {
 					"GrenadeLauncher": { "gunTip": new Point2D(10, 0),  "gunAngle": 330 },
@@ -408,9 +417,9 @@ Engine.initObject("Human", "PhysicsObject", function() {
 			"Right": {
 				"Standing": {
 					"GrenadeLauncher": { "gunTip": new Point2D(10, 2),  "gunAngle": 30 },
-					"M9": 	           { "gunTip": new Point2D(40, 06), "gunAngle": 90 },
-					"Mac10":           { "gunTip": new Point2D(40, 04), "gunAngle": 90 },
-					"SPAS":            { "gunTip": new Point2D(40, 09), "gunAngle": 90 },
+					"M9": 	           { "gunTip": new Point2D(30, -14), "gunAngle": 90 },
+					"Mac10":           { "gunTip": new Point2D(30, -15), "gunAngle": 90 },
+					"SPAS":            { "gunTip": new Point2D(30, -12), "gunAngle": 90 },
 				},
 				"Crouching": {
 					"GrenadeLauncher": { "gunTip": new Point2D(23, 0),  "gunAngle": 30 },

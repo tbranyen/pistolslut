@@ -37,8 +37,10 @@ Engine.initObject("b2Body", null, function() {
    // A rigid body. Internal computation are done in terms
    // of the center of mass position. The center of mass may
    // be offset from the body's origin.
-   var b2Body = Base.extend({ 
-      
+   var b2Body = Base.extend({
+
+       gameObject: null, // framechange - added
+
       // Temp mat
       sMat0: null,
       m_flags: 0,
@@ -80,7 +82,7 @@ Engine.initObject("b2Body", null, function() {
       m_sleepTime: null,
 
       m_userData: null,
-      
+
       constructor: function(bd, world) {
          // initialize instance variables for references
          this.sMat0 = new b2Mat22();
@@ -208,7 +210,7 @@ Engine.initObject("b2Body", null, function() {
 
          this.m_userData = bd.userData;
       },
-      
+
       // Set the position of the body's origin and rotation (radians).
       // This breaks any contacts and wakes the other bodies.
       SetOriginPosition: function(position, rotation){
@@ -410,7 +412,7 @@ Engine.initObject("b2Body", null, function() {
       GetUserData: function(){
          return this.m_userData;
       },
-      
+
       Destroy: function(){
          var s = this.m_shapeList;
          while (s)
@@ -460,16 +462,16 @@ Engine.initObject("b2Body", null, function() {
             s.DestroyProxy();
          }
       }
-      
-   }, { 
-      
+
+   }, {
+
       e_staticFlag: 0x0001,
       e_frozenFlag: 0x0002,
       e_islandFlag: 0x0004,
       e_sleepFlag: 0x0008,
       e_allowSleepFlag: 0x0010,
       e_destroyFlag: 0x0020
-      
+
    });
 
    return b2Body;

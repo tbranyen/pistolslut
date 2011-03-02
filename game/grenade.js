@@ -6,14 +6,12 @@ Engine.include("/engine/engine.object2d.js");
 Engine.initObject("Grenade", "Ordinance", function() {
 	var Grenade = Ordinance.extend({
 		timeThrown: null,
-		pinTimer: 20000, // how long the grenade takes to explode
+		pinTimer: 2000, // how long the grenade takes to explode
 		safeDistance: 40,
 
 		constructor: function(weapon) {
 			this.base(weapon);
 			this.timeThrown = new Date().getTime();
-
-			this.createPhysicalBody(5);
 		},
 
 		setupGraphics: function() {
@@ -29,7 +27,7 @@ Engine.initObject("Grenade", "Ordinance", function() {
 
 			this.setPosition(Point2D.create(this.weapon.getGunTip()));
 
-			this.getPhysicsComponent().setFriction(0.5);
+			this.getPhysicsComponent().setFriction(0.05);
 			this.getPhysicsComponent().setRestitution(0.5);
 			this.getPhysicsComponent().setDensity(0.01);
             this.getPhysicsComponent().getBodyDef().preventRotation = true;
@@ -46,7 +44,7 @@ Engine.initObject("Grenade", "Ordinance", function() {
 		update: function(renderContext, time) {
 			if(this.timeThrown + this.pinTimer < new Date().getTime())
 			{
-				//this.explode();
+				this.explode();
 				return;
 			}
 
@@ -62,8 +60,8 @@ Engine.initObject("Grenade", "Ordinance", function() {
 			return objCentre;
 		},
 
-		shrapnelCount: 30,
-		shrapnelTTL: 500,
+		shrapnelCount: 40,
+		shrapnelTTL: 700,
 		explode: function() {
 			for(var x = 0; x < this.shrapnelCount; x++)
 				this.field.renderContext.add(Shrapnel.create(this.field, this.shooter, this.getPosition(), this.shrapnelTTL));

@@ -35,6 +35,7 @@ Engine.initObject("Human", "PhysicsObject", function() {
 			this.loadSprites();
 
 			this.createPhysicalBody(Point2D.create(46, 41), position);
+            this.setGameObjectReference();
 
 			this.updateSprite();
 		},
@@ -108,21 +109,11 @@ Engine.initObject("Human", "PhysicsObject", function() {
             this.unsetSpotter();
 			this.stateOfBeing = Human.DYING;
 			this.setSprite(this.direction + Human.DYING + this.weapon.name);
-
-			this.throwBackwards(ordinance);
 		},
 
 		shoot: function() {
 			this.weapon.shoot();
 			this.updateSprite();
-		},
-
-		throwBackwardsUp: -3,
-		throwBackwardsTempering: 6,
-		throwBackwards: function(bullet) {
-			this.getVelocity().setX(bullet.getVelocity().x / this.throwBackwardsTempering);
-			this.getPosition().setY(this.getPosition().y - 5);
-			this.getVelocity().setY(this.throwBackwardsUp);
 		},
 
 		crouch: function() {
@@ -246,7 +237,7 @@ Engine.initObject("Human", "PhysicsObject", function() {
 		shot: function(ordinance) {
 			if(this.isAlive() || this.isDying())
 			{
-				this.bloodSpurt(ordinance);
+				//this.bloodSpurt(ordinance);
                 if(this.isAlive())
                 {
                     this.field.notifier.post(Human.SHOT, this);
@@ -401,13 +392,13 @@ Engine.initObject("Human", "PhysicsObject", function() {
 		COORDINATES: {
 			"Left": {
 			 	"Standing": {
-					"GrenadeLauncher": { "gunTip": new Point2D(10, 2),  "gunAngle": 330 },
+					"GrenadeLauncher": { "gunTip": new Point2D(5, -29),  "gunAngle": 330 },
 					"M9": 	           { "gunTip": new Point2D(-30, -14), "gunAngle": 270 },
 					"Mac10":           { "gunTip": new Point2D(-30, -15), "gunAngle": 270 },
 					"SPAS":            { "gunTip": new Point2D(-30, -12), "gunAngle": 270 }
 				},
 				"Crouching": {
-					"GrenadeLauncher": { "gunTip": new Point2D(18, 0),  "gunAngle": 330 },
+					"GrenadeLauncher": { "gunTip": new Point2D(-10, -20),  "gunAngle": 330 },
 					"M9": 	           { "gunTip": new Point2D(-30, -08), "gunAngle": 270 },
 					"Mac10":           { "gunTip": new Point2D(-27, -11), "gunAngle": 270 },
 					"SPAS":            { "gunTip": new Point2D(-27, -07), "gunAngle": 270 },
@@ -416,13 +407,13 @@ Engine.initObject("Human", "PhysicsObject", function() {
 			},
 			"Right": {
 				"Standing": {
-					"GrenadeLauncher": { "gunTip": new Point2D(10, 2),  "gunAngle": 30 },
+					"GrenadeLauncher": { "gunTip": new Point2D(10, -29),  "gunAngle": 30 },
 					"M9": 	           { "gunTip": new Point2D(30, -14), "gunAngle": 90 },
 					"Mac10":           { "gunTip": new Point2D(25, -17), "gunAngle": 90 },
 					"SPAS":            { "gunTip": new Point2D(25, -12), "gunAngle": 90 },
 				},
 				"Crouching": {
-					"GrenadeLauncher": { "gunTip": new Point2D(10, 0),  "gunAngle": 30 },
+					"GrenadeLauncher": { "gunTip": new Point2D(10, -20),  "gunAngle": 30 },
 					"M9":              { "gunTip": new Point2D(30, -10), "gunAngle": 90 },
 					"Mac10":           { "gunTip": new Point2D(30, -11), "gunAngle": 90 },
 					"SPAS":            { "gunTip": new Point2D(30, -07), "gunAngle": 90 },

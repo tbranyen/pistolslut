@@ -19,7 +19,7 @@ Engine.initObject("Furniture", "PhysicsObject", function() {
 		},
 
 		shot: function(projectile) {
-			this.particleRicochet(projectile);
+			//this.particleRicochet(projectile);
 		},
 
 		ricochetFlashSpread: 10,

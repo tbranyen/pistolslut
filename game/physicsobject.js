@@ -10,12 +10,17 @@ Engine.initObject("PhysicsObject", "PhysicsActor", function() {
 			this.base(name);
 		},
 
+        // set ref so can grab it for custom collision detection
+        setGameObjectReference: function() { this.getPhysicsBody().gameObject = this; },
+
         getVelocity: function() {
             if(this.getPhysicsComponent())
                 return this.getPhysicsBody().m_linearVelocity;
             else
                 return 0;
         },
+
+        collision: function(obj) { },
 
 	    setSprite: function(spriteKey) {
 			if(spriteKey != this.currentSpriteKey)
@@ -37,10 +42,11 @@ Engine.initObject("PhysicsObject", "PhysicsActor", function() {
                         var curPos = this.getPosition();
                         var newPos = Point2D.create(curPos.x + ((oldBBoxDims.x - newBBoxDims.x) / 2), curPos.y + ((oldBBoxDims.y - newBBoxDims.y) / 2));
                         this.createPhysicalBody(dimensions, newPos);
+                        this.setGameObjectReference();
                     }
                 }
 
-			    this.setBoundingBox(newSprite.getBoundingBox());
+			    this.setBoundingBox(Rectangle2D.create(newSprite.getBoundingBox()));
                 this.getDrawComponent().setSprite(newSprite);
 
 				newSprite.play(Engine.worldTime);

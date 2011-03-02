@@ -19,7 +19,7 @@ Engine.initObject("Ordinance", "PhysicsObject", function() {
 			this.shooter = this.weapon.owner;
 
 			this.createPhysicalBody();
-
+            this.setGameObjectReference();
 			this.getPhysicsComponent().applyForce(this.weapon.ordinancePhysics.call(this.weapon), this.getPosition());
 
             this.setupGraphics();

@@ -75,7 +75,10 @@ Engine.initObject("b2Shape", null, function() {
          this.m_maskBits = def.maskBits;
          this.m_groupIndex = def.groupIndex;
       },
-   
+
+       // framechange - added
+       getGameObject: function() { return this.m_mody.gameObject; },
+
       TestPoint: function(p) {
          return false
       },
@@ -96,7 +99,7 @@ Engine.initObject("b2Shape", null, function() {
       GetPosition: function() {
          return this.m_position;
       },
-      
+
       GetRotationMatrix: function() {
          return this.m_R;
       },
@@ -132,19 +135,19 @@ Engine.initObject("b2Shape", null, function() {
       // Internal use only. Do not call.
       Synchronize: function(position1, R1, position2, R2) {
       },
-      
+
       QuickSync: function(position, R) {
       },
-      
+
       Support: function(dX, dY, out) {
       },
-      
+
       GetMaxRadius: function() {
          return this.m_maxRadius;
       }
-   
+
    }, {
-      
+
       Create: function(def, body, center) {
          switch (def.type)
          {
@@ -165,7 +168,7 @@ Engine.initObject("b2Shape", null, function() {
          //b2Settings.b2Assert(false);
          return null;
       },
-      
+
       Destroy: function(shape) {
          /*b2BlockAllocator& allocator = shape->m_body->m_world->m_blockAllocator;
 
@@ -191,14 +194,14 @@ Engine.initObject("b2Shape", null, function() {
          if (shape.m_proxyId != b2Pair.b2_nullProxy)
             shape.m_body.m_world.m_broadPhase.DestroyProxy(shape.m_proxyId);
       },
-      
+
       e_unknownShape: -1,
       e_circleShape: 0,
       e_boxShape: 1,
       e_polyShape: 2,
       e_meshShape: 3,
       e_shapeTypeCount: 4,
-      
+
       PolyMass: function(massData, vs, count, rho) {
          //b2Settings.b2Assert(count >= 3);
 
@@ -264,7 +267,7 @@ Engine.initObject("b2Shape", null, function() {
          I = rho * (I - area * b2Math.b2Dot(center, center));
          massData.I = I;
       },
-      
+
       PolyCentroid: function(vs, count, out) {
          //b2Settings.b2Assert(count >= 3);
 
@@ -336,9 +339,9 @@ Engine.initObject("b2Shape", null, function() {
          //return c;
          out.Set(cX, cY);
       }
-      
+
    });
-   
+
    return b2Shape;
-   
+
 });

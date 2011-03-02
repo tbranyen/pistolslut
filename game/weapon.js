@@ -245,6 +245,8 @@ Engine.initObject("Weapon", "Base", function() {
 
 		tip: new Point2D(0, -1),
 
+        VELOCITY_BOOST: 80,
+
         MAX_SPARE_CLIPS: 3,
 
 		SEMI_AUTOMATIC: "semi_automatic",

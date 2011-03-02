@@ -158,6 +158,7 @@ Engine.initObject("PhysicsActor", "Object2D", function() {
 
         //framechange - removed because returns in world coords rather than window
         // computed in a method with same name in objects.physicsactor.js
+        // wouldn't have mattered if didn't have a scrolling level
       /**
        * Get the render position of the actor
        * @return {Point2D}

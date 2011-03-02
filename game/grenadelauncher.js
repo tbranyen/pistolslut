@@ -11,7 +11,7 @@ Engine.initObject("GrenadeLauncher", "IndirectWeapon", function() {
             this.animationTime = 400;
 			this.timeRequiredForDeadAim = 1000;
             this.playerRanges = GrenadeLauncher.PLAYER_RANGES;
-            this.flightSecs = 1.5
+            this.flightSecs = 1.25;
 			this.projectileVelocityVariability = 0;
             this.hasMuzzleFlash = false;
 		},

@@ -30,6 +30,19 @@ Engine.initObject("Bullet", "Ordinance", function() {
 
             this.simulate();
 		},
+
+        collision: function(obj) {
+            if(obj instanceof Furniture)
+            {
+                obj.shot(this);
+                this.destroy();
+            }
+            else if(obj instanceof Human)
+            {
+                obj.shot(this);
+                this.destroy();
+            }
+        },
 	}, {
 		getClassName: function() { return "Bullet"; },
 

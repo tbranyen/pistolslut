@@ -33,6 +33,8 @@ Engine.initObject("Grenade", "Ordinance", function() {
             this.getPhysicsComponent().getBodyDef().preventRotation = true;
 
             this.simulate();
+
+            this.base();
 		},
 
 		release: function() {
@@ -61,7 +63,7 @@ Engine.initObject("Grenade", "Ordinance", function() {
 		},
 
 		shrapnelCount: 40,
-		shrapnelTTL: 700,
+		shrapnelTTL: 2000,
 		explode: function() {
 			for(var x = 0; x < this.shrapnelCount; x++)
 				this.field.renderContext.add(Shrapnel.create(this.field, this.shooter, this.getPosition(), this.shrapnelTTL));

@@ -19,7 +19,6 @@ Engine.initObject("Bullet", "Ordinance", function() {
 			this.boxSize = Point2D.create(1, 1);
 			this.add(BoxBodyComponent.create("physics", this.boxSize));
             this.getPhysicsComponent().setRenderComponent(Vector2DComponent.create("draw"));
-            this.setSimulation(this.field.simulation);
 
 			this.setPosition(Point2D.create(this.weapon.getGunTip()));
 
@@ -28,7 +27,10 @@ Engine.initObject("Bullet", "Ordinance", function() {
 			this.getPhysicsComponent().setDensity(0.01);
             this.getPhysicsComponent().getBodyDef().preventRotation = true;
 
+            this.setSimulation(this.field.simulation);
             this.simulate();
+
+            this.base();
 		},
 
         collision: function(obj) {

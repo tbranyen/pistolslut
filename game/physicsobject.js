@@ -4,14 +4,25 @@ Engine.initObject("PhysicsObject", "PhysicsActor", function() {
 	var PhysicsObject = PhysicsActor.extend({
 		sprites: {},
 		currentSpriteKey: null,
-		renderScale: 1,
 
 		constructor: function(name) {
 			this.base(name);
 		},
 
+        createPhysicalBody: function() {
+            this.setGameObjectReference();
+        },
+
         // set ref so can grab it for custom collision detection
         setGameObjectReference: function() { this.getPhysicsBody().gameObject = this; },
+
+        // because of the way I had to hack in custom coll notification (in b2CollisionFilter),
+        // it is possible for an object to be destroyed by multiple objects (and thus
+        // multiple times) a single step.  This would cause an error, so stop it.
+        destroy: function() {
+            if(this._destroyed !== true)
+                this.base();
+        },
 
         getVelocity: function() {
             if(this.getPhysicsComponent())
@@ -42,7 +53,6 @@ Engine.initObject("PhysicsObject", "PhysicsActor", function() {
                         var curPos = this.getPosition();
                         var newPos = Point2D.create(curPos.x + ((oldBBoxDims.x - newBBoxDims.x) / 2), curPos.y + ((oldBBoxDims.y - newBBoxDims.y) / 2));
                         this.createPhysicalBody(dimensions, newPos);
-                        this.setGameObjectReference();
                     }
                 }
 

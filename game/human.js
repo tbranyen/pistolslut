@@ -35,7 +35,6 @@ Engine.initObject("Human", "PhysicsObject", function() {
 			this.loadSprites();
 
 			this.createPhysicalBody(Point2D.create(46, 41), position);
-            this.setGameObjectReference();
 
 			this.updateSprite();
 		},
@@ -51,22 +50,22 @@ Engine.initObject("Human", "PhysicsObject", function() {
             else
             {
                 this.stopSimulate();
-
                 this.setPosition(position);
-		        var dimensions = Point2D.create(dimensions);
+		        dimensions = Point2D.create(dimensions);
 		        var e = dimensions.get();
 		        this.getPhysicsComponent().getShapeDef().extents.Set(e.x / 2, e.y / 2);
 		        this.getPhysicsComponent().setLocalOrigin(e.x / 2, e.y / 2);
             }
 
 			this.boxSize = dimensions;
-            var physicsComponent = this.getPhysicsComponent();
-			physicsComponent.setFriction(0.3);
-			physicsComponent.setRestitution(0);
-			physicsComponent.setDensity(2);
-            physicsComponent.getBodyDef().preventRotation = true;
+			this.getPhysicsComponent().setFriction(0.3);
+			this.getPhysicsComponent().setRestitution(0);
+			this.getPhysicsComponent().setDensity(2);
+            this.getPhysicsComponent().getBodyDef().preventRotation = true;
 
             this.simulate();
+
+            this.base();
 		},
 
 		update: function(renderContext, time) {
@@ -82,6 +81,7 @@ Engine.initObject("Human", "PhysicsObject", function() {
 		},
 
 		move: function(time) {
+            console.log(this.getSprite().isSinglePlayOver(time))
 			if(this.getSprite().isSinglePlayOver(time) == true) // on a single play anim and it's over
 			{
 				if(this.stateOfBeing == Human.DYING)
@@ -338,7 +338,10 @@ Engine.initObject("Human", "PhysicsObject", function() {
             else if(this.isAlive())
 				this.setSprite(this.direction + this.getStandState() + this.getMoveState() + this.getShootState() + this.weapon.name);
 			else if(this.stateOfBeing == Human.DEAD)
+            {
+                console.log("deadddd")
 				this.setSprite(this.direction + Human.DEAD + this.weapon.name);
+            }
 		},
 
 		loadSprites: function() {

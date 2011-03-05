@@ -23,8 +23,6 @@ Engine.initObject("Shrapnel", "PhysicsObject", function() {
             this.startPosition = Point2D.create(epicentre);
 
             this.createPhysicalBody();
-            this.setGameObjectReference();
-
             this.setupGraphics();
 
 			var spread = 360;
@@ -49,6 +47,8 @@ Engine.initObject("Shrapnel", "PhysicsObject", function() {
             this.getPhysicsComponent().getBodyDef().preventRotation = true;
 
             this.simulate();
+
+            this.base();
 		},
 
 		setupGraphics: function() {

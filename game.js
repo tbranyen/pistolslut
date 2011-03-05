@@ -55,6 +55,7 @@ Game.load("/game/lift.js");
 Game.load("/game/barrel.js");
 Game.load("/game/machine.js");
 Game.load("/game/physicsobject.js");
+Game.load("/game/customB2CollisionFilter.js");
 
 Engine.initObject("PistolSlut", "Game", function() {
 
@@ -204,6 +205,7 @@ Engine.initObject("PistolSlut", "Game", function() {
 
 		loadComponents: function() {
             this.simulation = Simulation.create("simulation", this.fieldBox, Vector2D.create(0, 650));
+            this.simulation.world.SetFilter(new customB2CollisionFilter());
 			this.simulation.setIntegrations(3);
 
             // Add the simulation to the scene graph so the physical

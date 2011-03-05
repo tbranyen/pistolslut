@@ -422,6 +422,8 @@ Engine.initObject("b2Body", null, function() {
 
             b2Shape.Destroy(s0);
          }
+
+         this.gameObject = null; // framechange - added
       },
 
       SynchronizeShapes: function(){

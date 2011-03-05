@@ -45,10 +45,11 @@ Engine.initObject("b2CollisionFilter", null, function() {
           {
               var gameObject1 = shape1.m_body.gameObject;
               var gameObject2 = shape2.m_body.gameObject;
-              if(gameObject1 !== null)
+
+              if(gameObject1 !== null && gameObject2 !== null)
                   gameObject1.collision(gameObject2);
 
-              if(gameObject2 !== null)
+              if(gameObject1 !== null && gameObject2 !== null)
                   gameObject2.collision(gameObject1);
           }
 

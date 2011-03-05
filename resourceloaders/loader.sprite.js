@@ -399,6 +399,7 @@ var Sprite = PooledObject.extend(/** @scope Sprite.prototype */{
 	 isSinglePlayOver: function(time) {
 		 if(this.isOnce() == true) // we are playing a once over animation
 		 {
+             console.log("once")
 			 if(time - this.startTime > this.speed * (this.count - 1))
 				 return true;
 			 else

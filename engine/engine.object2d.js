@@ -73,6 +73,9 @@ var Object2D = HostObject.extend(/** @scope Object2D.prototype */{
 	 * Destroy the object.
 	 */
 	destroy: function() {
+        if(this._destroyed === true)
+            console.log(sdfhsdfh)
+        //console.log(this, this.id);
 		this.bBox.destroy();
 		this.wBox.destroy();
 		this.lastPosition.destroy();

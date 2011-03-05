@@ -277,7 +277,15 @@ var Sprite = PooledObject.extend(/** @scope Sprite.prototype */{
 		}
 
       if (this.type == Sprite.TYPE_ANIMATION) {
-         this.mode = (s[Sprite.INDEX_TYPE] == "loop" ? Sprite.MODE_LOOP : Sprite.MODE_TOGGLE);
+         //this.mode = (s[Sprite.INDEX_TYPE] == "loop" ? Sprite.MODE_LOOP : Sprite.MODE_TOGGLE);
+         // framechange - removed line above and added the stuff below
+         if(s[Sprite.INDEX_TYPE] == "loop")
+            this.mode = Sprite.MODE_LOOP;
+         else if(s[Sprite.INDEX_TYPE] == "toggle")
+            this.mode = Sprite.MODE_TOGGLE;
+         else if(s[Sprite.INDEX_TYPE] == "once")
+            this.mode = Sprite.MODE_ONCE;
+
          this.count = s[Sprite.INDEX_COUNT];
          this.speed = s[Sprite.INDEX_SPEED];
       }
@@ -399,7 +407,6 @@ var Sprite = PooledObject.extend(/** @scope Sprite.prototype */{
 	 isSinglePlayOver: function(time) {
 		 if(this.isOnce() == true) // we are playing a once over animation
 		 {
-             console.log("once")
 			 if(time - this.startTime > this.speed * (this.count - 1))
 				 return true;
 			 else

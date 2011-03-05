@@ -81,7 +81,6 @@ Engine.initObject("Human", "PhysicsObject", function() {
 		},
 
 		move: function(time) {
-            console.log(this.getSprite().isSinglePlayOver(time))
 			if(this.getSprite().isSinglePlayOver(time) == true) // on a single play anim and it's over
 			{
 				if(this.stateOfBeing == Human.DYING)
@@ -338,10 +337,7 @@ Engine.initObject("Human", "PhysicsObject", function() {
             else if(this.isAlive())
 				this.setSprite(this.direction + this.getStandState() + this.getMoveState() + this.getShootState() + this.weapon.name);
 			else if(this.stateOfBeing == Human.DEAD)
-            {
-                console.log("deadddd")
 				this.setSprite(this.direction + Human.DEAD + this.weapon.name);
-            }
 		},
 
 		loadSprites: function() {

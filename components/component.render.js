@@ -6,7 +6,7 @@
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1325 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -87,6 +87,27 @@ var RenderComponent = BaseComponent.extend(/** @scope RenderComponent.prototype 
    getDrawMode: function() {
       return this.drawMode;
    },
+
+	/**
+	 * Adjust the local transformation to accommodate the origin.
+	 * 
+	 * @param renderContext {RenderContext} The render context
+	 * @param before {Boolean} <code>true</code> if the transform is occurring before rendering
+	 */
+	transformOrigin: function(renderContext, before) {
+		if (this.getHostObject().getOrigin().isZero()) {
+			return;
+		}
+		
+		if (before) {
+			renderContext.pushTransform();
+			var origin = Point2D.create(this.getHostObject().getOrigin());
+			renderContext.setPosition(origin.neg());
+			origin.destroy();
+		} else {
+			renderContext.popTransform();
+		}
+	},
 
    /**
     * Handles whether or not the component should draw to the

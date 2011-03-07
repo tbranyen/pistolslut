@@ -7,7 +7,7 @@
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1402 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -37,7 +37,9 @@ Engine.include("/resourceloaders/loader.remote.js");
 Engine.initObject("ObjectLoader", "RemoteLoader", function() {
 
 /**
- * @class Loads JSON objects from a specified URL.
+ * @class Loads JSON objects from a specified URL.  The object uses a sligtly modified
+ * 		 format which allows for single-line comments in the object definition.  The
+ * 		 object must follow the rest of the JSON spec, with key names in quotes.
  *
  * @constructor
  * @param name {String=ObjectLoader} The name of the resource loader
@@ -65,20 +67,22 @@ var ObjectLoader = RemoteLoader.extend(/** @scope ObjectLoader.prototype */{
    load: function(name, url, obj) {
 
       if (url) {
-         Assert(url.indexOf("http") == -1, "Objects must be located relative to this server");
+         var loc = window.location;
+         if (url.indexOf(loc.protocol) != -1 && url.indexOf(loc.host) == -1) {
+            Assert(false, "Objects must be located on this server");
+         }
+
          var thisObj = this;
 
          // Get the file from the server
-         $.get(url, function(data) {
-            var objectInfo = EngineSupport.parseJSON(data);
-
+			Engine.loadJSON(url, function(data) {
             // 2nd pass - store the object
-            thisObj.load(name, null, objectInfo);
+            thisObj.load(name, null, data);
          });
       } else {
          // The object has been loaded and is ready for use
-         this.setReady(true);
          this.base(name, obj);
+         this.setReady(name, true);
       }
    },
 

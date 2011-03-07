@@ -6,8 +6,8 @@
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  *
- * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @author: $Author: bfattori@gmail.com $
+ * @version: $Revision: 1331 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -34,6 +34,7 @@
 // Includes
 Engine.include("/engine/engine.pooledobject.js");
 Engine.include("/engine/engine.baseobject.js");
+Engine.include("/engine/engine.container.js");
 
 Engine.initObject("Particle", "PooledObject", function() {
 
@@ -53,6 +54,7 @@ var Particle = PooledObject.extend(/** @scope Particle.prototype */{
    engine: null,
    birth: 0,
    dead: false,
+   pos: null,
 
    /**
     * @private
@@ -62,6 +64,15 @@ var Particle = PooledObject.extend(/** @scope Particle.prototype */{
       this.life = lifetime;
       this.birth = 0;
       this.dead = false;
+      this.pos = Point2D.create(0,0);
+   },
+   
+   /**
+    * Destroy the particle
+    */
+   destroy: function() {
+   	this.pos.destroy();
+   	this.base();
    },
 
    /**
@@ -73,6 +84,7 @@ var Particle = PooledObject.extend(/** @scope Particle.prototype */{
       this.engine = null;
       this.birth = 0;
       this.dead = true;
+      this.pos = null;
    },
 
    /**
@@ -88,14 +100,32 @@ var Particle = PooledObject.extend(/** @scope Particle.prototype */{
       this.dead = false;
    },
 
+	/**
+	 * Get the current position of the particle
+	 * @return {Point2D}
+	 */
+	getPosition: function() {
+		return this.pos;
+	},
+	
+	/**
+	 * Set the X and Y world coordinates of the particle
+	 * @param x {Number} X world coordinate
+	 * @param y {Number} Y world coordinate
+	 */
+	setPosition: function(x, y) {
+		this.pos.set(x,y);
+	},
+
    /**
     * Update the particle in the render context, calling its draw method.
     * @param renderContext {RenderContext} The context where the particle is drawn
     * @param time {Number} The world time, in milliseconds
     */
    update: function(renderContext, time) {
-      if (time < this.life) {
-         // Draw it ( I think this is an optimization point )
+      if (time < this.life &&
+      		renderContext.getViewport().containsPoint(this.getPosition())) {
+	   	// if the particle is still alive, and it isn't outside the viewport
          this.draw(renderContext, time);
          return true;
       } else {
@@ -118,6 +148,8 @@ var Particle = PooledObject.extend(/** @scope Particle.prototype */{
    getBirth: function() {
       return this.birth;
    },
+
+	
 
    /**
     * [ABSTRACT] Draw the particle
@@ -146,10 +178,17 @@ return Particle;
 Engine.initObject("ParticleEngine", "BaseObject", function() {
 
 /**
- * @class The particle engine is a simple system for updating, and expiring
+ * @class The particle engine is a system for updating and expiring
  *        particles within a game environment.  This is registered with the
  *        render context so it will be updated at regular intervals.  The maximum
- *        number of supported particles can be configured, but defaults to 120. 
+ *        number of supported particles can be configured, but defaults to 120.
+ *        <p/>
+ *        Particles should be simple objects which don't need to perform many
+ *        calculations before being drawn.  All particles are rendered in world
+ *        coordinates to speed up processing.
+ *        </p>
+ *        It is possible to run multiple particle engines within a render context,
+ *        but it might be non-productive to do so.
  *
  * @extends BaseObject
  * @constructor
@@ -168,13 +207,8 @@ var ParticleEngine = BaseObject.extend(/** @scope ParticleEngine.prototype */{
     */
    constructor: function() {
       this.base("ParticleEngine");
-      this.particles = [];
+      this.particles = Container.create();
       this.maximum = ParticleEngine.MAX_PARTICLES;
-      
-      // Initialize the particles
-      for (var u = 0; u < this.maximum; u++) {
-         this.particles[u] = null;
-      }
       this.liveParticles = 0;
    },
 
@@ -182,10 +216,8 @@ var ParticleEngine = BaseObject.extend(/** @scope ParticleEngine.prototype */{
     * @private
     */
    destroy: function() {
-      while (this.particles.length > 0) {
-         var p = this.particles.shift();
-         if (p) p.destroy();
-      }
+		this.particles.cleanUp();
+		this.particles.destroy();
       this.base();
    }, 
 
@@ -203,101 +235,68 @@ var ParticleEngine = BaseObject.extend(/** @scope ParticleEngine.prototype */{
    /**
     * Add a group of particles at one time.  This reduces the number of calls
     * to {@link #addParticle} which resorts the array of particles each time.
-    * @param particleArray {Particle[]} A group of particles to add at one time
+    * @param particles {Container} A container of particles to add at one time
     */
-   addParticles: function(particleArray) {
-      var i = 0,u;
-      
+   addParticles: function(particles) {
+		if (!Container.isInstance(particles)) {
+			// If the particles are an Array, convert to a Container first
+			var oldP = particles;
+			particles = Container.create();
+			particles.addAll(oldP);
+		}
+
       // If the new particles exceed the size of the engine's
       // maximum, truncate the remainder
-      if (particleArray > this.maximum) {
-         particleArray.length = this.maximum;
-      }
-      
-      // Sort the particles by remaining life, with empty slots at the end
-      this.sortParticles();
-      
-      // Find the first available empty slot for a particle from
-      // the group of particles being added
-      for (var p in this.particles) {
-         if (this.particles[p] == null) {
-            break;
-         }
-         i++;
+      if (particles.size() > this.maximum) {
+         var discard = particles.reduce(this.maximum);
+			discard.cleanUp();
+			discard.destroy();
       }
       
       // Initialize all of the new particles
-      for (var n in particleArray) {
-         particleArray[n].init(this, this.lastTime);
+      for (var i = particles.iterator(); i.hasNext(); ) {
+         i.next().init(this, this.lastTime);
       }
+		i.destroy();
       
       // The maximum number of particles to animate
-      this.liveParticles += particleArray.length;
-      if (this.liveParticles > this.maximum) {
-         this.liveParticles = this.maximum;
+      var total = this.liveParticles + particles.size();
+      if (total > this.maximum) {
+         total = this.maximum;
       }
       
-      // If the remaining slots of the array will contain the entire group of
-      // particles, we can use some native methods to speed up adding them to
-      // the engine
-      if (i + particleArray.length < this.maximum) {
-         // There's enough space, bulk add the particles
-         this.particles.length = i;
-         this.particles = this.particles.concat(particleArray);
-         
-         // Clean up the particle array
-         this.particles.length = this.maximum;
-         for (u = i + particleArray.length; u < this.maximum; u++) {
-            this.particles[u] = null;
-         }
-      
-      } else {
-         // There aren't enough free slots. Split the operation into two
-         // calls.  The first will insert what we can fit without forcing
-         // any particles out.  The second will force existing particles to
-         // be destroyed and put new particles in place.
-         
-         var avail = this.maximum - i;
-         if (avail > 0) {
-            // Insert what we can
-            this.particles.length = i;
-            this.particles = this.particles.concat(particleArray.slice(0, avail));
-            particleArray = particleArray.slice(avail);
-
-            // Clean up the particle array
-            this.particles.length = this.maximum;
-            for (u = i + particleArray.length; u < this.maximum; u++) {
-               this.particles[u] = null;
-            }
-         }
-         
-         // Take the remainder of the particles and force into
-         // the engine, overwriting the existing particles and
-         // destroying them
-         if (particleArray.length > 0) {
-            var oldParticles = this.particles.splice(0, particleArray.length);
-            this.particles = particleArray.concat(this.particles);
-
-            // Destroy the particles which were forced out
-            for (var o in oldParticles) {
-               oldParticles[o].destroy();
-            }
-         }
-         
-         // Resort the particles
-         this.sortParticles();
-      }
+		// If we can fit the entire set of particles without overflowing,
+		// add all the particles and be done.
+		if (particles.size() <= this.maximum - this.liveParticles) {
+			this.particles.addAll(particles);
+		} else {
+			// There isn't enough space to put all of the particles into
+			// the container.  So, we'll only add what we can.
+			var maxLeft = this.maximum - total;
+			var easySet = particles.subset(0, maxLeft);
+			this.particles.addAll(easySet);
+			easySet.destroy();
+		}
+		particles.destroy();
+		this.liveParticles = this.particles.size();
    },
 
    /**
     * Add a single particle to the engine.  If many particles are being
-    * added at one time, use {@link #addParticles} instead to add an
-    * array of particles.
+    * added at one time, use {@link #addParticles} instead to add a
+    * {@link Container} of particles.
     *
     * @param particle {Particle} A particle to animate
     */
    addParticle: function(particle) {
-      this.addParticles([particle]);
+		if (this.particles.size() < this.maximum) {
+         particle.init(this, this.lastTime);
+			this.particles.add(particle);
+			this.liveParticles = this.particles.size();
+		} else {
+			// nowhere to put it
+			particle.destroy();
+		}
    },
    
    /**
@@ -308,14 +307,11 @@ var ParticleEngine = BaseObject.extend(/** @scope ParticleEngine.prototype */{
       var oldMax = this.maximum;
       this.maximum = maximum;
       
-      // Adjust the particle array
+      // Kill off particles if the size is reduced
       if (this.maximum < oldMax) {
-         this.particles.length = this.maximum;
-      } else if (this.maximum > oldMax) {
-         // Add new empty slots
-         for (var u = oldMax; u < this.maximum; u++) {
-            this.particles[u] = null;
-         }
+         var discard = this.particles.reduce(this.maximum);
+			discard.cleanUp();
+			discard.destroy();
       }
    },
    
@@ -328,26 +324,14 @@ var ParticleEngine = BaseObject.extend(/** @scope ParticleEngine.prototype */{
    },
    
    /**
-    * Sort live particles to the beginning of the list, ordered by remaining life.
-    * Particles with a shorter lifespan should be sorted to the beginning of the list
-    * with longer lived particles toward the end.
-    * @private
-    */
-   sortParticles: function() {
-      this.particles.sort(function(a,b) {
-         return a && b ? (a.getTTL() - Engine.worldTime) - (b.getTTL() - Engine.worldTime) : !a ? 1 : !b ? -1 : 0;
-      });
-   },
-
-   /**
     * Update a particle, removing it and nulling its reference
     * if it is dead.  Only live particles are updated
     * @private
     */
-   runParticle: function(idx, renderContext, time) {
-      if (this.particles[idx] != null && !this.particles[idx].update(renderContext, time)) {
-         this.particles[idx].destroy();
-         this.particles[idx] = null;
+   runParticle: function(particle, renderContext, time) {
+      if (!particle.update(renderContext, time)) {
+			this.particles.remove(particle);
+         particle.destroy();
       }
    },
 
@@ -370,42 +354,13 @@ var ParticleEngine = BaseObject.extend(/** @scope ParticleEngine.prototype */{
 
       renderContext.pushTransform();
 
-      // Using Duff's device with loop inversion for speed
-      switch((this.liveParticles) & 0x3) {
-         case 3:
-            this.runParticle(p++,renderContext,time);
-         case 2:
-            this.runParticle(p++,renderContext,time);
-         case 1:
-            this.runParticle(p++,renderContext,time);
-      }
-
-      if (p < this.liveParticles) {
-         do
-         {
-            this.runParticle(p++,renderContext,time);
-            this.runParticle(p++,renderContext,time);
-            this.runParticle(p++,renderContext,time);
-            this.runParticle(p++,renderContext,time);
-         } while (p < this.liveParticles);
-      }
+		for (var itr = this.particles.iterator(); itr.hasNext(); ) {
+			this.runParticle(itr.next(), renderContext, time);
+		}
+		itr.destroy();
       
       renderContext.popTransform();
-      
-      // Subtract the dead particles from the live so we can update
-      // only when necessary.  Collapse the particles so that the
-      // nulls are at the end
-      this.particles = EngineSupport.filter(this.particles, function(v) {
-         return (v != null);
-      });
-      
-      this.liveParticles = this.particles.length;
-
-      // Clean up particle list
-      this.particles.length = this.maximum;
-      for (var u = this.liveParticles; u < this.maximum; u++) {
-         this.particles[u] = null;
-      }
+      this.liveParticles = this.particles.size();
    },
 
    /**
@@ -416,7 +371,7 @@ var ParticleEngine = BaseObject.extend(/** @scope ParticleEngine.prototype */{
       var self = this;
       var prop = this.base(self);
       return $.extend(prop, {
-         "Count" : [function() { return self.particles.length; },
+         "Count" : [function() { return self.particles.size(); },
                     null, false]
       });
    }
@@ -437,7 +392,8 @@ var ParticleEngine = BaseObject.extend(/** @scope ParticleEngine.prototype */{
     * the value, see {@link ParticleEngine#setMaximum}
     * @type Number
     */
-   MAX_PARTICLES: 500
+   MAX_PARTICLES: 120
+
 });
 
 return ParticleEngine;

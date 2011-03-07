@@ -7,8 +7,8 @@
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  *
- * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @author: $Author: bfattori@gmail.com $
+ * @version: $Revision: 1455 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -53,22 +53,51 @@ Engine.initObject("BoxColliderComponent", "ColliderComponent", function() {
  */
 var BoxColliderComponent = ColliderComponent.extend(/** @scope BoxColliderComponent.prototype */{
 
+	hasMethod: false,
+
    /**
-    * Call the host object's <tt>onCollide()</tt> method, passing the time of the collision
-    * and the potential collision object.  The return value should either tell the collision
-    * tests to continue, or to stop.
+    * Releases the component back into the pool for reuse.  See {@link PooledObject#release}
+    * for more information.
+    */
+   release: function() {
+      this.base();
+		this.hasMethod = false;		
+	},
+
+	/**
+    * Establishes the link between this component and its host object.
+    * When you assign components to a host object, it will call this method
+    * so that each component can refer to its host object, the same way
+    * a host object can refer to a component with {@link HostObject#getComponent}.
+    *
+    * @param hostObject {HostObject} The object which hosts this component
+	 */
+	setHostObject: function(hostObj) {
+		this.base(hostObj);
+		this.hasMethod = (hostObj.getWorldBox != undefined);
+		/* pragma:DEBUG_START */
+		AssertWarn(this.hasMethod, "Object " + hostObj.toString() + " does not have getWorldBox() method");
+		/* pragma:DEBUG_END */
+	},
+
+   /**
+    * Call the host object's <tt>onCollide()</tt> method, passing the time of the collision,
+    * the potential collision object, and the host and target masks.  The return value should 
+    * either tell the collision tests to continue or stop.
     * <p/>
     * A world bounding box collision must occur to trigger the <tt>onCollide()</tt> method.
     *
     * @param time {Number} The engine time (in milliseconds) when the potential collision occurred
     * @param collisionObj {HostObject} The host object with which the collision potentially occurs
+    * @param hostMask {Number} The collision mask for the host object
+    * @param targetMask {Number} The collision mask for <tt>collisionObj</tt>
     * @return {Number} A status indicating whether to continue checking, or to stop
     */
-   testCollision: function(time, collisionObj) {
-      if (this.getHostObject().getWorldBox && collisionObj.getWorldBox &&
+   testCollision: function(time, collisionObj, hostMask, targetMask) {
+      if (this.hasMethod && collisionObj.getWorldBox &&
           this.getHostObject().getWorldBox().isIntersecting(collisionObj.getWorldBox())) {
 
-         return this.base(collisionObj, time);
+         return this.base(time, collisionObj, hostMask, targetMask);
       }
       
       return ColliderComponent.CONTINUE;

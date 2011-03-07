@@ -1,6 +1,4 @@
 {
-	// Frame (f): left, top, frameWidth, frameHeight
-	// Animation (a): left, top, frameWidth, frameHeight, frameCount, speedMS, loop/toggle
 	bitmapImage: "level1.gif", bitmapWidth: 6000, bitmapHeight: 430, collisionMap: [],
 
     player: {

@@ -6,8 +6,8 @@
  *               mouse input.
  *
  * @author: Brett Fattori (brettf@renderengine.com)
- * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @author: $Author: bfattori@gmail.com $
+ * @version: $Revision: 1364 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -33,6 +33,7 @@
 
 // Includes
 Engine.include("/engine/engine.events.js");
+Engine.include("/engine/engine.timers.js");
 Engine.include("/components/component.input.js");
 
 Engine.initObject("MouseInputComponent", "InputComponent", function() {
@@ -72,36 +73,8 @@ Engine.initObject("MouseInputComponent", "InputComponent", function() {
 	   constructor: function(name, priority) {
 	      this.base(name, priority);
 
-	      // Assign handlers to the context, making sure to only add
-	      // one handler.  This way we don't have hundreds of mouse move
-	      // handlers taking up precious milliseconds
-	      var ctx = Engine.getDefaultContext();
-	      if (!ctx.MouseInputComponent_mouseInfo)
-	      {
-	         ctx.MouseInputComponent_mouseInfo = {
-	            position: new Point2D(0,0),
-	            lastPosition: new Point2D(0,0),
-	            button: EventEngine.MOUSE_NO_BUTTON,
-	            lastOver: null
-	         };
-	
-				ctx.addEvent(this, "mousemove", function(evt) {
-	            var mouseInfo = Engine.getDefaultContext().MouseInputComponent_mouseInfo;
-	            mouseInfo.position.set(evt.pageX, evt.pageY);
-	         });
-	
-	         ctx.addEvent(this, "mousedown", function(evt) {
-	            var mouseInfo = Engine.getDefaultContext().MouseInputComponent_mouseInfo;
-	            mouseInfo.button = evt.which;
-	         });
-	
-	         ctx.addEvent(this, "mouseup", function(evt) {
-	            var mouseInfo = Engine.getDefaultContext().MouseInputComponent_mouseInfo;
-	            mouseInfo.button = EventEngine.MOUSE_NO_BUTTON;
-	         });
-	
-	      }
-	
+			// Assign the global handlers
+			MouseInputComponent.assignMouseHandlers();
 	   },
 	
 	   /**
@@ -147,7 +120,6 @@ Engine.initObject("MouseInputComponent", "InputComponent", function() {
 	      // Mouse position changed
 	      if (this.getHostObject().onMouseMove && !mouseInfo.position.equals(mouseInfo.lastPosition)) {
 	         this.getHostObject().onMouseMove(mouseInfo);
-	         mouseInfo.lastPosition.set(mouseInfo.position);
 	      }
 	
 	      // Mouse is over object
@@ -185,7 +157,80 @@ Engine.initObject("MouseInputComponent", "InputComponent", function() {
 	    */
 	   getClassName: function() {
 	      return "MouseInputComponent";
-	   }
+	   },
+		
+		/**
+		 * Assigns the global mouse handlers.  The mouse information can be read from an
+		 * object which is contained on the default context. Reading 
+		 * <code>Engine.getDefaultContext().MouseInputComponent_mouseInfo</code> will return:
+		 * <ul>
+		 * <li><code>position</code> - {@link Point2D}</li>
+		 * <li><code>lastPosition</code> - {@link Point2D}</li>
+		 * <li><code>button</code> - {@link EventEngine#MOUSE_NO_BUTTON}, {@link EventEngine#MOUSE_LEFT_BUTTON},
+		 * {@link EventEngine#MOUSE_RIGHT_BUTTON}, or {@link EventEngine#MOUSE_MIDDLE_BUTTON}</li>
+		 * <li><code>lastOver</code> - {@link BaseObject} or <code>null</code></li>
+		 * <li><code>moveVec</code> - {@link Vector2D} which represents the direction and distance
+		 * of the mouse movement</li>
+		 * </ul>
+		 */
+		assignMouseHandlers: function() {
+	      // Assign handlers to the default context, making sure to only add
+	      // the handler once.  This way we don't have hundreds of mouse move
+	      // handlers taking up precious milliseconds.
+	      var ctx = Engine.getDefaultContext();
+	      if (!ctx.MouseInputComponent_mouseInfo)
+	      {
+	         ctx.MouseInputComponent_mouseInfo = {
+	            position: Point2D.create(0,0),
+	            lastPosition: Point2D.create(0,0),
+					downPosition: Point2D.create(0,0),
+	            button: EventEngine.MOUSE_NO_BUTTON,
+					moveVec: Vector2D.create(0,0),
+					dragVec: Vector2D.create(0,0),
+	            lastOver: null,
+					moveTimer: null
+	         };
+	
+				ctx.addEvent(null, "mousemove", function(evt) {
+	            var mouseInfo = Engine.getDefaultContext().MouseInputComponent_mouseInfo;
+					if (mouseInfo.moveTimer != null) {
+						mouseInfo.moveTimer.destroy();
+						mouseInfo.moveTimer = null;						
+					}
+   	         mouseInfo.lastPosition.set(mouseInfo.position);
+					mouseInfo.position.set(evt.pageX, evt.pageY);
+					mouseInfo.moveVec.set(mouseInfo.position);
+					mouseInfo.moveVec.sub(mouseInfo.lastPosition);
+					if (mouseInfo.button != EventEngine.MOUSE_NO_BUTTON) {
+						mouseInfo.dragVec.set(mouseInfo.downPosition);
+						mouseInfo.dragVec.sub(mouseInfo.position);
+					}
+					mouseInfo.moveTimer = Timeout.create("mouseMove", 33, function() {
+						mouseInfo.moveVec.set(0,0);				
+					});
+	         });
+	
+	         ctx.addEvent(null, "mousedown", function(evt) {
+	            var mouseInfo = Engine.getDefaultContext().MouseInputComponent_mouseInfo;
+	            mouseInfo.button = evt.which;
+					mouseInfo.downPosition.set(evt.pageX, evt.pageY);
+					evt.preventDefault();
+	         });
+	
+	         ctx.addEvent(null, "mouseup", function(evt) {
+	            var mouseInfo = Engine.getDefaultContext().MouseInputComponent_mouseInfo;
+	            mouseInfo.button = EventEngine.MOUSE_NO_BUTTON;
+					mouseInfo.dragVec.set(0,0);
+	         });
+	
+				// Clean up the events when the Engine is shutting down
+				Engine.onShutdown(function() {
+					ctx.removeEvent(null, "mousemove");
+					ctx.removeEvent(null, "mousedown");
+					ctx.removeEvent(null, "mouseup");
+				});
+	      }
+		}
 	});
 	
 	return MouseInputComponent;

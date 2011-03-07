@@ -8,7 +8,7 @@
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1400 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -34,8 +34,9 @@ Engine.initObject("Game", null, function() {
 
 /**
  * @class The game object represents an instance of a game.  It is
- * the controlling entity for all of a game and is responsible
- * for setup and teardown of the game.
+ * the controlling entity for the game constructs and is responsible
+ * for setup and teardown of the game.  All games must extend from this class
+ * to be executed by the engine.
  */
 var Game = Base.extend(/** @scope Game.prototype */{
 
@@ -44,7 +45,7 @@ var Game = Base.extend(/** @scope Game.prototype */{
    constructor: null,
 
    /**
-    * Initialize the game.  This method will be called automatically by the
+    * [ABSTRACT] Initialize the game.  This method will be called automatically by the
     * engine when all dependencies for the game have been resolved.
     * @memberOf Game
     */
@@ -52,7 +53,7 @@ var Game = Base.extend(/** @scope Game.prototype */{
    },
 
    /**
-    * Shut down the game.  This method will be called if the engine is shut down
+    * [ABSTRACT] Shut down the game.  This method will be called if the engine is shut down
     * giving a game time to clean up before it is destroyed.
     * @memberOf Game
     */
@@ -73,16 +74,16 @@ var Game = Base.extend(/** @scope Game.prototype */{
     *
     * @param scriptSource {String} The relative path to the script to load.
     * @return {String} An Id for the script which is used in the call to {@link #scriptLoaded}
-    * 					  when the script has completed loading (or errored out)
+    *                  when the script has completed loading (or errored out)
     * @memberOf Game
     */
    load: function(scriptSource) {
       Assert((scriptSource.indexOf("http") == -1), "Game scripts can only be loaded relative to the game's path");
       Engine.loadScript( (scriptSource.charAt(0) != "/" ? "./" : ".") + scriptSource );
-		var self = this;
-		this.setQueueCallback(function() {
-			self.scriptLoaded(scriptSource);
-		});
+      var self = this;
+      this.setQueueCallback(function() {
+         self.scriptLoaded(scriptSource);
+      });
    },
 
    /**

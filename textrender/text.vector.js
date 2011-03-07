@@ -3,11 +3,11 @@
  * VectorText
  *
  * @fileoverview A simple text renderer which draws text using lines.  It has a
- * 				  limited character set.
+ *               limited character set.
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1325 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -39,8 +39,8 @@ Engine.initObject("VectorText", "AbstractTextRenderer", function() {
 
 /**
  * @class A text renderer which draws text with simple vectors.  This type of text
- * 		 renderer is only supported by the {@link CanvasContext}.  For an {@link HTMLElementContext}
- * 		 or a derivative, use the {@link ContextText} renderer.
+ *        renderer is only supported by the {@link CanvasContext}.  For an {@link HTMLElementContext}
+ *        or a derivative, use the {@link ContextText} renderer.
  *
  * @constructor
  * @param componentName {String} The name of the text component
@@ -53,23 +53,23 @@ var VectorText = AbstractTextRenderer.extend(/** @scope VectorText.prototype */{
 
    spacing: 0,
 
-	/**
-	 * @private
-	 */
+   /**
+    * @private
+    */
    constructor: function(componentName, priority) {
       this.base(componentName, priority);
       this.rText = [];
-		this.setTextWeight(1);
+      this.setTextWeight(1.5);
    },
 
-	/**
-	 * @private
-	 */
+   /**
+    * @private
+    */
    release: function() {
       this.base();
       this.rText = null;
       this.spacing = 0;
-		this.setTextWeight(1);
+      this.setTextWeight(1.5);
    },
 
    /**
@@ -85,27 +85,36 @@ var VectorText = AbstractTextRenderer.extend(/** @scope VectorText.prototype */{
       for (var p = 0; p < this.rText.length; p++)
       {
          var pt = this.rText[p];
-			if (pt) {
-	         if (pt.x < x1)
-	         {
-	            x1 = pt.x;
-	         }
-	         if (pt.x > x2)
-	         {
-	            x2 = pt.x;
-	         }
-	         if (pt.y < y1)
-	         {
-	            y1 = pt.y;
-	         }
-	         if (pt.y > y2)
-	         {
-	            y2 = pt.y;
-	         }
-			}
+         if (pt) {
+            if (pt.x < x1)
+            {
+               x1 = pt.x;
+            }
+            if (pt.x > x2)
+            {
+               x2 = pt.x;
+            }
+            if (pt.y < y1)
+            {
+               y1 = pt.y;
+            }
+            if (pt.y > y2)
+            {
+               y2 = pt.y;
+            }
+         }
       }
 
-      this.getHostObject().setBoundingBox(new Rectangle2D(x1, y1, Math.abs(x1) + x2, Math.abs(y1) + y2));
+      this.getHostObject().setBoundingBox(new Rectangle2D(x1 * this.getSize(), y1 * this.getSize(), (Math.abs(x1) + x2 + 2) * this.getSize(), (Math.abs(y1) + y2 + 2) * this.getSize()));
+   },
+
+   /**
+    * Set the scaling of the text
+    * @param size {Number}
+    */
+   setSize: function(size) {
+      this.base(size);
+      this.calculateBoundingBox();
    },
 
    /**
@@ -117,6 +126,14 @@ var VectorText = AbstractTextRenderer.extend(/** @scope VectorText.prototype */{
       // We only have uppercase letters
       text = String(text).toUpperCase();
       this.base(text);
+		
+		if (this.rText.length > 0) {
+			for (var r in this.rText) {
+				if (this.rText[r])
+					this.rText[r].destroy();
+			}
+		}
+		
       this.rText = [];
       var spacing = 11.5;
 
@@ -127,39 +144,47 @@ var VectorText = AbstractTextRenderer.extend(/** @scope VectorText.prototype */{
       var align = this.getTextAlignment();
       var letter = (align == AbstractTextRenderer.ALIGN_RIGHT ? text.length - 1 : 0);
       var kern = new Point2D((align == AbstractTextRenderer.ALIGN_RIGHT ? -spacing : spacing), 0);
+		var lineHeight = this.getSize() * 5;
+		var y = 0;
       //var space = new Point2D((align == AbstractTextRenderer.ALIGN_RIGHT ? -spacing : spacing) * 0.07, 0);
 
 
       // Vectorize the text
-      var pc = new Point2D(0,0);
+      var pc = new Point2D(0,y);
       while (lCount-- > 0)
       {
          var ltr = [];
-         var glyph = VectorText.charSet[text.charCodeAt(letter) - 32];
-         if (glyph.length == 0)
-         {
-            pc.add(kern);
-         }
-         else
-         {
-            for (var p = 0; p < glyph.length; p++)
-            {
-               if (glyph[p] != null)
-               {
-                  this.rText.push(new Point2D(glyph[p][0], glyph[p][1]).add(pc));
-               }
-               else
-               {
-                  this.rText.push(null);
-               }
-            }
-            this.rText.push(null);
-            pc.add(kern);
-         }
-
+			var chr = text.charCodeAt(letter);
+			if (chr == 10) {
+				// Support multi-line text
+				y += (this.getSize() * 10) + this.getLineSpacing();
+				pc.set(0, y);
+			} else {
+	         var glyph = VectorText.charSet[chr - 32];
+	         if (glyph.length == 0)
+	         {
+	            pc.add(kern);
+	         }
+	         else
+	         {
+	            for (var p = 0; p < glyph.length; p++)
+	            {
+	               if (glyph[p] != null)
+	               {
+	                  this.rText.push(Point2D.create(glyph[p][0], glyph[p][1]).add(pc));
+	               }
+	               else
+	               {
+	                  this.rText.push(null);
+	               }
+	            }
+	            this.rText.push(null);
+	            pc.add(kern);
+	         }
+			}
          letter += (align == AbstractTextRenderer.ALIGN_RIGHT ? -1 : 1);
       }
-
+		pc.destroy();
       this.calculateBoundingBox();
    },
 
@@ -173,8 +198,8 @@ var VectorText = AbstractTextRenderer.extend(/** @scope VectorText.prototype */{
          return;
       }
 
-		renderContext.pushTransform();
-		renderContext.setScale(this.getSize());
+      renderContext.pushTransform();
+      renderContext.setScale(this.getSize());
       // Set the stroke and fill styles
       if (this.getColor() != null)
       {
@@ -183,7 +208,7 @@ var VectorText = AbstractTextRenderer.extend(/** @scope VectorText.prototype */{
 
       renderContext.setLineWidth(this.getTextWeight());
       renderContext.drawPolyline(this.rText);
-		renderContext.popTransform();
+      renderContext.popTransform();
    }
 
 

@@ -8,7 +8,7 @@
  * @author: Brett Fattori (brettf@renderengine.com)
  *
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1402 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -35,13 +35,14 @@
 // Includes
 Engine.include("/engine/engine.object2d.js");
 Engine.include("/components/component.transform2d.js");
+Engine.include("/components/component.billboard2d.js");
 
 Engine.initObject("TextRenderer", "Object2D", function() {
 
 /**
  * @class A 2d text rendering object.  The object hosts the given text
  *        renderer, and a way to position and size the text.  It is up
- *        to the rendered provided to present the text within the render
+ *        to the renderer provided to present the text within the render
  *        context.
  *
  * @constructor
@@ -56,8 +57,8 @@ Engine.initObject("TextRenderer", "Object2D", function() {
 var TextRenderer = Object2D.extend(/** @scope TextRenderer.prototype */{
 
    drawMode: 0,
-	
-	renderer: null,
+
+   renderer: null,
 
    /**
     * @private
@@ -70,12 +71,17 @@ var TextRenderer = Object2D.extend(/** @scope TextRenderer.prototype */{
 
       // Add components to move and draw the text
       this.renderer = renderer;
-      this.add(this.renderer);
+      if (!Engine.options.billboards || renderer.isNative()) {
+         this.add(this.renderer);
+      } else {
+         this.add(Billboard2DComponent.create("billboard", this.renderer));
+      }
+
       this.add(Transform2DComponent.create("transform"));
-      this.getComponent("TextRenderObject").setText(text || "");
-      //this.getComponent("transform").setScale(size || 1);
-      this.getComponent("TextRenderObject").setSize(size || 1);
-		this.drawMode = TextRenderer.DRAW_TEXT;
+
+      renderer.setText(text || "");
+      renderer.setSize(size || 1);
+      this.drawMode = TextRenderer.DRAW_TEXT;
    },
 
    /**
@@ -83,8 +89,8 @@ var TextRenderer = Object2D.extend(/** @scope TextRenderer.prototype */{
     */
    release: function() {
       this.base();
-		this.drawMode = TextRenderer.DRAW_TEXT;
-		this.renderer = null;
+      this.drawMode = TextRenderer.DRAW_TEXT;
+      this.renderer = null;
    },
 
    /**
@@ -105,23 +111,35 @@ var TextRenderer = Object2D.extend(/** @scope TextRenderer.prototype */{
    },
 
    /**
+    * @private
+    */
+   regen: function() {
+      if (!Engine.options.billboards || this.renderer.isNative()) {
+         return;
+      } else {
+         this.getComponent("billboard").regenerate();
+      }
+   },
+
+   /**
     * Set the text for this object to render.  This method
     * <i>must</i> be implemented by a text renderer.
     *
     * @param text {String} The text to render.
     */
    setText: function(text) {
-      this.getComponent("TextRenderObject").setText(text);
+      this.renderer.setText(text);
+      this.regen();
    },
 
    /**
     * Get the text for this object to render.  This method
     * <i>must</i> be implemented by a text renderer.
-    * 
+    *
     * @return {String} The text to draw
     */
    getText: function() {
-      return this.getComponent("TextRenderObject").getText();
+      return this.renderer.getText();
    },
 
    /**
@@ -130,8 +148,8 @@ var TextRenderer = Object2D.extend(/** @scope TextRenderer.prototype */{
     * @param size {Number} Defaults to 1
     */
    setTextSize: function(size) {
-      //this.getComponent("transform").setScale(size || 1);
-      this.getComponent("TextRenderObject").setSize(size || 1);
+      this.renderer.setSize(size || 1);
+      this.regen();
    },
 
    /**
@@ -139,7 +157,7 @@ var TextRenderer = Object2D.extend(/** @scope TextRenderer.prototype */{
     * @return {Number} The size/scale of the text
     */
    getTextSize: function() {
-      return this.getComponent("TextRenderObject").getSize();
+      return this.renderer.getSize();
    },
 
    /**
@@ -149,7 +167,8 @@ var TextRenderer = Object2D.extend(/** @scope TextRenderer.prototype */{
     * @param weight {Object} The boldness of the given text renderer
     */
    setTextWeight: function(weight) {
-      this.getComponent("TextRenderObject").setTextWeight(weight);
+      this.renderer.setTextWeight(weight);
+      this.regen();
    },
 
    /**
@@ -158,44 +177,46 @@ var TextRenderer = Object2D.extend(/** @scope TextRenderer.prototype */{
     * @return {Object} The boldness of the given text renderer
     */
    getTextWeight: function() {
-      return this.getComponent("TextRenderObject").getTextWeight();
+      return this.renderer.getTextWeight();
    },
-	
-	/**
-	 * Set the font for the text.  This method is optional
-	 * for a text renderer.
-	 * @param font {String} The text font
-	 */
-	setTextFont: function(font) {
-		this.getComponent("TextRenderObject").setTextFont(font);
-	},
-	
-	/**
-	 * Get the font for the text.  This method is optional
-	 * for a text renderer.
-	 * @return {String} The text font
-	 */
-	getTextFont: function() {
-		return this.getComponent("TextRenderObject").getTextFont();
-	},
-	
-	/**
-	 * Set the style of the text.  This method is optional
-	 * for a text renderer.
-	 * @param style {String} The text style
-	 */
-	setTextStyle: function(style) {
-		this.getComponent("TextRenderObject").setTextStyle(style);
-	},
 
-	/**
-	 * Get the style for text.  This method is optional
-	 * for a text renderer.
-	 * @return {String} The text style
-	 */	
-	getTextStyle: function() {
-		return this.getComponent("TextRenderObject").getTextStyle();
-	},
+   /**
+    * Set the font for the text.  This method is optional
+    * for a text renderer.
+    * @param font {String} The text font
+    */
+   setTextFont: function(font) {
+      this.renderer.setTextFont(font);
+      this.regen();
+   },
+
+   /**
+    * Get the font for the text.  This method is optional
+    * for a text renderer.
+    * @return {String} The text font
+    */
+   getTextFont: function() {
+      return this.renderer.getTextFont();
+   },
+
+   /**
+    * Set the style of the text.  This method is optional
+    * for a text renderer.
+    * @param style {String} The text style
+    */
+   setTextStyle: function(style) {
+      this.renderer.setTextStyle(style);
+      this.regen();
+   },
+
+   /**
+    * Get the style for text.  This method is optional
+    * for a text renderer.
+    * @return {String} The text style
+    */
+   getTextStyle: function() {
+      return this.renderer.getTextStyle();
+   },
 
    /**
     * Get the position where the text will render.
@@ -211,7 +232,7 @@ var TextRenderer = Object2D.extend(/** @scope TextRenderer.prototype */{
     * @param point {Point2D} The position to render the text
     */
    setPosition: function(point) {
-      this.getComponent("transform").setPosition(point);
+       this.getComponent("transform").setPosition(point);
 	  //framechange - removed this: point.destroy();
    },
 
@@ -222,7 +243,8 @@ var TextRenderer = Object2D.extend(/** @scope TextRenderer.prototype */{
     * @param alignment {Object} A text alignment mode for the given text renderer.
     */
    setTextAlignment: function(alignment) {
-		this.getComponent("TextRenderObject").setTextAlignment(alignment);
+      this.renderer.setTextAlignment(alignment);
+      this.regen();
    },
 
    /**
@@ -231,7 +253,7 @@ var TextRenderer = Object2D.extend(/** @scope TextRenderer.prototype */{
     * @return {Number} The alignment mode for the given text renderer
     */
    getTextAlignment: function() {
-		return this.getComponent("TextRenderObject").getTextAlignment();
+      return this.renderer.getTextAlignment();
    },
 
    /**
@@ -240,7 +262,8 @@ var TextRenderer = Object2D.extend(/** @scope TextRenderer.prototype */{
     * @param color {String} The color of the text
     */
    setColor: function(color) {
-      this.getComponent("TextRenderObject").setColor(color);
+      this.renderer.setColor(color);
+      this.regen();
    },
 
    /**
@@ -248,7 +271,7 @@ var TextRenderer = Object2D.extend(/** @scope TextRenderer.prototype */{
     * @return {String} The text color
     */
    getColor: function() {
-      return this.getComponent("TextRenderObject").getColor();
+      return this.renderer.getColor();
    },
 
    /**
@@ -257,7 +280,8 @@ var TextRenderer = Object2D.extend(/** @scope TextRenderer.prototype */{
     * @param textColor {String} Color of the text.
     */
    setTextColor: function(textColor) {
-      this.getComponent("TextRenderObject").setColor(textColor);
+      this.renderer.setColor(textColor);
+      this.regen();
    },
 
    /**
@@ -265,7 +289,7 @@ var TextRenderer = Object2D.extend(/** @scope TextRenderer.prototype */{
     * @return {String} The color or style of the line
     */
    getTextColor: function() {
-      return this.getComponent("TextRenderObject").getColor();
+      return this.renderer.getColor();
    },
 
    /**
@@ -305,12 +329,12 @@ var TextRenderer = Object2D.extend(/** @scope TextRenderer.prototype */{
     * @type Number
     */
    NO_DRAW: 1,
-	
+
    /**
     * The size of a text element, in pixels
     * @type Number
     */
-	BASE_TEXT_PIXELSIZE: 12
+   BASE_TEXT_PIXELSIZE: 12
 });
 
 return TextRenderer;

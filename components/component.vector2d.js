@@ -7,7 +7,7 @@
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1307 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -236,6 +236,8 @@ var Vector2DComponent = RenderComponent.extend(/** @scope Vector2DComponent.prot
          renderContext.setFillStyle(this.fillStyle);
       }
 
+		this.transformOrigin(renderContext, true);
+
       // Render out the points
       if (this.closedManifold)
       {
@@ -250,6 +252,9 @@ var Vector2DComponent = RenderComponent.extend(/** @scope Vector2DComponent.prot
       {
          renderContext.drawFilledPolygon(this.points);
       }
+
+		this.transformOrigin(renderContext, false);
+
    }
 }, /** @scope Vector2DComponent.prototype */{
    /**

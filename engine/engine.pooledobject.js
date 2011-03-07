@@ -8,7 +8,7 @@
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1438 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -36,18 +36,15 @@ Engine.initObject("PooledObject", null, function() {
 
 /**
  * @class Pooled objects are created as needed, and reused from a static pool
- *        of all objects, organized by class.  When an object is created, if one 
+ *        of all objects, organized by classname.  When an object is created, if one 
  *        is not available in the pool, a new object is created.  When the object 
  *        is destroyed, it is returned to the pool so it can be used again.  This has the
- *        effect of minimizing the requirement of garbage collection, reducing
+ *        effect of minimizing the requirement for garbage collection, reducing
  *        cycles needed to clean up dead objects.
  *
- * @param name {String} The name of the object from which the Id will be generated.
+ * @param name {String} The name of the object within the engine.
  * @constructor
- * @description Create an instance of this object, assigning a name to it.  An
- *              object reference will be maintained by the {@link Engine} class,
- *              which gives the object final responsibility for making sure the
- *              object can be destroyed.
+ * @description Create an instance of this object, assigning a global identifies to it.
  */
 var PooledObject = Base.extend(/** @scope PooledObject.prototype */{
 
@@ -56,11 +53,16 @@ var PooledObject = Base.extend(/** @scope PooledObject.prototype */{
 
    // The name of the object
    name: "",
+	
+	_destroyed: false,
+	
+	
 
    /**
     * @private
     */
    constructor: function(name) {
+		this._destroyed = false;
       this.name = name;
       this.id = Engine.create(this);
    },
@@ -81,13 +83,14 @@ var PooledObject = Base.extend(/** @scope PooledObject.prototype */{
     * to be used again.
     */
    destroy: function() {
-      PooledObject.returnToPool(this);
-      Engine.addMetric("poolLoad", Math.floor((PooledObject.poolSize / PooledObject.poolNew) * 100), false, "#%");
-
       // Clean up the engine reference to this object
       Engine.destroy(this);
 
-      // Reset any variables on the object before putting
+		this._destroyed = true;
+      PooledObject.returnToPool(this);
+      Engine.addMetric("poolLoad", Math.floor((PooledObject.poolSize / PooledObject.poolNew) * 100), false, "#%");
+
+      // Reset any variables on the object after putting
       // it back in the pool.
       this.release();
    },
@@ -126,24 +129,79 @@ var PooledObject = Base.extend(/** @scope PooledObject.prototype */{
       });
    },
 
+	toString: function() {
+      return this.getId() + " [" + this.constructor.getClassName() + "]";   
+	},
+
    /**
     * Serialize the object to XML.
     * @return {String}
     */
-   toString: function(indent) {
+   toXML: function(indent) {
       indent = indent ? indent : "";
       var props = this.getProperties();
       var xml = indent + "<" + this.constructor.getClassName();
       for (var p in props) {
          // If the value should be serialized, call it's getter
          if (props[p][2]) {
-            xml += " " + p + "=\"" + props[p][0]().toString() + "\"";
+            xml += " " + p.toLowerCase() + "=\"" + props[p][0]().toString() + "\"";
          }
       }
 
       xml += "/>\n";
       return xml;
-   }
+   },
+	
+	/**
+	 * Returns <tt>true</tt> if the object has been destroyed.  For objects which are
+	 * being updated by containers, this method is used to determine if the object should
+	 * be updated.  It is important to check this method if you are outside the normal
+	 * bounds of updating an object.  For example, if an object is drawing its bounding
+	 * box using it's collision component, the component may have been destroyed along
+	 * with the object, by another object.  Checking to see if the object is destroyed
+	 * before calling such method would prevent an exception being thrown when trying
+	 * to access the component which was destroyed as well.
+	 * @return {Boolean}
+	 */
+	isDestroyed: function() {
+		return this._destroyed;
+	},
+	
+	/**
+	 * Get the model data associated with an object.  If <tt>key</tt> is provided, only the
+	 * data for <tt>key</tt> will be returned.  If the data has not yet been assigned,
+	 * an empty object will be created to contain the data.
+	 * 
+	 * @param [key] {String} Optional key which contains the data, or <tt>null</tt> for the
+	 * 	entire data model. 
+	 */
+	getObjectDataModel: function(key) {
+		var mData = this[PooledObject.DATA_MODEL];
+		if (mData == null) {
+			this[PooledObject.DATA_MODEL] = {};
+			mData = this[PooledObject.DATA_MODEL];
+		}
+		return key ? mData[key] : mData;
+	},
+	
+	/**
+	 * Set a key, within the object's data model, to a specific value.
+	 * 
+	 * @param key {String} The key to set the data for
+	 * @param value {Object} The value to assign to the key
+	 */
+	setObjectDataModel: function(key, value) {
+		var mData = this.getObjectDataModel();
+		mData[key] = value;
+	},
+	
+	/**
+	 * Clear all of the spatial container model data.
+	 */
+	clearObjectDataModel: function() {
+		this[PooledObject.DATA_MODEL] = null;
+	}
+	
 }, /** @scope PooledObject.prototype **/{
 
    /**
@@ -170,9 +228,9 @@ var PooledObject = Base.extend(/** @scope PooledObject.prototype */{
     */
    poolSize: 0,
    
-   /* pragma:DEBUG_START 
+   /* pragma:DEBUG_START */
    classPool: {},
-      pragma:DEBUG_END */
+   /* pragma:DEBUG_END */
 
    /**
     * Similar to a constructor, all pooled objects implement this method.
@@ -193,24 +251,24 @@ var PooledObject = Base.extend(/** @scope PooledObject.prototype */{
          var obj = PooledObject.objectPool[this.getClassName()].shift();
          obj.constructor.apply(obj, arguments);
 
-         /* pragma:DEBUG_START 
+         /* pragma:DEBUG_START */ 
          PooledObject.classPool[this.getClassName()][1]++;
          PooledObject.classPool[this.getClassName()][2]--;
-            pragma:DEBUG_END */
+         /* pragma:DEBUG_END */
 
          return obj;
       } else {
          PooledObject.poolNew++;
          Engine.addMetric("poolNew", PooledObject.poolNew, false, "#");
          
-         /* pragma:DEBUG_START 
+         /* pragma:DEBUG_START */
          if (PooledObject.classPool[this.getClassName()]) {
             PooledObject.classPool[this.getClassName()][0]++;
          } else {
             // 0: new, 1: in use, 2: pooled
             PooledObject.classPool[this.getClassName()] = [1,0,0];
          }
-            pragma:DEBUG_END */
+         /* pragma:DEBUG_END */
          
          // TODO: Any more than 15 arguments and construction will fail!
          return new this(arguments[0],arguments[1],arguments[2],arguments[3],arguments[4],
@@ -236,12 +294,12 @@ var PooledObject = Base.extend(/** @scope PooledObject.prototype */{
       PooledObject.poolSize++;
       PooledObject.objectPool[obj.constructor.getClassName()].push(obj);
 
-      /* pragma:DEBUG_START 
+      /* pragma:DEBUG_START */
       if (PooledObject.classPool[obj.constructor.getClassName()][1] != 0) {
          PooledObject.classPool[obj.constructor.getClassName()][1]--;
       }
       PooledObject.classPool[obj.constructor.getClassName()][2]++;
-         pragma:DEBUG_END */
+      /* pragma:DEBUG_END */
          
 
       Engine.addMetric("pooledObjects", PooledObject.poolSize, false, "#");
@@ -263,7 +321,12 @@ var PooledObject = Base.extend(/** @scope PooledObject.prototype */{
          Console.warn("Object is missing getClassName()");
       }
       return "PooledObject";
-   }
+   },
+	
+	/**
+	 * @private
+	 */
+	DATA_MODEL: "$$OBJECT_DATA_MODEL"
 
 });
 

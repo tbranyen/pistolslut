@@ -8,7 +8,7 @@
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1266 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -327,6 +327,15 @@ var RenderContext2D = RenderContext.extend(/** @scope RenderContext2D.prototype 
 	 */
 	setFontStyle: function(style) {
 		this.fontStyle = style;
+	},
+	
+	/**
+	 * Get a rectangle that will approximately enclose the text drawn by the render context.
+	 * @param text {String} The text to measure
+	 * @return {Rectangle2D}
+	 */
+	getTextMetrics: function(text) {
+		return Rectangle2D.create(0,0,1,1);	
 	},
 	
 	/**

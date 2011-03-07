@@ -7,7 +7,7 @@
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1231 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -39,12 +39,12 @@ Engine.initObject("KeyboardInputComponent", "InputComponent", function() {
 
 /**
  * @class A component which responds to keyboard events and notifies
- * its host object by calling one of three methods.  The host object
+ * its {@link HostObject} by calling one of three methods.  The <tt>HostObject</tt>
  * should implement any of the following methods to receive the corresponding event:
  * <ul>
- * <li>onKeyDown - A key was pressed down</li>
- * <li>onKeyUp - A key was released</li>
- * <li>onKeyPress - A key was pressed and released</li>
+ * <li><tt>onKeyDown()</tt> - A key was pressed down</li>
+ * <li><tt>onKeyUp()</tt> - A key was released</li>
+ * <li><tt>onKeyPress()</tt> - A key was pressed and released</li>
  * </ul>
  * Each function should take up to six arguments.  The first argument is the character
  * code, a number which represents the key that was pressed. The second argument is the
@@ -99,21 +99,21 @@ var KeyboardInputComponent = InputComponent.extend(/** @scope KeyboardInputCompo
       this.base();
    },
 
-	/**
-	 * @private
-	 */
-	playEvent: function(e) {
-		var evt = document.createEvent("KeyboardEvent");
-		evt.initKeyEvent(e.type, true, false, null, e.ctrlKey, false, e.shiftKey, false, e.keyCode, 0);
-		this.getHostObject().getRenderContext().getSurface().dispatchEvent(evt);
-	},
+   /**
+    * @private
+    */
+   playEvent: function(e) {
+      var evt = document.createEvent("KeyboardEvent");
+      evt.initKeyEvent(e.type, true, false, null, e.ctrlKey, false, e.shiftKey, false, e.keyCode, 0);
+      this.getHostObject().getRenderContext().getSurface().dispatchEvent(evt);
+   },
 
    /**
     * @private
     */
    _keyDownListener: function(eventObj) {
       if (this.getHostObject().onKeyDown) {
-			this.record(eventObj,KeyboardInputComponent.RECORD_PART);
+         this.record(eventObj,KeyboardInputComponent.RECORD_PART);
          return this.getHostObject().onKeyDown(eventObj.which, eventObj.keyCode, eventObj.ctrlKey, eventObj.altKey, eventObj.shiftKey, eventObj);
       }
    },
@@ -123,7 +123,7 @@ var KeyboardInputComponent = InputComponent.extend(/** @scope KeyboardInputCompo
     */
    _keyUpListener: function(eventObj) {
       if (this.getHostObject().onKeyUp) {
-			this.record(eventObj,KeyboardInputComponent.RECORD_PART);
+         this.record(eventObj,KeyboardInputComponent.RECORD_PART);
          return this.getHostObject().onKeyUp(eventObj.which, eventObj.keyCode, eventObj.ctrlKey, eventObj.altKey, eventObj.shiftKey, eventObj);
       }
    },
@@ -133,7 +133,7 @@ var KeyboardInputComponent = InputComponent.extend(/** @scope KeyboardInputCompo
     */
    _keyPressListener: function(eventObj) {
       if (this.getHostObject().onKeyPress) {
-			this.record(eventObj,KeyboardInputComponent.RECORD_PART);
+         this.record(eventObj,KeyboardInputComponent.RECORD_PART);
          return this.getHostObject().onKeyPress(eventObj.which, eventObj.keyCode, eventObj.ctrlKey, eventObj.altKey, eventObj.shiftKey, eventObj);
       }
    }
@@ -147,8 +147,8 @@ var KeyboardInputComponent = InputComponent.extend(/** @scope KeyboardInputCompo
    getClassName: function() {
       return "KeyboardInputComponent";
    },
-	
-	RECORD_PART: ["shiftKey","ctrlKey","altKey","keyCode"]
+   
+   RECORD_PART: ["shiftKey","ctrlKey","altKey","keyCode"]
 });
 
 return KeyboardInputComponent;

@@ -6,7 +6,7 @@
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1466 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -36,7 +36,7 @@ Engine.include("/engine/engine.baseobject.js");
 Engine.initObject("Timer", "BaseObject", function() {
 
 /**
- * @class The base abstract class for all timers.
+ * @class The base abstract class for all timer objects.
  *
  * @param name {String} The name of the timer
  * @param interval {Number} The interval for the timer, in milliseconds
@@ -52,6 +52,7 @@ var Timer = BaseObject.extend(/** @scope Timer.prototype */{
 
    running: false,
    paused: false,
+	timerFn: null,
 
    /**
     * @private
@@ -66,6 +67,7 @@ var Timer = BaseObject.extend(/** @scope Timer.prototype */{
       this.base(name);
       this.interval = interval;
       this.callback = callback;
+		this.timerFn = null;
       
       // The engine needs to know about this timer
       Engine.addTimer(this.getId(), this);
@@ -156,6 +158,7 @@ var Timer = BaseObject.extend(/** @scope Timer.prototype */{
    setCallback: function(callback) {
       Assert((typeof callback == "function"), "Callback must be a function in Timer.setCallback");
       this.callback = callback;
+		this.timerFn = null;
       if (this.isRunning)
       {
          this.restart();
@@ -168,12 +171,14 @@ var Timer = BaseObject.extend(/** @scope Timer.prototype */{
     * @return {Function} The callback function
     */
    getCallback: function() {
-      var timerFn = function() {
-         arguments.callee.cb.call(arguments.callee.timer);  
-      };
-      timerFn.cb = this.callback;
-      timerFn.timer = this;
-      return timerFn;
+		if (this.timerFn === null) {
+	      this.timerFn = function() {
+	         arguments.callee.cb.call(arguments.callee.timer);  
+	      };
+	      this.timerFn.cb = this.callback;
+	      this.timerFn.timer = this;
+		}
+      return this.timerFn;
    },
 
    /**
@@ -211,7 +216,7 @@ return Timer;
 Engine.initObject("Timeout", "Timer", function() {
 
 /**
- * @class A timer that wraps the <tt>window.setTimeout</tt> method.
+ * @class An extension of {@link Timer} that wraps the <tt>window.setTimeout</tt> method.
  *
  * @param name {String} The name of the timer
  * @param interval {Number} The interval for the timer, in milliseconds
@@ -261,8 +266,9 @@ return Timeout;
 Engine.initObject("OneShotTimeout", "Timeout", function() {
 
 /**
- * @class A one-shot timer that cannot be restarted and will
- *        self-destroy after it completes its interval..
+ * @class An extension of {@link Timeout} which is a one-shot timer that cannot 
+ *        be restarted and will self-destroy after it completes its interval.  Within
+ *        the callback, <tt>this</tt> refers to the <tt>Timer</tt> object itself.
  *
  * @param name {String} The name of the timer
  * @param interval {Number} The interval for the timer, in milliseconds
@@ -279,8 +285,8 @@ var OneShotTimeout = Timeout.extend(/** @scope OneShotTimeout.prototype */{
    constructor: function(name, interval, callback) {
 
       var cb = function() {
-         this.destroy();
          arguments.callee.cbFn.call(this);
+         this.destroy();
       };
       cb.cbFn = callback;
 
@@ -317,13 +323,14 @@ return OneShotTimeout;
 Engine.initObject("OneShotTrigger", "OneShotTimeout", function() {
 
 /**
- * @class A one-shot timer that triggers a callback, at regular intervals,
- *        until the timer has expired.  When the timer expires, the trigger
- *        will automatically destroy itself.
+ * @class An extension of {@link OneShotTimeout} which is a one-shot timer that triggers a callback, 
+ *        at regular intervals, until the timer has expired.  When the timer expires, the 
+ *        trigger will automatically destroy itself.  Within the callbacks, <tt>this</tt>
+ *        refers to the <tt>Timer</tt> object itself.
  *
  * @param name {String} The name of the timer
- * @param interval {Number} The interval for the timer, in milliseconds
- * @param callback {Function} The function to call when the interval is reached
+ * @param interval {Number} The full interval for the timer, in milliseconds
+ * @param callback {Function} The function to call when the full interval is reached
  * @param triggerInterval {Number} The interval between triggers, in milliseconds
  * @param triggerCallback {Function} The function to call for each trigger interval
  * @extends OneShotTimeout
@@ -362,9 +369,10 @@ return OneShotTrigger;
 Engine.initObject("MultiTimeout", "Timeout", function() {
 
 /**
- * @class A timer that will repeat the specified number of times before
+ * @class An extension of {@link Timeout} that will repeat the specified number of times before
  *        destroying itself.  The callback will be triggered with the
- *        repetition number as the only argument.
+ *        repetition number as the only argument.  Within the callback, <tt>this</tt>
+ *        refers to the <tt>Timer</tt> object itself.
  *
  * @param name {String} The name of the timer
  * @param reps {Number} The number of repetitions to restart the timer automatically
@@ -380,7 +388,7 @@ var MultiTimeout = Timeout.extend(/** @scope MultiTimeout.prototype */{
 
       var cb = function() {
          var aC = arguments.callee;
-         if (aC.reps-- >= 0) {
+         if (aC.reps-- > 0) {
             aC.cbFn.call(this, aC.totalReps);
             aC.totalReps++;
             this.restart();
@@ -413,7 +421,7 @@ return MultiTimeout;
 Engine.initObject("Interval", "Timer", function() {
 
 /**
- * @class A timer that wraps the <tt>window.setInterval</tt> method.
+ * @class An extension of {@link Timer} that wraps the <tt>window.setInterval</tt> method.
  * @param name {String} The name of the timer
  * @param interval {Number} The interval for the timer, in milliseconds
  * @param callback {Function} The function to call when the interval is reached
@@ -459,4 +467,3 @@ var Interval = Timer.extend(/** @scope Interval.prototype */{
 return Interval;
 
 });
-

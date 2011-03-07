@@ -7,7 +7,7 @@
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1402 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -40,7 +40,9 @@ Engine.initObject("ResourceLoader", "BaseObject", function() {
  * @class  A resource loader is a generalized interface used by all resource
  *         loaders.  It is designed to provide a common set of routines for
  *         loading resources (fonts, images, game data, etc...) from some
- *         location.
+ *         location.  Additionally, objects are cached by this base class,
+ *         although some classes make use of other methods to enhance the
+ *         caching, such as the {@link ImageLoader} class.
  *
  * @param [name=ResourceLoader] {String} The name of the resource loader.
  * @constructor
@@ -208,6 +210,15 @@ var ResourceLoader = BaseObject.extend(/** @scope ResourceLoader.prototype */{
       }
       return n;
    },
+
+	/**
+	 * Exports an object which contains references to all of the resources
+	 * which have been loaded by this resource loader.  This method is optional
+	 * and may not be implemented directly by the loader.
+	 */
+	exportAll: function() {
+		return {};
+	},
 
    /**
     * The name of the resource this loader will get.

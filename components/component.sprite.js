@@ -7,7 +7,7 @@
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1307 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -57,7 +57,7 @@ var SpriteComponent = RenderComponent.extend(/** @scope SpriteComponent.prototyp
     * @private
     */
    constructor: function(name, priority, sprite) {
-      if (priority instanceof Sprite) {
+      if (Sprite.isInstance(priority)) {
          sprite = priority;
          priority = 0.1;
       }
@@ -125,7 +125,9 @@ var SpriteComponent = RenderComponent.extend(/** @scope SpriteComponent.prototyp
       }
 
       if (this.currentSprite) {
+			this.transformOrigin(renderContext, true);
          renderContext.drawSprite(this.currentSprite, time, this.getHostObject());
+			this.transformOrigin(renderContext, false);
       }
    }
 }, /** @scope SpriteComponent.prototype */{ 

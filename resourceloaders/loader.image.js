@@ -6,7 +6,7 @@
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1449 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -37,7 +37,24 @@ Engine.include("/engine/engine.timers.js");
 Engine.initObject("ImageLoader", "RemoteLoader", function() {
 
 /**
- * @class Loads images and stores the reference to those images.
+ * @class Loads images and stores the reference to those images.  Images
+ *        are stored on the client-side in a simple cache for faster re-use.
+ *        When loading images, you assign a name to the image.  This would allow
+ *        you to re-use the image without having to load it again for another
+ *        purpose.
+ *        <p/>
+ *        Loading images is fairly simple.  You only need to create an instance
+ *        of an image loader (multiple images can be loaded by the same resource
+ *        loader) and then use it to load the images:
+ <pre>
+          this.imageLoader = ImageLoader.create();
+          
+          // Load an image
+          this.imageLoader.load("keys", this.getFilePath("resources/fingerboard.png"), 220, 171);
+ </pre>
+ *        In the example above, <tt>this</tt> refers to a {@link Game} object which
+ *        implements the {@link Game#getFilePath getFilePath()} method which is
+ *        used to get a path relative to where the game is located on the server.
  *
  * @constructor
  * @param name {String=ImageLoader} The name of the resource loader
@@ -137,6 +154,16 @@ var ImageLoader = RemoteLoader.extend(/** @scope ImageLoader.prototype */{
       var imgInfo = this.base(name);
       return imgInfo ? imgInfo.image[0] : null;
    },
+	
+	/**
+	 * Get an {@link Image} object from the resource which represents the image, or <tt>null</tt>
+	 * if no such image exists.
+	 * @param name {String} The name of the image resource
+	 * @return {Image}
+	 */
+	getImage: function(name) {
+		return Image.create("Image", name, this); 	
+	},
    
    /**
     * Get the dimensions of an image from the resource stored with 
@@ -175,3 +202,72 @@ var ImageLoader = RemoteLoader.extend(/** @scope ImageLoader.prototype */{
 return ImageLoader;
 
 });
+
+Engine.initObject("Image", "PooledObject", function() {
+
+/**
+ * @class A wrapper class for images.  Images contain a reference to their resource
+ * 		 loader and the bitmap dimensions for the image.  Additionally, the dimensions
+ * 		 are used to determine the bounding box around the image.
+ *
+ * @constructor
+ * @param name {String} The name of the image object
+ * @param imageName {String} The name of the image container in the resource loader
+ * @param imageLoader {ImageLoader} The resource loader used to load the image
+ * @extends PooledObject
+ */
+var Image = PooledObject.extend(/** @scope Image.prototype */{
+
+	image: null,
+
+   /**
+    * @private
+    */
+   constructor: function(name, imageName, imageLoader) {
+      this.base(name || "Image");
+		this.image = imageLoader.get(imageName);
+		var dims = imageLoader.getDimensions(imageName);
+      this.bbox = Rectangle2D.create(0, 0, dims.x, dims.y);
+   },
+	
+   /**
+    * @private
+    */
+   release: function() {
+      this.base();
+      this.image = null;
+      this.bbox = null;
+   },
+
+   /**
+    * Get the bounding box for the image.
+    * @return {Rectangle2D} The bounding box which contains the entire image
+    */
+   getBoundingBox: function() {
+      return this.bbox;
+   },
+
+	/**
+	 * Get the HTML image object which contains the image.
+	 * @return {HTMLImage}
+	 */
+	getImage: function() {
+		return this.image;
+	}		
+	
+},{
+
+   /**
+    * Gets the class name of this object.
+    * @return {String} The string "Image"
+    */
+   getClassName: function() {
+      return "Image";
+   }	
+	
+});
+
+return Image;
+
+});
+

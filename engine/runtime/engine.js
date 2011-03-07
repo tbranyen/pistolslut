@@ -5,8 +5,8 @@
  * http://www.renderengine.com for more information.
  *
  * author: Brett Fattori (brettf@renderengine.com)
- * version: v1.0
- * date: Jul 23, 2010
+ * version: v1.5.3
+ * date: November 20, 2010
  *
  * Copyright (c) 2010 Brett Fattori
  *
@@ -37,7 +37,7 @@
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1449 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -83,8 +83,10 @@ var ConsoleRef = Base.extend(/** @scope ConsoleRef.prototype */{
    },
 
    cleanup: function(o) {
-      if (typeof o == "undefined") {
+      if (typeof o === "undefined") {
          return "";
+      } else if (o === null) {
+         return "null";
       } else if (typeof o == "function") {
          return "function";
       } else if (o.constructor == Array || (o.slice && o.join && o.splice)) { // An array
@@ -93,7 +95,7 @@ var ConsoleRef = Base.extend(/** @scope ConsoleRef.prototype */{
             s += (s.length > 1 ? "," : "") + this.cleanup(o[e]);
          }
          return s + "]";
-      } else if (typeof o == "object") {
+      } else if (typeof o === "object") {
          var s = "{\n";
          for (var e in o) {
             s += e + ": " + this.cleanup(o[e]) + "\n";
@@ -167,6 +169,7 @@ var ConsoleRef = Base.extend(/** @scope ConsoleRef.prototype */{
  *        "debug-console" will be created an appended to the DOM for you.  This object is created when no other
  *        option is available from the browser, or when developer tools cannot be accessed.
  * @extends ConsoleRef
+ * @private
  */
 var HTMLConsoleRef = ConsoleRef.extend(/** @DebugConsoleRef.prototype **/{
 
@@ -297,6 +300,7 @@ var HTMLConsoleRef = ConsoleRef.extend(/** @DebugConsoleRef.prototype **/{
 /**
  * @class A debug console abstraction for Safari browsers.
  * @extends ConsoleRef
+ * @private
  */
 var SafariConsoleRef = ConsoleRef.extend(/** @SafariConsoleRef.prototype **/{
 
@@ -345,6 +349,7 @@ var SafariConsoleRef = ConsoleRef.extend(/** @SafariConsoleRef.prototype **/{
 /**
  * @class A debug console for Opera browsers.
  * @extends ConsoleRef
+ * @private
  */
 var OperaConsoleRef = ConsoleRef.extend(/** @OperaConsoleRef.prototype **/{
 
@@ -394,6 +399,7 @@ var OperaConsoleRef = ConsoleRef.extend(/** @OperaConsoleRef.prototype **/{
 /**
  * @class A console reference to the Firebug console.  This will work with both Firebug and FirebugLite.
  * @extends ConsoleRef
+ * @private
  */
 var FirebugConsoleRef = ConsoleRef.extend(/** @FirebugConsoleRef.prototype **/{
 
@@ -464,6 +470,54 @@ var FirebugConsoleRef = ConsoleRef.extend(/** @FirebugConsoleRef.prototype **/{
 });
 
 /**
+ * @class A console reference to the MSIE console.
+ * @extends ConsoleRef
+ * @private
+ */
+var MSIEConsoleRef = ConsoleRef.extend(/** @MSIEConsoleRef.prototype **/{
+
+   constructor: function() {
+   },
+
+   /**
+    * Write a debug message to the console
+    */
+   info: function() {
+      console.log(this.fixArgs(arguments));
+   },
+
+   /**
+    * Write a debug message to the console
+    */
+   debug: function() {
+      console.info(this.fixArgs(arguments));
+   },
+
+   /**
+    * Write a warning message to the console
+    */
+   warn: function() {
+      console.warn(this.fixArgs(arguments));
+   },
+
+   /**
+    * Write an error message to the console
+    */
+   error: function() {
+      console.error(this.fixArgs(arguments));
+   },
+
+   /**
+    * Get the class name of this object
+    *
+    * @return {String} The string "SafariConsoleRef"
+    */
+   getClassName: function() {
+      return "MSIEConsoleRef";
+   }
+});
+
+/**
  * @class A class for logging messages to a console reference object.  There are
  *        currently four supported console references:
  *        <ul>
@@ -472,6 +526,7 @@ var FirebugConsoleRef = ConsoleRef.extend(/** @FirebugConsoleRef.prototype **/{
  *        <li>HTMLConsoleRef - logs to an HTML div element in the body</li>
  *        <li>SafariConsoleRef - logging for Apple's Safari browser</li>
  *        </ul>
+ * @static
  */
 var Console = Base.extend(/** @scope Console.prototype */{
    constructor: null,
@@ -509,12 +564,14 @@ var Console = Base.extend(/** @scope Console.prototype */{
    DEBUGLEVEL_NONE:       -1,
 
    /** @private */
-   verbosity: this.DEBUGLEVEL_NONE,
+   verbosity: null,
 
    /**
     * Starts up the console.
     */
    startup: function() {
+		Console.verbosity = this.DEBUGLEVEL_ERRORS;
+		
       if (EngineSupport.checkBooleanParam("debug") && (EngineSupport.checkBooleanParam("simWii") || jQuery.browser.Wii)) {
          this.consoleRef = new HTMLConsoleRef();
       }
@@ -522,7 +579,10 @@ var Console = Base.extend(/** @scope Console.prototype */{
          // Firebug or firebug lite
          this.consoleRef = new FirebugConsoleRef();
       }
-      else if (jQuery.browser.safari) {
+      else if (typeof console != "undefined" && jQuery.browser.msie) {
+         this.consoleRef = new MSIEConsoleRef();
+      }
+      else if (jQuery.browser.chrome || jQuery.browser.safari) {
          this.consoleRef = new SafariConsoleRef();
       }
       else if (jQuery.browser.opera) {
@@ -565,14 +625,14 @@ var Console = Base.extend(/** @scope Console.prototype */{
    setDebugLevel: function(level) {
       this.verbosity = level;
    },
-	
-	/**
-	 * Get the debug level which the console is currently at.
-	 * @return {Number} The debug level
-	 */
-	getDebugLevel: function() {
-		return this.verbosity;
-	},
+   
+   /**
+    * Get the debug level which the console is currently at.
+    * @return {Number} The debug level
+    */
+   getDebugLevel: function() {
+      return this.verbosity;
+   },
 
    /**
     * Verifies that the debug level is the same as the message to output
@@ -625,7 +685,8 @@ var Console = Base.extend(/** @scope Console.prototype */{
    },
 
    /**
-    * Output an error message.  These messages will only show when <tt>DEBUGLEVEL_ERRORS</tt> is the level.
+    * Output an error message.  These messages always appear unless the debug level is explicitly
+    * set to <tt>DEBUGLEVEL_NONE</tt>.
     * You can pass as many parameters as you want to this method.  The parameters will be combined into
     * one message to output to the console.
     */
@@ -648,11 +709,11 @@ var Console = Base.extend(/** @scope Console.prototype */{
  * @param error {String} The error message to throw if the test fails
  */
 var Assert = function(test, error) {
-	var fail = false;
+   var fail = false;
    try {
       if (!test)
       {
-			fail = true;
+         fail = true;
          Console.setDebugLevel(Console.DEBUGLEVEL_ERRORS);
          if (arguments.length > 1) {
             for (var a = 1; a < arguments.length; a++) {
@@ -662,7 +723,7 @@ var Assert = function(test, error) {
          }
 
          Engine.shutdown();
-			
+         
       }
    } catch (ex) {
       var pr = Console.getDebugLevel();
@@ -670,11 +731,11 @@ var Assert = function(test, error) {
       Console.warn("*ASSERT* 'test' would result in an exception: ", ex);
       Console.setDebugLevel(pr);
    }
-	
+   
    // This will provide a stacktrace for browsers that support it
    if (fail) {
-		throw new Error(error);
-	}
+      throw new Error(error);
+   }
 };
 
 /**
@@ -705,6 +766,188 @@ var AssertWarn = function(test, warning) {
 
 /**
  * The Render Engine
+ * JavaScript Profiler
+ *
+ * @fileoverview Profiler Object
+ *
+ * @author: Brett Fattori (brettf@renderengine.com)
+ * @author: $Author: bfattori $
+ * @version: $Revision: 1449 $
+ *
+ * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
+/**
+ * Return a new date object.
+ * @return {Date}
+ */
+function now() {
+	return new Date();
+}
+
+/**
+ * @class A static JavaScript implementation of a simple profiler.
+ * @static
+ */
+var Profiler = {
+	profileStack: [],
+	allProfiles: {},
+	profiles: [],
+	running: false
+};
+
+/**
+ * Start the profiler.
+ * @memberOf Profiler
+ */
+Profiler.start = function() {
+	Profiler.resetProfiles();
+	Profiler.running = true;
+};
+
+/**
+ * Stop the profiler, dumping whatever was being profiled.
+ * @memberOf Profiler
+ */
+Profiler.stop = function() {
+	Profiler.dump();
+	Profiler.running = false;
+};
+
+/**
+ * Add a profile monitor to the stack of running profiles.  A good way to profile code
+ * is to use the <tt>try/finally</tt> method so that the profile will be exited even
+ * if the method returns from multiple points.
+<pre>
+   function func() {
+      try {
+         Profiler.enter("func");
+         
+         doStuff = doStuff + 1;
+         return doStuff;
+      } finally {
+         Profiler.exit();
+      }
+   }
+</pre>
+ *
+ * @param prof {String} The name of the profile
+ * @memberOf Profiler
+ */
+Profiler.enter = function(prof) {
+	if (!Profiler.running) { return; }
+	var profile = Profiler.allProfiles[prof];
+	if (profile == null) {
+		// Create a monitor
+		profile = Profiler.allProfiles[prof] = {
+			name: prof,
+			startMS: now(),
+			execs: 0,
+			totalMS: 0,
+			instances: 1,
+			pushed: false
+		};
+	} else {
+		profile.startMS = profile.instances == 0 ? now() : profile.startMS;
+		profile.instances++;
+	}
+	Profiler.profileStack.push(profile);
+};
+
+/**
+ * For every "enter", there needs to be a matching "exit" to
+ * tell the profiler to stop timing the contained code.  Note
+ * that "exit" doesn't take any parameters.  It is necessary that
+ * you properly balance your profile stack.  Too many "exit" calls
+ * will result in a stack underflow. Missing calls to "exit" will
+ * result in a stack overflow.
+ * @memberOf Profiler
+ */
+Profiler.exit = function() {
+	if (!Profiler.running) { return; }
+	if (Profiler.profileStack.length == 0) {
+		var msg = "Profile stack underflow";
+		if (typeof console !== "undefined") { console.error(msg); }
+		throw(msg);
+	}
+
+	var profile = Profiler.profileStack.pop();
+	profile.endMS = new Date();
+	profile.execs++;
+	profile.instances--;
+	profile.totalMS += profile.instances == 0 ? (profile.endMS.getTime() - profile.startMS.getTime()) : 0;
+	if (!profile.pushed) {
+		// If we haven't remembered it, do that now
+		profile.pushed = true;
+		Profiler.profiles.push(profile);
+	}
+};
+
+/**
+ * Reset any currently running profiles and clear the stack.
+ * @memberOf Profiler
+ */
+Profiler.resetProfiles = function() {
+	Profiler.profileStack = [];
+	Profiler.allProfiles = {};
+	Profiler.profiles = [];
+};
+
+/**
+ * Dump the profiles that are currently in the stack to a debug window.
+ * The profile stack will be cleared after the dump.
+ * @memberOf Profiler
+ */
+Profiler.dump = function() {
+	if (!Profiler.running) { return; }
+	if (Profiler.profileStack.length > 0) {
+		// overflow - profiles left in stack
+		var rProfs = "";
+		for (var x in Profiler.profileStack) {
+			rProfs += (rProfs.length > 0 ? "," : "") + x;
+		}
+		Console.error("Profile stack overflow.  Running profiles: ", rProfs);
+	}
+
+	var d = now();
+	d = d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds();
+
+	var rev = Profiler.profiles.reverse();
+	var totalTime = 0;
+	var out = "";
+	for (var r in rev) {
+		var avg = Math.round(rev[r].totalMS / rev[r].execs);
+		totalTime += rev[r].totalMS;
+		out += "# " + rev[r].name + " | " + (rev[r].totalMS < 1 ? "<1" : rev[r].totalMS) + " ms | " + rev[r].execs + " @ " + (avg < 1 ? "<1" : avg) + " ms\n";
+	}
+	out += "# Total Time: | " + totalTime + " ms | \n";
+
+	console.warn("PROFILER RESULTS @ " + d + "\n---------------------------------------------------\n");
+	console.info(out);
+	
+	Profiler.resetProfiles();
+};
+/**
+ * The Render Engine
  * Math2 Class
  *
  * @fileoverview A math static class which provides a method for generating
@@ -712,7 +955,7 @@ var AssertWarn = function(test, warning) {
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1442 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -763,7 +1006,7 @@ var Math2 = Base.extend(/** @scope Math2.prototype */{
 	},
 	
 	/**
-	 * Get a random integer from the pseduo random number generator.
+	 * Returns a random integer between 0 and 4,294,967,296.
 	 * @return {Number} An integer between 0 and 2^32
 	 */
 	randomInt: function() {
@@ -772,12 +1015,62 @@ var Math2 = Base.extend(/** @scope Math2.prototype */{
 	},
 	
 	/**
-	 * Get a random float between 0 (inclusive) and 1 (exclusive)
+	 * Returns a pseudo-random number between 0 (inclusive) and 1 (exclusive)
 	 * @return {Number} A number between 0 and 1
 	 */
 	random: function() {
 		// returns in range [0,1]
 		return this.randomInt() / (this.m - 1);
+	},
+	
+	/**
+	 * Return a random value within the <tt>low</tt> to <tt>hight</tt> range,
+	 * optionally as an integer value only.
+	 *
+	 * @param low {Number} The low part of the range
+	 * @param high {Number} The high part of the range
+	 * @param [whole] {Boolean} Return whole values only
+	 * @return {Number}
+	 */
+	randomRange: function(low, high, whole) {
+		var v = low + (this.random() * high);
+		return (whole ? Math.floor(v) : v);
+	},
+	
+	/**
+	 * Parse a binary string into a number.
+	 * 
+	 * @param bin {String} Binary string to parse
+	 * @return {Number}
+	 */
+	parseBin: function(bin) {
+		if (!isNaN(bin)) {
+			return parseInt(bin, 2);
+		}
+	},
+	
+	/**
+	 * Converts a number to a hexidecimal string, prefixed by "0x".
+	 *
+	 * @param num {Number} The number to convert
+	 * @return {String}
+	 */
+	toHex: function(num) {
+		if (!isNaN(num)) {
+			return ("0x" + num.toString(16));
+		}
+	},
+	
+	/**
+	 * Converts a number to a binary string.
+	 *
+	 * @param num {Number} The number to convert
+	 * @return {String}
+	 */
+	toBinary: function(num) {
+		if (!isNaN(num)) {
+			return num.toString(2);
+		}
 	}
 });
 
@@ -793,7 +1086,7 @@ Math2.seed();
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1408 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -1198,6 +1491,29 @@ var EngineSupport = Base.extend(/** @scope EngineSupport.prototype */{
       }
    },
 
+	/**
+	 * Determine the OS platform from the user agent string, if possible
+	 * @private
+    * @memberOf EngineSupport
+	 */
+	checkOS: function() {
+		// Scrape the userAgent to get the OS
+		var uA = navigator.userAgent.toLowerCase();
+		OS = /windows nt 6\.0/.test (userAgent) ? "Windows Vista" :
+				/windows nt 6\.1/.test (userAgent) ? "Windows 7" :
+				/windows nt 5\.1/.test (userAgent) ? "Windows XP" :
+				/windows/.test(userAgent) ? "Windows" :
+				/android 1\./.test(userAgent) ? "Android 1.x" :
+				/android 2\./.test(userAgent) ? "Android 2.x" :
+				/android/.test(userAgent) ? "Android" :
+				/x11/.test(userAgent) ? "X11" :
+				/linux/.test(userAgent) ? "Linux" :
+				/Mac OS X/.test(userAgent) ? "Mac OS X" :
+				/macintosh/.test(userAgent) ? "Macintosh" :
+				"unknown"; 
+		return OS;
+	},
+
    /**
     * Gets an object that is a collation of a number of browser and
     * client settings.  You can use this information to tailor a game
@@ -1214,6 +1530,8 @@ var EngineSupport = Base.extend(/** @scope EngineSupport.prototype */{
     * <li>fullscreen - If the browser is running in fullscreen mode</li>
     * <li>width - The browser's viewable width</li>
     * <li>height - The browser's viewable height</li>
+    * <li>viewWidth - The innerWidth of the viewport</li>
+    * <li>viewHeight - The innerHeight of the viewport</li>
     * <li>support:
     *    <ul><li>xhr - Browser supports XMLHttpRequest object</li>
     *    <li>geo - navigator.geolocation is supported</li>
@@ -1226,6 +1544,18 @@ var EngineSupport = Base.extend(/** @scope EngineSupport.prototype */{
     *       <li>database - indexedDB storage is supported</li>
     *       </ul>
     *    </li>
+    *    <li>canvas:
+    *       <ul><li>emulated - Canvas support emulated by FlashCanvas</li>
+    *       <li>defined - Canvas is either native or emulated</li>
+    *       <li>text - Supports text</li>
+    *       <li>textMetrics - Supports text measurement</li>
+    *			<li>contexts:
+    *      		<ul><li>ctx2D - Supports 2D</li>
+    *				<li>ctxGL - Supports webGL</li>
+    *				</ul>
+    *			</li>
+    *       </ul>
+    *    </li>
     *    </ul>
     * </li>
     * </ul>
@@ -1234,18 +1564,66 @@ var EngineSupport = Base.extend(/** @scope EngineSupport.prototype */{
     */
    sysInfo: function() {
       if (!EngineSupport._sysInfo) {
+      	
+      	// Determine if the browser supports Canvas
+      	var canvasSupport = {
+      		emulated: false,
+      		defined: false,
+      		text: false,
+      		textMetrics: false,
+      		contexts: {
+      			ctx2D: false,
+      			ctxGL: false
+      		}
+      	};
+      	if (document.addEventListener) {
+      		// Standards browsers
+      		var canvas = document.createElement("canvas");
+      		if (typeof canvas != "undefined" && (typeof canvas.getContext == "function")) {
+      			canvasSupport.defined = true;
+	      		var c2d = canvas.getContext("2d");
+	      		if (typeof c2d != "undefined") {
+	      			canvasSupport.contexts.ctx2D = true;
+	      			
+						// Does it support native text
+						canvasSupport.text = (typeof c2d.fillText == "function");
+						canvasSupport.textMetrics = (typeof c2d.measureText == "function");
+					}
+	      		
+					try {
+		      		var webGL = canvas.getContext("glcanvas");
+		      		if (typeof webGL != "undefined") {
+		      			canvasSupport.contexts.ctxGL = true;
+		      		}
+					} catch (ex) { /* no webgl */ }
+	      	}
+      	}
+			
+			if (typeof FlashCanvas != "undefined") {
+				// If FlashCanvas is loaded, setup for emulation
+      		canvasSupport.emulated = true;
+      		canvasSupport.defined = true;
+      		canvasSupport.contexts.ctx2D = true;
+      		canvasSupport.text = true;
+				canvasSupport.textMetrics = true;
+			}
+      	      
+      	// Build support object
          EngineSupport._sysInfo = {
             "browser" : $.browser.chrome ? "chrome" :
+				           ($.browser.android ? "android" :
                        ($.browser.Wii ? "wii" : 
                        ($.browser.iPhone ? "iphone" :
                        ($.browser.safari ? "safari" : 
-                       ($.browser.mozilla ? "mozilla" : 
+							  ($.browser.firefox ? "firefox" : 
+                       ($.browser.mozilla ? "mozilla" :
                        ($.browser.opera ? "opera" : 
-                       ($.browser.msie ? "msie" : "unknown")))))),
+                       ($.browser.msie ? "msie" : "unknown")))))))),
             "version" : $.browser.version,
             "agent": navigator.userAgent,
             "platform": navigator.platform,
             "cpu": navigator.cpuClass || navigator.oscpu,
+				"OS": EngineSupport.checkOS(),
             "language": navigator.language,
             "online": navigator.onLine,
             "cookies": navigator.cookieEnabled,
@@ -1257,17 +1635,20 @@ var EngineSupport = Base.extend(/** @scope EngineSupport.prototype */{
                "storage": (typeof Storage !== "undefined" ? {
                   "local" : (typeof localStorage !== "undefined"),
                   "session" : (typeof sessionStorage !== "undefined"),
-                  "global" : (typeof globalStorage !== "undefined"),
                   "database": (typeof indexedDB !== "undefined")
                } : null),
-               "geo": (typeof navigator.geolocation !== "undefined")
+               "geo": (typeof navigator.geolocation !== "undefined"),
+               "canvas" : canvasSupport
             }
          };
+         
          $(document).ready(function() {
             // When the document is ready, we'll go ahead and get the width and height added in
             EngineSupport._sysInfo = $.extend(EngineSupport._sysInfo, {
-               "width": window.innerWidth || document.body ? document.body.parentNode.clientWidth : -1,
-               "height": window.innerHeight || document.body ? document.body.parentNode.clientHeight : -1
+               "width": $(window).width(),
+               "height": $(window).height(),
+               "viewWidth": $(document).width(),
+               "viewHeight" : $(document).height()
             });
          });
       }
@@ -1298,9 +1679,9 @@ var EngineSupport = Base.extend(/** @scope EngineSupport.prototype */{
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1425 $
  *
- * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
+ * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com) 
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1363,7 +1744,10 @@ var Linker = Base.extend(/** @scope Linker.prototype */{
       for (var c in Linker.loadedClasses) {
          var d = Linker.loadedClasses[c]
          var parentObj = Linker.getParentClass(d);
-         delete parentObj[d];
+         if (EngineSupport.sysInfo().browser != "msie") {
+            // IE doesn't allow this
+            delete parentObj[d];
+         }
       }
       Linker.loadedClasses = [];
    },
@@ -1426,7 +1810,7 @@ var Linker = Base.extend(/** @scope Linker.prototype */{
    checkNSDeps: function(objName) {
       var objHr = objName.split(".");
 
-      if (objHr.length == 0) {
+      if (objHr.length == 1) {
          return true;
       }
 
@@ -1472,17 +1856,19 @@ var Linker = Base.extend(/** @scope Linker.prototype */{
          var deps = Linker.dependencyList[d].deps;
          var resolved = [];
          var miss = false;
-         for (var dep in deps) {
-            if (deps[dep] != null && window[deps[dep]] == null) {
-               miss = true;
-            } else {
-               resolved.push(deps[dep]);
-            }
-         }
-
-         for (var x in resolved) {
-            EngineSupport.arrayRemove(Linker.dependencyList[d].deps, resolved[x]);
-         }
+			if (deps.length > 0) {
+	         for (var dep in deps) {
+	            if (deps[dep] != null && window[deps[dep]] == null) {
+	               miss = true;
+	            } else {
+	               resolved.push(deps[dep]);
+	            }
+	         }
+	
+	         for (var x in resolved) {
+	            EngineSupport.arrayRemove(Linker.dependencyList[d].deps, resolved[x]);
+	         }
+			}
 
          if (!miss && Linker.checkNSDeps(d)) {
             // We can initialize it now
@@ -1498,7 +1884,11 @@ var Linker = Base.extend(/** @scope Linker.prototype */{
             // After it has been initialized, check to see if it has the
             // resolved() class method
             if (parentObj[d].resolved) {
-               parentObj[d].resolved();
+					try {
+	               parentObj[d].resolved();
+					} catch (rEx) {
+						Console.error("Error calling " + d + ".resolved() due to: " + rEx.message, rEx);
+					}
             }
          }
       }
@@ -1593,7 +1983,7 @@ var Linker = Base.extend(/** @scope Linker.prototype */{
       }
 
       // "instanceof" checks
-		/*
+      /*
       while ((m = inR.exec(def)) != null) {
          if (EngineSupport.indexOf(dTable, m[2]) == -1) {
             dTable.push(m[2]);
@@ -1615,13 +2005,13 @@ var Linker = Base.extend(/** @scope Linker.prototype */{
          var args = m[1].split(",");
 
          for (var x in args) {
-	         a.push(args[x].replace(" ",""));
+            a.push(args[x].replace(" ",""));
          }
       }
 
       return a;
    },
-	
+   
    /**
     * Finds all of the dependencies within an object class.
     * @private
@@ -1650,23 +2040,23 @@ var Linker = Base.extend(/** @scope Linker.prototype */{
          }
       }
 
-		var kInstance = null;
+      var kInstance = null;
       if ($.isFunction(k)) {
          // If the class is an instance, get it's class object
-			kInstance = k;
+         kInstance = k;
          k = k.prototype;
       }
 
       // Find the internal functions
       for (var f in k) {
          var def = k[f];
-			if (kInstance && f == "constructor" && $.isFunction(kInstance) && k.hasOwnProperty(f)){
-				// If it's an instance, we're looking at the constructor, and the
-				// instance has its own constructor (not inherited)
-				def = kInstance;
-			}
+         if (kInstance && f == "constructor" && $.isFunction(kInstance) && k.hasOwnProperty(f)){
+            // If it's an instance, we're looking at the constructor, and the
+            // instance has its own constructor (not inherited)
+            def = kInstance;
+         }
          if ($.isFunction(def) && k.hasOwnProperty(f)) {
-				def = def.toString();
+            def = def.toString();
             var fR = new RegExp("function\\s*\\(([\\$\\w_, ]*?)\\)\\s*\\{((.|\\s)*)","g");
             var m = fR.exec(def);
             if (m) {
@@ -1685,7 +2075,7 @@ var Linker = Base.extend(/** @scope Linker.prototype */{
                   return (e != "" && e != "this" && e != "arguments");
                });
 
-					// Consider arguments as local variables
+               // Consider arguments as local variables
                var args = m[1].split(",");
                var vs = fTable[f].vars;
                for (var a in args) {
@@ -1748,7 +2138,7 @@ var Linker = Base.extend(/** @scope Linker.prototype */{
     * @private
     */
    checkCircularRefs: function(objectName) {
-		// Remove first-level dependencies				
+      // Remove first-level dependencies           
       var deps = Linker.dependencyList[objectName].deps;
       for (var dep in deps) {
          if (Linker.dependencyList[deps[dep]] && EngineSupport.indexOf(Linker.dependencyList[deps[dep]].deps, objectName) != -1) {
@@ -1756,9 +2146,9 @@ var Linker = Base.extend(/** @scope Linker.prototype */{
             EngineSupport.arrayRemove(Linker.dependencyList[objectName].deps, deps[dep]);
          }
       }
-		
+      
    },
-
+	
    /**
     * Check the dependency list for any unresolved dependencies.  Anything that hasn't
     * been resolved will be dumped to the console as an error.
@@ -1776,20 +2166,20 @@ var Linker = Base.extend(/** @scope Linker.prototype */{
       for (var obj in Linker.dependencyList) {
          dCount++;
          unresDeps += "Object '" + obj + "' has the following unresolved dependencies: ";
-			unresDeps += "(" + Linker.dependencyList[obj].deps.length + ") ";
+         unresDeps += "(" + Linker.dependencyList[obj].deps.length + ") ";
          for (var d in Linker.dependencyList[obj].deps) {
             unresDeps += Linker.dependencyList[obj].deps[d] + " ";
          }
          unresolved.push(unresDeps);
-			unresDeps = "";
+         unresDeps = "";
       }
       
       if (dCount != 0) {
          // Dump the dependency list
          Console.setDebugLevel(Console.DEBUGLEVEL_ERRORS);
-			for (var ud in unresolved) {
-	         Console.error(unresolved[ud]);
-			}
+         for (var ud in unresolved) {
+            Console.error(unresolved[ud]);
+         }
          Engine.shutdown();
       }
    },
@@ -1843,7 +2233,7 @@ var Linker = Base.extend(/** @scope Linker.prototype */{
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1217 $
+ * @version: $Revision: 1450 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -1891,9 +2281,21 @@ var Linker = Base.extend(/** @scope Linker.prototype */{
  * @static
  */
 var Engine = Base.extend(/** @scope Engine.prototype */{
-   version: "v1.0",
+   version: "v1.5.3",
 
    constructor: null,
+
+   // Default configuration options
+   defaultOptions: {
+      skipFrames: true,		// Skip missed frames
+      billboards: true,		// Use billboards to speed up rendering
+      hardwareAccel: false,// Hardware acceleration is not available
+      pointAsArc: true,		// Draw points are arcs
+		transientMathObject: false		// MathObject is not transient (pooled)
+   },
+
+   // Global engine options
+   options: {},
 
    /*
     * Engine objects
@@ -1920,17 +2322,6 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
    skipFrames: true,          // Skip missed frames
 
    /*
-    * Metrics tracking/display
-    */
-   metrics: {},               // Tracked metrics
-   metricDisplay: null,       // The metric display object
-   metricSampleRate: 10,      // Frames between samples
-   lastMetricSample: 10,      // Last sample frame
-   showMetricsWindow: false,  // Metrics display flag
-   vObj: 0,                   // Visible objects
-   droppedFrames: 0,          // Non-rendered frames/frames dropped
-
-   /*
     * Sound engine info
     */
    soundsEnabled: false,      // Sound engine enabled flag
@@ -1950,6 +2341,8 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
     * @memberOf Engine
     */
    liveTime: 0,               // The "alive" time (worldTime-upTime)
+   
+   shutdownCallbacks: [],		// Methods to call when the engine is shutting down
 
    // Issue #18 - Intrinsic loading dialog
    loadingCSS: "<style type='text/css'>div.loadbox {width:325px;height:30px;padding:10px;font:10px Arial;border:1px outset gray;-moz-border-radius:10px;-webkit-border-radius:10px} #engine-load-progress { position:relative;border:1px inset gray;width:300px;height:5px} #engine-load-progress .bar {background:silver;}</style>",
@@ -1959,6 +2352,52 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
    //                                      ENGINE PROPERTIES
    //====================================================================================================
    //====================================================================================================
+
+   /**
+    * Set/override the engine options.
+    * @param opts {Object} Configuration options for the engine
+    */
+   setOptions: function(opts) {
+		// Check for a "defaults" key
+		var configOpts;
+		if (opts.defaults) {
+			configOpts = opts.defaults;
+		}
+		
+		// See if the OS has a key
+		var osOpts, platformDefaults, versionDefaults, platformVersions;
+		if (opts["platforms"] && opts["platforms"][EngineSupport.sysInfo().OS]) {
+			// Yep, extract that one
+			osOpts = opts["platforms"][EngineSupport.sysInfo().OS];
+			
+			// Check for platform defaults
+			if (osOpts && osOpts["defaults"]) {
+				platformDefaults = osOpts["defaults"];
+			}
+		}
+		
+		// Check for general version specific options
+		if (opts["versions"]) {
+			for (var v in opts["versions"]) {
+				if (parseFloat(EngineSupport.sysInfo().version) >= parseFloat(v)) {
+					// Add  the version options
+					versionDefaults = opts["versions"][v];
+				}
+			}
+		}
+		
+		// Finally, check the OS for version specific options
+		if (osOpts && osOpts["versions"]) {
+			for (var v in osOpts["versions"]) {
+				if (parseFloat(EngineSupport.sysInfo().version) >= parseFloat(v)) {
+					// Add  the version options
+					platformVersions = osOpts["versions"][v];
+				}
+			}
+		}
+		
+      $.extend(Engine.options, configOpts, platformDefaults, versionDefaults, platformVersions);
+   },
 
    /**
     * Set the debug mode of the engine.  Affects message ouput and
@@ -2124,11 +2563,16 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
     * @memberOf Engine
     */
    create: function(obj) {
-      Assert((this.shuttingDown === false), "Creating an object when the engine is shutting down!", obj);
+      if(this.shuttingDown === true) {
+      	Console.warn("Engine shutting down, '" + obj + "' destroyed because it would create an orphaned reference");
+      	obj.destroy();
+      	return;
+      };
+
       Assert((this.started === true), "Creating an object when the engine is stopped!", obj);
+
       this.idRef++;
       var objId = obj.getName() + this.idRef;
-      this.gameObjects[objId] = obj;
       Console.log("CREATED Object ", objId, "[", obj, "]");
       this.livingObjects++;
 
@@ -2142,12 +2586,13 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
     * @memberOf Engine
     */
    destroy: function(obj) {
-      Assert((obj != null), "Trying to destroy non-existent object!", obj);
+   	if (obj == null) {
+   		Console.warn("NULL reference passed to Engine.destroy()!  Ignored.");
+   		return;
+   	}
+
       var objId = obj.getId();
-      Assert((this.gameObjects[objId] != null), "Attempt to destroy missing object!", this.gameObjects[objId]);
       Console.log("DESTROYED Object ", objId, "[", obj, "]");
-      this.gameObjects[objId] = null;
-      delete this.gameObjects[objId];
       this.livingObjects--;
    },
    
@@ -2177,9 +2622,10 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
     * @param id {String} The global Id of the object to locate
     * @return {PooledObject} The object
     * @memberOf Engine
+    * @deprecated This method no longer returns an object
     */
    getObject: function(id) {
-      return this.gameObjects[id];
+      return null;
    },
 
    //====================================================================================================
@@ -2280,6 +2726,21 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
       this.running = false;
    },
 
+	/**
+	 * Add a method to be called when the engine is being shutdown.  Use this
+	 * method to allow an object, which is not referenced to by the engine, to
+	 * perform cleanup actions.
+	 *
+	 * @param fn {Function} The callback function
+	 */
+	onShutdown: function(fn) {
+		if (Engine.shuttingDown === true) {
+			return;
+		}
+		
+		Engine.shutdownCallbacks.push(fn);
+	},
+
    /**
     * Shutdown the engine.  Stops the global timer and cleans up (destroys) all
     * objects that have been created and added to the world.
@@ -2309,6 +2770,12 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
 
       // Stop world timer
       window.clearTimeout(Engine.globalTimer);
+      
+      // Run through shutdown callbacks to allow objects not tracked by Engine
+      // to clean up references, etc.
+      while (Engine.shutdownCallbacks.length > 0) {
+      	Engine.shutdownCallbacks.shift()();
+      };
 
       if (this.metricDisplay)
       {
@@ -2393,163 +2860,6 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
       Linker.initObject(objectName, primaryDependency, fn);
    },
 
-   //====================================================================================================
-   //====================================================================================================
-   //                                     METRICS MANAGEMENT
-   //====================================================================================================
-   //====================================================================================================
-
-   /**
-    * Toggle the display of the metrics window.  Any metrics
-    * that are being tracked will be reported in this window.
-    * @memberOf Engine
-    */
-   toggleMetrics: function() {
-      this.showMetricsWindow = !this.showMetricsWindow;
-   },
-
-   /**
-    * Show the metrics window
-    * @memberOf Engine
-    */
-   showMetrics: function() {
-      this.showMetricsWindow = true;
-   },
-
-   /**
-    * Hide the metrics window
-    * @memberOf Engine
-    */
-   hideMetrics: function() {
-      this.showMetricsWindow = false;
-   },
-   
-   manMetrics: function() {
-      if ($("div.metric-button.minimize").length > 0) {
-         $("div.metric-button.minimize").removeClass("minimize").addClass("maximize").attr("title", "maximize");
-         $("div.metrics").css("height", 17);
-         $("div.metrics .items").hide();
-      } else {
-         $("div.metric-button.maximize").removeClass("maximize").addClass("minimize").attr("title", "minimize");
-         $("div.metrics .items").show();
-         $("div.metrics").css("height", "auto");
-      }
-   },
-
-   /**
-    * Creates a button for the metrics window
-    * @private
-    */
-   metricButton: function(cssClass, fn) {
-      return $("<div class='metric-button " + cssClass + "' title='" + cssClass + "'><!-- --></div>").click(fn);
-   },
-
-   /**
-    * Render the metrics window
-    * @private
-    */
-   renderMetrics: function() {
-
-      if (this.showMetricsWindow && !this.metricDisplay) {
-         this.metricDisplay = $("<div/>").addClass("metrics");
-         this.metricDisplay.append(this.metricButton("run", function() { Engine.run(); }));
-         this.metricDisplay.append(this.metricButton("pause", function() { Engine.pause(); }));
-         this.metricDisplay.append(this.metricButton("shutdown", function() { Engine.shutdown(); }));
-
-         this.metricDisplay.append(this.metricButton("close", function() { Engine.hideMetrics(); }));
-         this.metricDisplay.append(this.metricButton("minimize", function() { Engine.manMetrics(); }));
-
-         this.metricDisplay.append($("<div class='items'/>"));
-         this.metricDisplay.appendTo($("body"));
-      }
-      
-      if (this.showMetricsWindow && this.lastMetricSample-- == 0)
-      {
-         // Add some metrics to assist the developer
-         Engine.addMetric("FPS", this.getFPS(), false, "#");
-         Engine.addMetric("aFPS", this.getActualFPS(), true, "#");
-         Engine.addMetric("availTime", this.fpsClock, false, "#ms");
-         Engine.addMetric("frameGenTime", Engine.frameTime, true, "#ms");
-         Engine.addMetric("engineLoad", Math.floor(this.getEngineLoad() * 100), true, "#%");
-         Engine.addMetric("visibleObj", Engine.vObj, false, "#");
-         Engine.addMetric("droppedFrames", Engine.droppedFrames, false, "#");
-         Engine.addMetric("upTime", Math.floor((Engine.worldTime - Engine.upTime)/1000), false, "# sec");
-
-         this.updateMetrics();
-         this.lastMetricSample = this.metricSampleRate;
-      }
-   },
-
-   /**
-    * Set the interval at which metrics are sampled by the system.
-    * The default is for metrics to be calculated every 10 engine frames.
-    *
-    * @param sampleRate {Number} The number of ticks between samples
-    * @memberOf Engine
-    */
-   setMetricSampleRate: function(sampleRate) {
-      this.lastMetricSample = 1;
-      this.metricSampleRate = sampleRate;
-   },
-
-   /**
-    * Add a metric to the game engine that can be displayed
-    * while it is running.  If smoothing is selected, a 3 point
-    * running average will be used to smooth out jitters in the
-    * value that is shown.  For the <tt>fmt</tt> argument,
-    * you can provide a string which contains the pound sign "#"
-    * that will be used to determine where the calculated value will
-    * occur in the formatted string.
-    *
-    * @param metricName {String} The name of the metric to track
-    * @param value {String/Number} The value of the metric.
-    * @param smoothing {Boolean} <tt>true</tt> to use 3 point average smoothing
-    * @param fmt {String} The way the value should be formatted in the display (e.g. "#ms")
-    * @memberOf Engine
-    */
-   addMetric: function(metricName, value, smoothing, fmt) {
-      if (smoothing) {
-         var vals = this.metrics[metricName] ? this.metrics[metricName].values : [];
-         if (vals.length == 0) {
-            // Init
-            vals.push(value);
-            vals.push(value);
-            vals.push(value);
-         }
-         vals.shift();
-         vals.push(value);
-         var v = Math.floor((vals[0] + vals[1] + vals[2]) * 0.33);
-         this.metrics[metricName] = { val: (fmt ? fmt.replace("#", v) : v), values: vals };
-      } else {
-         this.metrics[metricName] = { val: (fmt ? fmt.replace("#", value) : value) };
-      }
-   },
-
-   /**
-    * Remove a metric from the display
-    *
-    * @param metricName {String} The name of the metric to remove
-    * @memberOf Engine
-    */
-   removeMetric: function(metricName) {
-      this.metrics[metricName] = null;
-      delete this.metrics[metricName];
-   },
-
-   /**
-    * Updates the display of the metrics window.
-    * @private
-    * @memberOf Engine
-    */
-   updateMetrics: function() {
-      var h = "";
-      for (var m in this.metrics)
-      {
-         h += m + ": " + this.metrics[m].val + "<br/>";
-      }
-      $(".items", this.metricDisplay).html(h);
-   },
-
    /**
     * Check the current browser to see if it is supported by the
     * engine.  If it isn't, there's no reason to load the remainder of
@@ -2568,13 +2878,16 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
       msg += "Please see <a href='http://www.renderengine.com/browsers.php' target='_blank'>the list of ";
       msg += "supported browsers</a> for more information.";
       switch (sInfo.browser) {
+         case "iPhone":
+			case "android": 
+         case "msie": Engine.options.billboards = false; 
+                      return true;
          case "chrome":
          case "Wii":
-         case "iPhone":
          case "safari":
          case "mozilla":
+         case "firefox":
          case "opera": return true;
-         case "msie":
          case "unknown": $(document).ready(function() {
                            Engine.shutdown();
                            $("body", document).append($("<div class='unsupported'>")
@@ -2611,37 +2924,267 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
       if (Engine.shuttingDown) {
          return;
       }
-      
-      var nextFrame = Engine.fpsClock;
 
-      // Update the world
-      if (Engine.running && Engine.getDefaultContext() != null) {
-         Engine.vObj = 0;
+		/* pragma:DEBUG_START */
+		try {
+			Profiler.enter("Engine.engineTimer()");
+		/* pragma:DEBUG_END */
 
-         // Render a frame
-         Engine.worldTime = new Date().getTime();
-         Engine.getDefaultContext().update(null, Engine.worldTime);
-         Engine.frameTime = new Date().getTime() - Engine.worldTime;
-         Engine.liveTime = Engine.worldTime - Engine.upTime;
+			var nextFrame = Engine.fpsClock;
 
-         // Determine when the next frame should draw
-         // If we've gone over the allotted time, wait until the next available frame
-         var f = nextFrame - Engine.frameTime;
-         nextFrame = (Engine.skipFrames ? (f > 0 ? f : nextFrame) : Engine.fpsClock);
-         Engine.droppedFrames += (f <= 0 ? Math.round((f * -1) / Engine.fpsClock) : 0);
+			// Update the world
+			if (Engine.running && Engine.getDefaultContext() != null) {
+				Engine.vObj = 0;
 
-         // Output any metrics
-         if (Engine.showMetricsWindow) {
-            Engine.renderMetrics();
-         } else if (!Engine.showMetricsWindow && Engine.metricDisplay) {
-            Engine.metricDisplay.remove();
-            Engine.metricDisplay = null;
-         }
-      }
+				// Render a frame
+				Engine.worldTime = new Date().getTime();
+				Engine.getDefaultContext().update(null, Engine.worldTime);
+				Engine.frameTime = new Date().getTime() - Engine.worldTime;
+				Engine.liveTime = Engine.worldTime - Engine.upTime;
 
-      // When the process is done, start all over again
-      Engine.globalTimer = setTimeout(function _engineTimer() { Engine.engineTimer(); }, nextFrame);
-   }
+				// Determine when the next frame should draw
+				// If we've gone over the allotted time, wait until the next available frame
+				var f = nextFrame - Engine.frameTime;
+				nextFrame = (Engine.skipFrames ? (f > 0 ? f : nextFrame) : Engine.fpsClock);
+				Engine.droppedFrames += (f <= 0 ? Math.round((f * -1) / Engine.fpsClock) : 0);
+
+				// Update the metrics display
+				Engine.doMetrics();
+			}
+
+			// When the process is done, start all over again
+			Engine.globalTimer = setTimeout(function _engineTimer() { Engine.engineTimer(); }, nextFrame);
+
+		/* pragma:DEBUG_START */
+		} finally {
+			Profiler.exit();
+		}
+		/* pragma:DEBUG_END */
+   },
+	
+	// ======================================================
+	// Declarations here only for documentation purposes
+	// See engine.script.js
+	// ======================================================
+	
+   /**
+    * Status message when a script is not found
+    * @type Boolean
+    * @memberOf Engine
+    * @field
+    */
+   SCRIPT_NOT_FOUND: false,
+   
+   /**
+    * Status message when a script is successfully loaded
+    * @type Boolean
+    * @memberOf Engine
+    * @field
+    */
+   SCRIPT_LOADED: true,
+
+   /**
+    * Include a script file.  This is the method used to load additional
+    * script files, relative to the engine's location.
+<pre>
+	Engine.include("/rendercontexts/context.canvascontext.js");
+</pre>
+    *
+    * @param scriptURL {String} The URL of the script file
+    * @memberOf Engine
+    * @function
+    */
+   include: null,
+
+   /**
+    * Queue a script to load from the server and append it to
+    * the head element of the browser.  Script names are
+    * cached so they will not be loaded again.  Each script in the
+    * queue is processed synchronously.
+    *
+    * @param scriptPath {String} The URL of a script to load.
+    * @memberOf Engine
+    * @function
+    */
+   loadScript: null,
+
+	/**
+	 * Load text from the specified path.
+	 *
+	 * @param path {String} The url to load
+	 * @param data {Object} Optional arguments to pass to server
+	 * @param callback {Function} The callback method which is passed the
+	 *		text and status code (a number) of the request.
+	 * @memberOf Engine
+    * @function
+	 */	 
+	loadText: null,
+	
+	/**
+	 * Load text from the specified path and parse it as JSON.  We're doing
+	 * a little pre-parsing of the returned data so that the JSON can include
+	 * comments which is not spec.
+	 *
+	 * @param path {String} The url to load
+	 * @param data {Object} Optional arguments to pass to server
+	 * @param callback {Function} The callback method which is passed the
+	 *		JSON object and status code (a number) of the request.
+    * @memberOf Engine
+    * @function
+	 */	 
+	loadJSON: null,
+
+   /**
+    * Insert a callback into the script load queue so that when a
+    * certain number of files has been loaded, we can call
+    * a method.  Allows for functionality to start with
+    * incremental loading.
+    *
+    * @param cb {Function} A callback to execute
+    * @memberOf Engine
+    * @function
+    */
+   setQueueCallback: null,
+
+   /**
+    * You can pause the queue from a callback function, then
+    * unpause it to continue processing queued scripts.  This will
+    * allow you to wait for an event to occur before continuing to
+    * to load scripts.
+    *
+    * @param state {Boolean} <tt>true</tt> to put the queue processor
+    *                        in a paused state.
+    * @memberOf Engine
+    * @function
+    */
+   pauseQueue: null,
+
+   /**
+    * Loads a game's script.  This will wait until the specified
+    * <tt>gameObjectName</tt> is available before running it.  Doing so will
+    * ensure that all dependencies have been resolved before starting a game.
+    * Also creates the default rendering context for the engine.
+    * <p/>
+    * All games should execute this method to start their processing, rather than
+    * using the script loading mechanism for engine or game scripts.  This is used
+    * for the main game script only.  Normally it would appear in the game's "index" file.
+    * <pre>
+    *  &lt;script type="text/javascript"&gt;
+    *     // Load the game script
+    *     Engine.loadGame('game.js','Spaceroids');
+    *  &lt;/script&gt;
+    * </pre>
+    *
+    * @param gameSource {String} The URL of the game script.
+    * @param gameObjectName {String} The string name of the game object to execute.  When
+    *                       the framework if ready, the <tt>startup()</tt> method of this
+    *                       object will be called.
+    * @param [gameDisplayName] {String} An optional string to display in the loading dialog
+    * @memberOf Engine
+    * @function
+    */
+   loadGame: null,
+
+   /**
+    * Load a script relative to the engine path.  A simple helper method which calls
+    * {@link #loadScript} and prepends the engine path to the supplied script source.
+    *
+    * @param scriptSource {String} A URL to load that is relative to the engine path.
+    * @memberOf Engine
+    * @function
+    */
+   load: null,
+
+   /**
+    * Load a stylesheet and append it to the document.  Allows for
+    * scripts to specify additional stylesheets that can be loaded
+    * as needed.  Additionally, you can use thise method to inject
+    * the engine path into the css being loaded.  Using the variable
+    * <tt>$&lt;enginePath&gt;</tt>, you can load css relative to the
+    * engine's path.  For example:
+    * <pre>
+    *    .foo {
+    *       background: url('$&lt;enginePath&gt;/myGame/images/bar.png') no-repeat 50% 50%;
+    *    }
+    * </pre>
+    *
+    * @param stylesheetPath {String} Path to the stylesheet, relative to
+    *                                the engine path.
+    * @memberOf Engine
+    * @function
+    */
+   loadStylesheet: null,
+
+	// ======================================================
+	// Declarations here only for documentation purposes
+	// See engine.metrics.js
+	// ======================================================
+
+   /**
+    * Toggle the display of the metrics window.  Any metrics
+    * that are being tracked will be reported in this window.
+    * @memberOf Engine
+    * @function
+    */
+   toggleMetrics: null,
+
+   /**
+    * Show the metrics window.
+    * @memberOf Engine
+    * @function
+    */
+   showMetrics: null,
+   
+   /**
+    * Show the engine performance graph.
+    * @memberOf Engine
+    * @function
+    */
+   showProfile: null,
+
+   /**
+    * Hide the metrics window.
+    * @memberOf Engine
+    * @function
+    */
+   hideMetrics: null,
+
+   /**
+    * Set the interval at which metrics are sampled by the system.
+    * The default is for metrics to be calculated every 10 engine frames.
+    *
+    * @param sampleRate {Number} The number of ticks between samples
+    * @memberOf Engine
+    * @function
+    */
+   setMetricSampleRate: null,
+
+   /**
+    * Add a metric to the game engine that can be displayed
+    * while it is running.  If smoothing is selected, a 3 point
+    * running average will be used to smooth out jitters in the
+    * value that is shown.  For the <tt>fmt</tt> argument,
+    * you can provide a string which contains the pound sign "#"
+    * that will be used to determine where the calculated value will
+    * occur in the formatted string.
+    *
+    * @param metricName {String} The name of the metric to track
+    * @param value {String/Number} The value of the metric.
+    * @param smoothing {Boolean} <tt>true</tt> to use 3 point average smoothing
+    * @param fmt {String} The way the value should be formatted in the display (e.g. "#ms")
+    * @memberOf Engine
+    * @function
+    */
+   addMetric: null,
+
+   /**
+    * Remove a metric from the display
+    *
+    * @param metricName {String} The name of the metric to remove
+    * @memberOf Engine
+    * @function
+    */
+   removeMetric: null
 
  }, { // Interface
    globalTimer: null
@@ -2684,8 +3227,7 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
 //                                     SCRIPT PROCESSING
 //====================================================================================================
 //====================================================================================================
-var Engine = Engine.extend({
-   /** @lends Engine */
+var Engine = Engine.extend(/** @lends Engine.prototype */{
    constructor: null,
 
    /*
@@ -2701,13 +3243,14 @@ var Engine = Engine.extend({
    
    /**
     * Status message when a script is not found
-    * @memberOf Engine
+    * @type Boolean
+    * @memberOf Engine.prototype
     */
    SCRIPT_NOT_FOUND: false,
    
    /**
     * Status message when a script is successfully loaded
-    * @memberOf Engine
+    * @type Boolean
     */
    SCRIPT_LOADED: true,
 
@@ -2751,6 +3294,92 @@ var Engine = Engine.extend({
       Engine.scriptQueue.push(scriptPath);
       Engine.runScriptQueue();
    },
+
+	/**
+	 * Low-level method to call jQuery to use AJAX to load
+	 * a file asynchronously.  If a failure (such as a 404) occurs,
+	 * it shouldn't fail silently.
+	 * 
+	 * @param path {String} The url to load
+	 * @param data {Object} Optional arguments to pass to server
+	 * @param callback {Function} The callback method
+	 * @private
+	 */
+	ajaxLoad: function(path, data, callback) {
+		// Use our own internal method to load a file with the JSON
+		// data.  This way, we don't fail silently when loading a file
+		// that doesn't exist.
+		var xhr = new XMLHttpRequest();
+		xhr.open("GET", path, true);
+		xhr.onreadystatechange = function(evt) {
+			if (xhr.readyState == 4) {
+				callback(xhr, xhr.status);
+			}
+		};
+		var rData = null;
+		if (data) {
+			rData = "";
+			for (var i in data) {
+				rData += (rData.length == 0 ? "?" : "&") + i + "=" + encodeURIComponent(data[i]);
+			}
+		}
+		xhr.send(rData);
+	},
+	
+	/**
+	 * Load text from the specified path.
+	 *
+	 * @param path {String} The url to load
+	 * @param data {Object} Optional arguments to pass to server
+	 * @param callback {Function} The callback method which is passed the
+	 *		text and status code (a number) of the request.
+	 */	 
+	loadText: function(path, data, callback) {
+		if (typeof data == "function") {
+			callback = data;
+			data = null;
+		}
+		Engine.ajaxLoad(path, data, function(xhr, result) {
+			callback(xhr.responseText, xhr.status);
+		});
+	},
+	
+	/**
+	 * Load text from the specified path and parse it as JSON.  We're doing
+	 * a little pre-parsing of the returned data so that the JSON can include
+	 * comments which is not spec.
+	 *
+	 * @param path {String} The url to load
+	 * @param data {Object} Optional arguments to pass to server
+	 * @param callback {Function} The callback method which is passed the
+	 *		JSON object and status code (a number) of the request.
+	 */	 
+	loadJSON: function(path, data, callback) {
+		if (typeof data == "function") {
+			callback = data;
+			data = null;
+		}
+		Engine.ajaxLoad(path, data, function(xhr, result) {
+			function clean(txt) {
+				var outbound = txt.replace(/(".*".*|)(\/\/.*$)/gm, function(str,t,c) {
+					return t;
+				});
+				return outbound.replace(/[\n\r\t]*/g,"");
+				//return outbound; //.replace(/\/\*(.|\n|\r)*?\*\//g, "");
+			}
+
+			var json = null;
+			try {
+				// Remove comments
+				var inbound = xhr.responseText;
+				if (inbound) {
+					var c = clean(inbound);
+					json = EngineSupport.parseJSON(c);
+				}
+			} catch (ex) {}
+			callback(json, xhr.status);
+		});
+	},
 
    /**
     * Internal method which runs the script queue to handle scripts and functions
@@ -2965,7 +3594,7 @@ var Engine = Engine.extend({
             $("head").append($(Engine.loadingCSS));
 
             var loadingDialog = "<span id='loading' class='intrinsic'><table border='0' style='width:100%;height:100%;'><tr>";
-            loadingDialog += "<td style='width:100%;height:100%;' valign='middle' align='left'><div class='loadbox'>Loading ";
+            loadingDialog += "<td style='width:100%;height:100%;' valign='middle' align='center'><div class='loadbox'>Loading ";
             loadingDialog += gameDisplayName + "...<div id='engine-load-progress'></div><span id='engine-load-info'></span></div>";
             loadingDialog += "</td></tr></table></span>";
 
@@ -2975,8 +3604,12 @@ var Engine = Engine.extend({
 
       // We'll wait for the Engine to be ready before we load the game
       var engine = this;
+	
+		// Load engine options for browsers
+		Engine.loadEngineOptions();
+
       Engine.gameLoadTimer = setInterval(function() {
-         if (window["DocumentContext"] != null) {
+         if (Engine.optionsLoaded && window["DocumentContext"] != null) {
 
             // Start the engine
             Engine.run();
@@ -3009,6 +3642,27 @@ var Engine = Engine.extend({
          }
       }, 2);
    },
+
+	loadEngineOptions: function() {
+		
+		// Load the default configuration for all browsers, then load one specific to the browser type
+		Engine.optionsLoaded = false;
+	
+		// Load the options specific to the browser.  Whether they load, or not,
+		// the game will continue to load.
+		Engine.loadJSON(Engine.getEnginePath() + "/engine/configs/" + EngineSupport.sysInfo().browser + ".config", function(bData, status) {
+			if (status == 200) {
+				Console.debug("Engine options loaded for: " + EngineSupport.sysInfo().browser);
+				Engine.setOptions(bData);
+			} else {
+				// Log an error (most likely a 404)
+				Console.log("Engine options for: " + EngineSupport.sysInfo().browser + " responded with " + status);
+			}
+			
+			Engine.optionsLoaded = true;	
+		});
+		
+	},
 
    /**
     * Load a script relative to the engine path.  A simple helper method which calls
@@ -3081,7 +3735,12 @@ var Engine = Engine.extend({
             // process the data to replace the "enginePath" variable
             var epRE = /(\$<enginePath>)/g;
             data = data.replace(epRE, Engine.getEnginePath());
-            $("head", document).append($("<style type='text/css'/>").text(data));
+            if (EngineSupport.sysInfo().browser == "msie") {
+               // IE likes it this way...
+               $("head", document).append($("<style type='text/css'>" + data + "</script>"));
+            } else {
+               $("head", document).append($("<style type='text/css'/>").text(data));
+            }
             Console.debug("Stylesheet loaded '" + stylesheetPath + "'");
          }, "text");
       };
@@ -3112,6 +3771,308 @@ var Engine = Engine.extend({
    }
    
 });
+/**
+ * The Render Engine
+ * 
+ * An extension to the engine for metrics processing and display.
+ *
+ * @author: Brett Fattori (brettf@renderengine.com)
+ *
+ * @author: $Author: bfattori $
+ * @version: $Revision: 1449 $
+ *
+ * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
+//====================================================================================================
+//====================================================================================================
+//                                     METRICS MANAGEMENT
+//====================================================================================================
+//====================================================================================================
+var Engine = Engine.extend({
+   constructor: null,
+
+   /*
+    * Metrics tracking/display
+    */
+   metrics: {},               // Tracked metrics
+   metricDisplay: null,       // The metric display object
+   profileDisplay: null,      // The profile display object
+   metricSampleRate: 10,      // Frames between samples
+   lastMetricSample: 10,      // Last sample frame
+   showMetricsWindow: false,  // Metrics display flag
+   showMetricsProfile: false, // Metrics profile graph display flag
+   vObj: 0,                   // Visible objects
+   droppedFrames: 0,          // Non-rendered frames/frames dropped
+   profilePos: 0,
+   profiles: {},
+   
+
+   /**
+    * Toggle the display of the metrics window.  Any metrics
+    * that are being tracked will be reported in this window.
+    * @memberOf Engine
+    */
+   toggleMetrics: function() {
+      this.showMetricsWindow = !this.showMetricsWindow;
+   },
+
+   /**
+    * Show the metrics window
+    * @memberOf Engine
+    */
+   showMetrics: function() {
+      this.showMetricsWindow = true;
+   },
+   
+   /**
+    * Show a graph of the engine profile
+    * @memberOf Engine
+    */
+   showProfile: function() {
+      this.showMetricsProfile = true;
+   },
+
+   /**
+    * Hide the metrics window
+    * @memberOf Engine
+    */
+   hideMetrics: function() {
+      this.showMetricsWindow = false;
+   },
+   
+   manMetrics: function() {
+      if ($("div.metric-button.minimize").length > 0) {
+         $("div.metric-button.minimize").removeClass("minimize").addClass("maximize").attr("title", "maximize");
+         $("div.metrics").css("height", 17);
+         $("div.metrics .items").hide();
+      } else {
+         $("div.metric-button.maximize").removeClass("maximize").addClass("minimize").attr("title", "minimize");
+         $("div.metrics .items").show();
+         $("div.metrics").css("height", "auto");
+      }
+   },
+
+   /**
+    * Creates a button for the metrics window
+    * @private
+    */
+   metricButton: function(cssClass, fn) {
+      return $("<div class='metric-button " + cssClass + "' title='" + cssClass + "'><!-- --></div>").click(fn);
+   },
+
+   /**
+    * Render the metrics window
+    * @private
+    */
+   renderMetrics: function() {
+
+      if (this.showMetricsWindow && !this.metricDisplay) {
+         this.metricDisplay = $("<div/>").addClass("metrics");
+         this.metricDisplay.append(this.metricButton("run", function() { Engine.run(); }));
+         this.metricDisplay.append(this.metricButton("pause", function() { Engine.pause(); }));
+         this.metricDisplay.append(this.metricButton("shutdown", function() { Engine.shutdown(); }));
+
+         this.metricDisplay.append(this.metricButton("close", function() { Engine.hideMetrics(); }));
+         this.metricDisplay.append(this.metricButton("minimize", function() { Engine.manMetrics(); }));
+
+         this.metricDisplay.append($("<div class='items'/>"));
+         this.metricDisplay.appendTo($("body"));
+      }
+      
+      if ((this.showMetricsWindow || this.showMetricsProfile) && this.lastMetricSample-- == 0)
+      {
+         // Add some metrics to assist the developer
+         Engine.addMetric("FPS", this.getFPS(), false, "#");
+         Engine.addMetric("aFPS", this.getActualFPS(), true, "#");
+         Engine.addMetric("availTime", this.fpsClock, false, "#ms");
+         Engine.addMetric("frameGenTime", Engine.frameTime, true, "#ms");
+         Engine.addMetric("engineLoad", Math.floor(this.getEngineLoad() * 100), true, "#%");
+         Engine.addMetric("visibleObj", Engine.vObj, false, "#");
+         Engine.addMetric("droppedFrames", Engine.droppedFrames, false, "#");
+         Engine.addMetric("upTime", Math.floor((Engine.worldTime - Engine.upTime)/1000), false, "# sec");
+
+         this.updateMetrics();
+         this.lastMetricSample = this.metricSampleRate;
+      }
+      
+      if (this.showMetricsProfile && EngineSupport.sysInfo().browser == "msie" &&
+			 parseFloat(EngineSupport.sysInfo().version) < 9) {
+         // Profiler not supported in IE
+         this.showMetricsProfile = false;
+      }
+      
+      if (this.showMetricsProfile && !this.profileDisplay) {
+         this.profileDisplay = $("<canvas width='150' height='100'/>").addClass("engine-profile");
+         this.profileDisplay.appendTo($("body"));
+         this.profileDisplay[0].getContext('2d').save();
+      }
+   },
+
+   /**
+    * Set the interval at which metrics are sampled by the system.
+    * The default is for metrics to be calculated every 10 engine frames.
+    *
+    * @param sampleRate {Number} The number of ticks between samples
+    * @memberOf Engine
+    */
+   setMetricSampleRate: function(sampleRate) {
+      this.lastMetricSample = 1;
+      this.metricSampleRate = sampleRate;
+   },
+
+   /**
+    * Add a metric to the game engine that can be displayed
+    * while it is running.  If smoothing is selected, a 3 point
+    * running average will be used to smooth out jitters in the
+    * value that is shown.  For the <tt>fmt</tt> argument,
+    * you can provide a string which contains the pound sign "#"
+    * that will be used to determine where the calculated value will
+    * occur in the formatted string.
+    *
+    * @param metricName {String} The name of the metric to track
+    * @param value {String/Number} The value of the metric.
+    * @param smoothing {Boolean} <tt>true</tt> to use 3 point average smoothing
+    * @param fmt {String} The way the value should be formatted in the display (e.g. "#ms")
+    * @memberOf Engine
+    */
+   addMetric: function(metricName, value, smoothing, fmt) {
+      if (smoothing) {
+         var vals = this.metrics[metricName] ? this.metrics[metricName].values : [];
+         if (vals.length == 0) {
+            // Init
+            vals.push(value);
+            vals.push(value);
+            vals.push(value);
+         }
+         vals.shift();
+         vals.push(value);
+         var v = Math.floor((vals[0] + vals[1] + vals[2]) * 0.33);
+         this.metrics[metricName] = { val: (fmt ? fmt.replace("#", v) : v), values: vals, act: v };
+      } else {
+         this.metrics[metricName] = { val: (fmt ? fmt.replace("#", value) : value), act: value };
+      }
+   },
+
+   /**
+    * Remove a metric from the display
+    *
+    * @param metricName {String} The name of the metric to remove
+    * @memberOf Engine
+    */
+   removeMetric: function(metricName) {
+      this.metrics[metricName] = null;
+      delete this.metrics[metricName];
+   },
+
+   /**
+    * Updates the display of the metrics window.
+    * @private
+    * @memberOf Engine
+    */
+   updateMetrics: function() {
+      var h = "", ctx;
+      if (this.showMetricsProfile) {
+         ctx = this.profileDisplay[0].getContext('2d');
+         ctx.save();
+         ctx.translate(147, 0);
+      }
+
+      for (var m in this.metrics)
+      {
+			if (this.showMetricsWindow) {
+	         h += m + ": " + this.metrics[m].val + "<br/>";
+			}
+         if (this.showMetricsProfile) {
+            switch (m) {
+               case "engineLoad": this.drawProfilePoint("#ffff00", this.metrics[m].act); break;
+               //case "frameGenTime": this.drawProfilePoint("#ff8888", this.metrics[m].act); break;
+               case "visibleObj": this.drawProfilePoint("#339933", this.metrics[m].act); break;
+               case "poolLoad" : this.drawProfilePoint("#a0a0ff", this.metrics[m].act); break;
+            }
+         }
+      }
+		if (this.showMetricsWindow) {
+			$(".items", this.metricDisplay).html(h);
+		}
+	   if (this.showMetricsProfile) {
+         ctx.restore();
+         this.moveProfiler();
+      }
+   },
+
+   drawProfilePoint: function(color, val) {
+      var ctx = this.profileDisplay[0].getContext('2d');
+      ctx.strokeStyle = color
+      try {
+         if (!isNaN(val)) {
+            ctx.beginPath();
+            ctx.moveTo(0, this.profiles[color] || 100);
+            ctx.lineTo(1, (100 - val < 1 ? 1 : 100 - val));
+            ctx.closePath();
+            ctx.stroke();
+            this.profiles[color] = (100 - val < 1 ? 1 : 100 - val);
+         }
+      } catch(ex) {
+         
+      }
+   },
+   
+   moveProfiler: function() {
+      var ctx = this.profileDisplay[0].getContext('2d');
+      var imgData = ctx.getImageData(1,0,149,100);
+      ctx.save();
+      ctx.translate(-1,0);
+      ctx.putImageData(imgData, 0, 0);
+      ctx.restore();
+   },
+
+   /**
+    * Run the metrics display.
+    * @private
+    * @memberOf Engine
+    */
+   doMetrics: function() { 
+      // Output any metrics
+      if (Engine.showMetricsWindow || Engine.showMetricsProfile) {
+         Engine.renderMetrics();
+      } else if (!Engine.showMetricsWindow && Engine.metricDisplay) {
+         Engine.metricDisplay.remove();
+         Engine.metricDisplay = null;
+      }
+   }
+   
+});
+
+if (EngineSupport.checkBooleanParam("metrics"))
+{
+   Engine.showMetrics();
+}
+
+if (EngineSupport.checkBooleanParam("profile"))
+{
+   Engine.showProfile();
+}
+
 
 /**
  * The Render Engine
@@ -3121,7 +4082,7 @@ var Engine = Engine.extend({
  *
  * @author: Brett Fattori (brettf@renderengine.com)
  * @author: $Author: bfattori $
- * @version: $Revision: 1216 $
+ * @version: $Revision: 1325 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
@@ -3149,6 +4110,7 @@ var Engine = Engine.extend({
 Console.startup();
 
 // Start the engine
+Engine.options = $.extend({}, Engine.defaultOptions);
 Engine.startup();
 
 // Set up the engine using whatever query params were passed
@@ -3157,11 +4119,6 @@ Engine.setDebugMode(EngineSupport.checkBooleanParam("debug"));
 if (Engine.getDebugMode())
 {
    Console.setDebugLevel(EngineSupport.getNumericParam("debugLevel", Console.DEBUGLEVEL_DEBUG));
-}
-
-if (EngineSupport.checkBooleanParam("metrics"))
-{
-   Engine.showMetrics();
 }
 
 // Local mode keeps loaded script source available

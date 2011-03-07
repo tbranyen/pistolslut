@@ -54,6 +54,7 @@ Engine.initObject("Human", "Mover", function() {
 
 			this.weapon.handleReload(time);
 			this.weapon.handleAutomatic(time);
+
 			this.weapon.handleDischarge(time);
             this.grenadeLauncher.handleDischarge(time);
 		},
@@ -86,7 +87,6 @@ Engine.initObject("Human", "Mover", function() {
 
 			this.field.applyGravity(this);
             this.handleLift();
-			this.handleFriction();
 			this.setPosition(this.getPosition().add(this.getVelocity()));
 		},
 
@@ -356,31 +356,6 @@ Engine.initObject("Human", "Mover", function() {
                 this.shooter = null;
             }
         },
-
-		// if dead, carry on moving. A bit.
-		friction: 0.1,
-		handleFriction: function() {
-			newX = null;
-			if(this.isDying())
-			{
-				var x = this.getVelocity().x;
-				if(x == 0)
-					return;
-				else if(x > 0)
-				{
-					newX = x - this.friction;
-					if(newX < 0)
-						newX = 0;
-				}
-				else // x < 0
-				{
-					newX = x + this.friction;
-					if(newX < 0)
-						newX = 0;
-				}
-				this.getVelocity().setX(newX);
-			}
-		},
 
 		// sets sprite to reflect whatever human is doing
 		updateSprite: function() {

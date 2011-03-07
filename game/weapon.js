@@ -179,7 +179,7 @@ Engine.initObject("Weapon", "Base", function() {
 
 		// if reloading and the time to reload has elapsed, fill clip
 		handleReload: function(time) {
-			if(this.reloading)
+			if(this.reloading == true)
 				if(time - this.reloadBegun > this.timeToReload) // reload period has passed
 			    {
 					this.fillClip();

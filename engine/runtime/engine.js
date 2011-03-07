@@ -149,7 +149,7 @@ var ConsoleRef = Base.extend(/** @scope ConsoleRef.prototype */{
 
    /**
     * Dump a stack trace to the console.
-    */   
+    */
    trace: function() {
    },
 
@@ -165,7 +165,7 @@ var ConsoleRef = Base.extend(/** @scope ConsoleRef.prototype */{
 });
 
 /**
- * @class A debug console that will use a pre-defined element to display its output.  The element with the id 
+ * @class A debug console that will use a pre-defined element to display its output.  The element with the id
  *        "debug-console" will be created an appended to the DOM for you.  This object is created when no other
  *        option is available from the browser, or when developer tools cannot be accessed.
  * @extends ConsoleRef
@@ -174,7 +174,7 @@ var ConsoleRef = Base.extend(/** @scope ConsoleRef.prototype */{
 var HTMLConsoleRef = ConsoleRef.extend(/** @DebugConsoleRef.prototype **/{
 
    msgStore: null,
-   
+
    firstTime: null,
 
    constructor: function() {
@@ -192,7 +192,7 @@ var HTMLConsoleRef = ConsoleRef.extend(/** @DebugConsoleRef.prototype **/{
       $(document).ready(function() {
          $(document.body).append($("<div id='debug-console'><!-- --></div>"));
       });
-      
+
       // Redirect error logging to the console
       window.onerror = function(err){
          if (err instanceof Error) {
@@ -217,7 +217,7 @@ var HTMLConsoleRef = ConsoleRef.extend(/** @DebugConsoleRef.prototype **/{
          $("#debug-console")[0].scrollTop = w.scrollHeight + 1;
       }
    },
-   
+
    store: function(type, args) {
       if (!this.firstTime) {
          return;
@@ -226,7 +226,7 @@ var HTMLConsoleRef = ConsoleRef.extend(/** @DebugConsoleRef.prototype **/{
          this.msgStore.push({
             t: type,
             a: this.fixArgs(args)
-         });   
+         });
       } else {
          this.firstTime = false;
          for (var i = 0; i < this.msgStore.length; i++) {
@@ -449,7 +449,7 @@ var FirebugConsoleRef = ConsoleRef.extend(/** @FirebugConsoleRef.prototype **/{
          console.error.apply(console, arguments);
       }
    },
-   
+
    /**
     * Write a stack trace to the console
     */
@@ -571,7 +571,7 @@ var Console = Base.extend(/** @scope Console.prototype */{
     */
    startup: function() {
 		Console.verbosity = this.DEBUGLEVEL_ERRORS;
-		
+
       if (EngineSupport.checkBooleanParam("debug") && (EngineSupport.checkBooleanParam("simWii") || jQuery.browser.Wii)) {
          this.consoleRef = new HTMLConsoleRef();
       }
@@ -625,7 +625,7 @@ var Console = Base.extend(/** @scope Console.prototype */{
    setDebugLevel: function(level) {
       this.verbosity = level;
    },
-   
+
    /**
     * Get the debug level which the console is currently at.
     * @return {Number} The debug level
@@ -694,7 +694,7 @@ var Console = Base.extend(/** @scope Console.prototype */{
       if (this.checkVerbosity(this.DEBUGLEVEL_ERRORS))
          this.consoleRef.error.apply(this.consoleRef, arguments);
    },
-   
+
    trace: function() {
       this.consoleRef.trace();
    }
@@ -702,7 +702,7 @@ var Console = Base.extend(/** @scope Console.prototype */{
 
 
 /**
- * Assert that a condition is <tt>true</tt>, stopping the engine if it is <tt>false</tt>.  
+ * Assert that a condition is <tt>true</tt>, stopping the engine if it is <tt>false</tt>.
  * If the condifion fails an exception will be thrown.
  *
  * @param test {Boolean} A simple test that should evaluate to <tt>true</tt>
@@ -723,7 +723,7 @@ var Assert = function(test, error) {
          }
 
          Engine.shutdown();
-         
+
       }
    } catch (ex) {
       var pr = Console.getDebugLevel();
@@ -731,7 +731,7 @@ var Assert = function(test, error) {
       Console.warn("*ASSERT* 'test' would result in an exception: ", ex);
       Console.setDebugLevel(pr);
    }
-   
+
    // This will provide a stacktrace for browsers that support it
    if (fail) {
       throw new Error(error);
@@ -841,7 +841,7 @@ Profiler.stop = function() {
    function func() {
       try {
          Profiler.enter("func");
-         
+
          doStuff = doStuff + 1;
          return doStuff;
       } finally {
@@ -943,7 +943,7 @@ Profiler.dump = function() {
 
 	console.warn("PROFILER RESULTS @ " + d + "\n---------------------------------------------------\n");
 	console.info(out);
-	
+
 	Profiler.resetProfiles();
 };
 /**
@@ -983,28 +983,28 @@ Profiler.dump = function() {
  * @class A static class which provides methods for generating random integers
  * 		 and floats between 0 and 1.  The class also provides a way to seed the
  * 		 random number generator for repeatable results.
- * 
+ *
  * @static
  */
 var Math2 = Base.extend(/** @scope Math2.prototype */{
 	constructor: null,
-	
+
 	state: 1,
 	m: 0x100000000, // 2**32;
 	a: 1103515245,
 	c: 12345,
-	
+
 	/**
 	 * Seed the random number generator with a known number.  This
 	 * ensures that random numbers occur in a known sequence.
-	 * 
+	 *
 	 * @param seed {Number} An integer to seed the number generator with
 	 */
 	seed: function(seed) {
 		// LCG using GCC's constants
 		this.state = seed ? seed : Math.floor(Math.random() * (this.m-1));
 	},
-	
+
 	/**
 	 * Returns a random integer between 0 and 4,294,967,296.
 	 * @return {Number} An integer between 0 and 2^32
@@ -1013,7 +1013,7 @@ var Math2 = Base.extend(/** @scope Math2.prototype */{
 		this.state = (this.a * this.state + this.c) % this.m;
 		return this.state;
 	},
-	
+
 	/**
 	 * Returns a pseudo-random number between 0 (inclusive) and 1 (exclusive)
 	 * @return {Number} A number between 0 and 1
@@ -1022,7 +1022,7 @@ var Math2 = Base.extend(/** @scope Math2.prototype */{
 		// returns in range [0,1]
 		return this.randomInt() / (this.m - 1);
 	},
-	
+
 	/**
 	 * Return a random value within the <tt>low</tt> to <tt>hight</tt> range,
 	 * optionally as an integer value only.
@@ -1036,10 +1036,10 @@ var Math2 = Base.extend(/** @scope Math2.prototype */{
 		var v = low + (this.random() * high);
 		return (whole ? Math.floor(v) : v);
 	},
-	
+
 	/**
 	 * Parse a binary string into a number.
-	 * 
+	 *
 	 * @param bin {String} Binary string to parse
 	 * @return {Number}
 	 */
@@ -1048,7 +1048,7 @@ var Math2 = Base.extend(/** @scope Math2.prototype */{
 			return parseInt(bin, 2);
 		}
 	},
-	
+
 	/**
 	 * Converts a number to a hexidecimal string, prefixed by "0x".
 	 *
@@ -1060,7 +1060,7 @@ var Math2 = Base.extend(/** @scope Math2.prototype */{
 			return ("0x" + num.toString(16));
 		}
 	},
-	
+
 	/**
 	 * Converts a number to a binary string.
 	 *
@@ -1111,9 +1111,9 @@ Math2.seed();
  */
 
 /**
- * @class A static class with support methods the engine or games can use.  
+ * @class A static class with support methods the engine or games can use.
  *        Many of the methods can be used to manipulate arrays.  Additional
- *        methods are provided to access query parameters, and generate and/or 
+ *        methods are provided to access query parameters, and generate and/or
  *        read JSON.
  * @static
  */
@@ -1174,16 +1174,16 @@ var EngineSupport = Base.extend(/** @scope EngineSupport.prototype */{
          array.splice(idx, 1);
       }
    },
-   
+
    /**
     * Returns <tt>true</tt> if the string, after trimming, is either
     * empty or is null.
-    * 
+    *
     * @param str {String} The string to test
     * @return {Boolean} <tt>true</tt> if the string is empty or <tt>null</tt>
     */
    isEmpty: function(str) {
-      return (str == null || $.trim(str) === "");     
+      return (str == null || $.trim(str) === "");
    },
 
    /**
@@ -1409,7 +1409,7 @@ var EngineSupport = Base.extend(/** @scope EngineSupport.prototype */{
     * Cleans up incoming source by stripping single-line comments,
     * multi-line comments, blank lines, new lines, and trims lines.
     * In other words, this is a simplification of minification.
-    * 
+    *
     * /(([\"'])(\\\2|.*:\/\/|[^\/\n\r])*\2)|(//.*$)/gm
     * @param inString {String} The source to clean
     */
@@ -1418,11 +1418,11 @@ var EngineSupport = Base.extend(/** @scope EngineSupport.prototype */{
                      .replace(/\/\*(\n|.)*?\*\//gm, "")           // Remove multi line comments
                      .replace(/^[ \t]*(.*?)[ \t]*$/gm, "$1")      // Trim lines
                      .replace(/\s*\n$/gm, "");                    // Remove blank lines
-     
+
       if (!keepNewLines) {
          s = s.replace(/(\n|\r)/gm, "");                   // Remove new lines
       }
-      
+
       return s;
    },
 
@@ -1457,7 +1457,7 @@ var EngineSupport = Base.extend(/** @scope EngineSupport.prototype */{
          return EngineSupport.evalJSON(jsonString);
       }
    },
-   
+
    /**
     * This method does a direct <tt>eval()</tt> on the JSON object and
     * should be avoided since it allows for XSS and other security issues.
@@ -1468,7 +1468,7 @@ var EngineSupport = Base.extend(/** @scope EngineSupport.prototype */{
    {
       jsonString = EngineSupport.cleanSource(jsonString);
       try {
-         return eval("(" + jsonString + ")");   
+         return eval("(" + jsonString + ")");
       } catch (ex) {
          Console.warn("Cannot eval JSON: " + ex.message);
          return null;
@@ -1510,7 +1510,7 @@ var EngineSupport = Base.extend(/** @scope EngineSupport.prototype */{
 				/linux/.test(userAgent) ? "Linux" :
 				/Mac OS X/.test(userAgent) ? "Mac OS X" :
 				/macintosh/.test(userAgent) ? "Macintosh" :
-				"unknown"; 
+				"unknown";
 		return OS;
 	},
 
@@ -1564,7 +1564,7 @@ var EngineSupport = Base.extend(/** @scope EngineSupport.prototype */{
     */
    sysInfo: function() {
       if (!EngineSupport._sysInfo) {
-      	
+
       	// Determine if the browser supports Canvas
       	var canvasSupport = {
       		emulated: false,
@@ -1584,12 +1584,12 @@ var EngineSupport = Base.extend(/** @scope EngineSupport.prototype */{
 	      		var c2d = canvas.getContext("2d");
 	      		if (typeof c2d != "undefined") {
 	      			canvasSupport.contexts.ctx2D = true;
-	      			
+
 						// Does it support native text
 						canvasSupport.text = (typeof c2d.fillText == "function");
 						canvasSupport.textMetrics = (typeof c2d.measureText == "function");
 					}
-	      		
+
 					try {
 		      		var webGL = canvas.getContext("glcanvas");
 		      		if (typeof webGL != "undefined") {
@@ -1598,7 +1598,7 @@ var EngineSupport = Base.extend(/** @scope EngineSupport.prototype */{
 					} catch (ex) { /* no webgl */ }
 	      	}
       	}
-			
+
 			if (typeof FlashCanvas != "undefined") {
 				// If FlashCanvas is loaded, setup for emulation
       		canvasSupport.emulated = true;
@@ -1607,17 +1607,17 @@ var EngineSupport = Base.extend(/** @scope EngineSupport.prototype */{
       		canvasSupport.text = true;
 				canvasSupport.textMetrics = true;
 			}
-      	      
+
       	// Build support object
          EngineSupport._sysInfo = {
             "browser" : $.browser.chrome ? "chrome" :
 				           ($.browser.android ? "android" :
-                       ($.browser.Wii ? "wii" : 
+                       ($.browser.Wii ? "wii" :
                        ($.browser.iPhone ? "iphone" :
-                       ($.browser.safari ? "safari" : 
-							  ($.browser.firefox ? "firefox" : 
+                       ($.browser.safari ? "safari" :
+							  ($.browser.firefox ? "firefox" :
                        ($.browser.mozilla ? "mozilla" :
-                       ($.browser.opera ? "opera" : 
+                       ($.browser.opera ? "opera" :
                        ($.browser.msie ? "msie" : "unknown")))))))),
             "version" : $.browser.version,
             "agent": navigator.userAgent,
@@ -1641,7 +1641,7 @@ var EngineSupport = Base.extend(/** @scope EngineSupport.prototype */{
                "canvas" : canvasSupport
             }
          };
-         
+
          $(document).ready(function() {
             // When the document is ready, we'll go ahead and get the width and height added in
             EngineSupport._sysInfo = $.extend(EngineSupport._sysInfo, {
@@ -1654,7 +1654,7 @@ var EngineSupport = Base.extend(/** @scope EngineSupport.prototype */{
       }
       return EngineSupport._sysInfo;
    },
-   
+
    /**
     * When the object is no longer <tt>undefined</tt>, the function will
     * be executed.
@@ -1681,7 +1681,7 @@ var EngineSupport = Base.extend(/** @scope EngineSupport.prototype */{
  * @author: $Author: bfattori $
  * @version: $Revision: 1425 $
  *
- * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com) 
+ * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1716,7 +1716,7 @@ var EngineSupport = Base.extend(/** @scope EngineSupport.prototype */{
  *
  * @static
  */
-var Linker = Base.extend(/** @scope Linker.prototype */{ 
+var Linker = Base.extend(/** @scope Linker.prototype */{
 
    constructor: null,
 
@@ -1733,9 +1733,9 @@ var Linker = Base.extend(/** @scope Linker.prototype */{
    dependencyTimer: null,
    dependencyCheckTimeout: $.browser.Wii ? 8500 : 6500,
    dependencyProcessTimeout: 100,
-   
+
    loadedClasses: [],
-   
+
    /**
     * Cleanup all initialized classes and start fresh.
     * @private
@@ -1770,7 +1770,7 @@ var Linker = Base.extend(/** @scope Linker.prototype */{
       if (primaryDependency) {
          objDeps.push(primaryDependency);
       }
-      
+
       var newDeps = [];
 
       // Check for nulls and circular references
@@ -1864,7 +1864,7 @@ var Linker = Base.extend(/** @scope Linker.prototype */{
 	               resolved.push(deps[dep]);
 	            }
 	         }
-	
+
 	         for (var x in resolved) {
 	            EngineSupport.arrayRemove(Linker.dependencyList[d].deps, resolved[x]);
 	         }
@@ -1880,7 +1880,7 @@ var Linker = Base.extend(/** @scope Linker.prototype */{
 
             // Remember what we processed so we don't process them again
             pDeps.push(d);
-            
+
             // After it has been initialized, check to see if it has the
             // resolved() class method
             if (parentObj[d].resolved) {
@@ -1927,7 +1927,7 @@ var Linker = Base.extend(/** @scope Linker.prototype */{
       var vR = new RegExp("(var\\s*" + nR + "\\s*)","g");
       var m;
       while ((m = vR.exec(def)) != null) {
-         vTable.push(m[2]); 
+         vTable.push(m[2]);
       }
       return vTable;
    },
@@ -2011,7 +2011,7 @@ var Linker = Base.extend(/** @scope Linker.prototype */{
 
       return a;
    },
-   
+
    /**
     * Finds all of the dependencies within an object class.
     * @private
@@ -2138,7 +2138,7 @@ var Linker = Base.extend(/** @scope Linker.prototype */{
     * @private
     */
    checkCircularRefs: function(objectName) {
-      // Remove first-level dependencies           
+      // Remove first-level dependencies
       var deps = Linker.dependencyList[objectName].deps;
       for (var dep in deps) {
          if (Linker.dependencyList[deps[dep]] && EngineSupport.indexOf(Linker.dependencyList[deps[dep]].deps, objectName) != -1) {
@@ -2146,9 +2146,9 @@ var Linker = Base.extend(/** @scope Linker.prototype */{
             EngineSupport.arrayRemove(Linker.dependencyList[objectName].deps, deps[dep]);
          }
       }
-      
+
    },
-	
+
    /**
     * Check the dependency list for any unresolved dependencies.  Anything that hasn't
     * been resolved will be dumped to the console as an error.
@@ -2159,7 +2159,7 @@ var Linker = Base.extend(/** @scope Linker.prototype */{
       window.clearTimeout(Linker.dependencyTimer);
       Linker.dependencyTimer = null;
       window.clearTimeout(Linker.dependencyProcessor);
-      Linker.dependencyProcessor = null;      
+      Linker.dependencyProcessor = null;
 
       // Build the list
       var unresolved = [], unresDeps = "", dCount = 0;
@@ -2173,7 +2173,7 @@ var Linker = Base.extend(/** @scope Linker.prototype */{
          unresolved.push(unresDeps);
          unresDeps = "";
       }
-      
+
       if (dCount != 0) {
          // Dump the dependency list
          Console.setDebugLevel(Console.DEBUGLEVEL_ERRORS);
@@ -2197,7 +2197,7 @@ var Linker = Base.extend(/** @scope Linker.prototype */{
    //                                         SYNTAX PARSER
    //====================================================================================================
    //====================================================================================================
-   
+
    /**
     * Parse a javascript file for common syntax errors which might otherwise cause a script
     * to not load.  On platforms, such as Wii and iPhone, it might not be possible to see
@@ -2206,10 +2206,10 @@ var Linker = Base.extend(/** @scope Linker.prototype */{
     * @private
     */
    parseSyntax: function(jsCode) {
-      
+
       // Clean the source first so we only have code
       //jsCode = EngineSupport.cleanSource(jsCode, true);
-      
+
       // Check for the following:
       // * Variable comparison in assignment statement
       // * Extra comma after last item in Object definition
@@ -2217,12 +2217,12 @@ var Linker = Base.extend(/** @scope Linker.prototype */{
       // * Missing colon between name and definition
       // * Equal sign where colon expected
       // * Try without catch and finally
-      
+
       //Console.error("Syntax errors:\n", errors);
-      
-      return true;   
+
+      return true;
    }
-   
+
 });
 
 /**
@@ -2290,7 +2290,7 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
       skipFrames: true,		// Skip missed frames
       billboards: true,		// Use billboards to speed up rendering
       hardwareAccel: false,// Hardware acceleration is not available
-      pointAsArc: true,		// Draw points are arcs
+      pointAsArc: false,		// Draw points are arcs - framechange from true
 		transientMathObject: false		// MathObject is not transient (pooled)
    },
 
@@ -2341,7 +2341,7 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
     * @memberOf Engine
     */
    liveTime: 0,               // The "alive" time (worldTime-upTime)
-   
+
    shutdownCallbacks: [],		// Methods to call when the engine is shutting down
 
    // Issue #18 - Intrinsic loading dialog
@@ -2363,19 +2363,19 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
 		if (opts.defaults) {
 			configOpts = opts.defaults;
 		}
-		
+
 		// See if the OS has a key
 		var osOpts, platformDefaults, versionDefaults, platformVersions;
 		if (opts["platforms"] && opts["platforms"][EngineSupport.sysInfo().OS]) {
 			// Yep, extract that one
 			osOpts = opts["platforms"][EngineSupport.sysInfo().OS];
-			
+
 			// Check for platform defaults
 			if (osOpts && osOpts["defaults"]) {
 				platformDefaults = osOpts["defaults"];
 			}
 		}
-		
+
 		// Check for general version specific options
 		if (opts["versions"]) {
 			for (var v in opts["versions"]) {
@@ -2385,7 +2385,7 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
 				}
 			}
 		}
-		
+
 		// Finally, check the OS for version specific options
 		if (osOpts && osOpts["versions"]) {
 			for (var v in osOpts["versions"]) {
@@ -2395,7 +2395,7 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
 				}
 			}
 		}
-		
+
       $.extend(Engine.options, configOpts, platformDefaults, versionDefaults, platformVersions);
    },
 
@@ -2446,7 +2446,7 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
       Assert((fps != 0), "You cannot have a framerate of zero!");
       this.fpsClock = Math.floor(1000 / fps);
    },
-   
+
    /**
     * Get the FPS (frames per second) the engine is set to run at.
     * @return {Number}
@@ -2455,7 +2455,7 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
    getFPS: function() {
       return Math.floor((1 / this.fpsClock) * 1000)
    },
-   
+
    /**
     * Get the actual FPS (frames per second) the engine is running at.
     * This value will vary as load increases or decreases due to the
@@ -2467,7 +2467,7 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
    getActualFPS: function() {
       return Math.floor((1 / Engine.frameTime) * 1000);
    },
-   
+
    /**
     * Get the amount of time allocated to draw a single frame.
     * @return {Number} Milliseconds allocated to draw a frame
@@ -2476,7 +2476,7 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
    getFrameTime: function() {
       return this.fpsClock;
    },
-   
+
    /**
     * Get the amount of time it took to draw the last frame.  This value
     * varies per frame drawn, based on visible objects, number of operations
@@ -2488,9 +2488,9 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
    getDrawTime: function() {
       return Engine.frameTime;
    },
-   
+
    /**
-    * Get the load the currently rendered frame is putting on the engine.  
+    * Get the load the currently rendered frame is putting on the engine.
     * The load represents the amount of
     * work the engine is doing to render a frame.  A value less
     * than one indicates the the engine can render a frame within
@@ -2595,7 +2595,7 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
       Console.log("DESTROYED Object ", objId, "[", obj, "]");
       this.livingObjects--;
    },
-   
+
    /**
     * Add a timer to the pool so it can be cleaned up when
     * the engine is shutdown, or paused when the engine is
@@ -2604,7 +2604,7 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
     * @param timer {Timer} The timer to add
     */
    addTimer: function(timerName, timer) {
-      Engine.timerPool[timerName] = timer;   
+      Engine.timerPool[timerName] = timer;
    },
 
    /**
@@ -2685,12 +2685,12 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
       if (Engine.shuttingDown || Engine.running) {
          return;
       }
-      
+
       // Restart all of the timers
       for (var tm in Engine.timerPool) {
          Engine.timerPool[tm].restart();
       }
-      
+
       var mode = "[";
       mode += (this.debugMode ? "DEBUG" : "");
       mode += (this.localMode ? (mode.length > 0 ? " LOCAL" : "LOCAL") : "");
@@ -2720,7 +2720,7 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
       for (var tm in Engine.timerPool) {
          Engine.timerPool[tm].pause();
       }
-      
+
       Console.warn(">>> Engine paused <<<");
       window.clearTimeout(Engine.globalTimer);
       this.running = false;
@@ -2737,7 +2737,7 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
 		if (Engine.shuttingDown === true) {
 			return;
 		}
-		
+
 		Engine.shutdownCallbacks.push(fn);
 	},
 
@@ -2751,12 +2751,12 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
          // Prevent another shutdown
          return;
       }
-      
+
       Engine.shuttingDown = true;
-      
+
       if (!this.running && this.started)
       {
-         // If the engine is not currently running (i.e. paused) 
+         // If the engine is not currently running (i.e. paused)
          // restart it and then re-perform the shutdown
          this.running = true;
          setTimeout(function() { Engine.shutdown(); }, (this.fpsClock * 2));
@@ -2770,7 +2770,7 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
 
       // Stop world timer
       window.clearTimeout(Engine.globalTimer);
-      
+
       // Run through shutdown callbacks to allow objects not tracked by Engine
       // to clean up references, etc.
       while (Engine.shutdownCallbacks.length > 0) {
@@ -2794,19 +2794,19 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
       Console.warn(">>> Engine stopped.  Runtime: " + (this.downTime - this.upTime) + "ms");
 
       this.running = false;
-      
+
       // Kill off the default context and anything
       // that's attached to it.  We'll alert the
       // developer if there's an issue with orphaned objects
       this.getDefaultContext().destroy();
-      
+
       // Dump the object pool
       if (typeof PooledObject != "undefined") {
          PooledObject.objectPool = null;
       }
 
       AssertWarn((this.livingObjects == 0), "Object references not cleaned up!");
-      
+
       this.loadedScripts = {};
       this.scriptLoadCount = 0;
       this.scriptsProcessed = 0;
@@ -2827,7 +2827,7 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
    cleanup: function() {
       // Protect the HTML console, if visible
       var hdc = $("#debug-console").remove();
-   
+
       // Remove the body contents
       $(document.body).empty();
 
@@ -2837,10 +2837,10 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
 
       // Remove all scripts from the <head>
       $("head script", document).remove();
-      
+
       // Final cleanup
       Linker.cleanup();
-      
+
       // Shutdown complete
       Engine.shuttingDown = false;
    },
@@ -2879,8 +2879,8 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
       msg += "supported browsers</a> for more information.";
       switch (sInfo.browser) {
          case "iPhone":
-			case "android": 
-         case "msie": Engine.options.billboards = false; 
+			case "android":
+         case "msie": Engine.options.billboards = false;
                       return true;
          case "chrome":
          case "Wii":
@@ -2961,12 +2961,12 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
 		}
 		/* pragma:DEBUG_END */
    },
-	
+
 	// ======================================================
 	// Declarations here only for documentation purposes
 	// See engine.script.js
 	// ======================================================
-	
+
    /**
     * Status message when a script is not found
     * @type Boolean
@@ -2974,7 +2974,7 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
     * @field
     */
    SCRIPT_NOT_FOUND: false,
-   
+
    /**
     * Status message when a script is successfully loaded
     * @type Boolean
@@ -3017,9 +3017,9 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
 	 *		text and status code (a number) of the request.
 	 * @memberOf Engine
     * @function
-	 */	 
+	 */
 	loadText: null,
-	
+
 	/**
 	 * Load text from the specified path and parse it as JSON.  We're doing
 	 * a little pre-parsing of the returned data so that the JSON can include
@@ -3031,7 +3031,7 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
 	 *		JSON object and status code (a number) of the request.
     * @memberOf Engine
     * @function
-	 */	 
+	 */
 	loadJSON: null,
 
    /**
@@ -3134,7 +3134,7 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
     * @function
     */
    showMetrics: null,
-   
+
    /**
     * Show the engine performance graph.
     * @memberOf Engine
@@ -3192,7 +3192,7 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
 
 /**
  * The Render Engine
- * 
+ *
  * An extension to the engine for script loading and processing.
  *
  * @author: Brett Fattori (brettf@renderengine.com)
@@ -3201,17 +3201,17 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
  * @version: $Revision$
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -3240,14 +3240,14 @@ var Engine = Engine.extend(/** @lends Engine.prototype */{
    scriptRatio: 0,            // Ratio between processed/queued
    queuePaused:false,         // Script queue paused flag
    pauseReps: 0,              // Queue run repetitions while paused
-   
+
    /**
     * Status message when a script is not found
     * @type Boolean
     * @memberOf Engine.prototype
     */
    SCRIPT_NOT_FOUND: false,
-   
+
    /**
     * Status message when a script is successfully loaded
     * @type Boolean
@@ -3268,7 +3268,7 @@ var Engine = Engine.extend(/** @lends Engine.prototype */{
     * Perform an immediate load on the specified script.  Objects within
     * the script may not immediately initialize, unless their dependencies
     * have been resolved.
-    * 
+    *
     * @param {String} scriptPath The path to the script to load
     * @param {Function} [cb] The function to call when the script is loaded.
     *                   the path of the script loaded and a status message
@@ -3279,7 +3279,7 @@ var Engine = Engine.extend(/** @lends Engine.prototype */{
    loadNow: function(scriptPath, cb) {
       this.doLoad(this.getEnginePath() + scriptPath, scriptPath, cb);
    },
-   
+
    /**
     * Queue a script to load from the server and append it to
     * the head element of the browser.  Script names are
@@ -3299,7 +3299,7 @@ var Engine = Engine.extend(/** @lends Engine.prototype */{
 	 * Low-level method to call jQuery to use AJAX to load
 	 * a file asynchronously.  If a failure (such as a 404) occurs,
 	 * it shouldn't fail silently.
-	 * 
+	 *
 	 * @param path {String} The url to load
 	 * @param data {Object} Optional arguments to pass to server
 	 * @param callback {Function} The callback method
@@ -3325,7 +3325,7 @@ var Engine = Engine.extend(/** @lends Engine.prototype */{
 		}
 		xhr.send(rData);
 	},
-	
+
 	/**
 	 * Load text from the specified path.
 	 *
@@ -3333,7 +3333,7 @@ var Engine = Engine.extend(/** @lends Engine.prototype */{
 	 * @param data {Object} Optional arguments to pass to server
 	 * @param callback {Function} The callback method which is passed the
 	 *		text and status code (a number) of the request.
-	 */	 
+	 */
 	loadText: function(path, data, callback) {
 		if (typeof data == "function") {
 			callback = data;
@@ -3343,7 +3343,7 @@ var Engine = Engine.extend(/** @lends Engine.prototype */{
 			callback(xhr.responseText, xhr.status);
 		});
 	},
-	
+
 	/**
 	 * Load text from the specified path and parse it as JSON.  We're doing
 	 * a little pre-parsing of the returned data so that the JSON can include
@@ -3353,7 +3353,7 @@ var Engine = Engine.extend(/** @lends Engine.prototype */{
 	 * @param data {Object} Optional arguments to pass to server
 	 * @param callback {Function} The callback method which is passed the
 	 *		JSON object and status code (a number) of the request.
-	 */	 
+	 */
 	loadJSON: function(path, data, callback) {
 		if (typeof data == "function") {
 			callback = data;
@@ -3502,12 +3502,12 @@ var Engine = Engine.extend(/** @lends Engine.prototype */{
                   var h = document.getElementsByTagName("head")[0];
                   h.appendChild(n);
                   Engine.readyForNextScript = true;
-                  
+
                   Engine.scriptLoadCount--;
                   Engine.updateProgress();
                   Console.debug("Loaded '" + scriptPath + "'");
                }
-               
+
             }, "text");
          }  else {
 
@@ -3526,7 +3526,7 @@ var Engine = Engine.extend(/** @lends Engine.prototype */{
                   }
                   if (!Engine.localMode) {
                      // Delete the script node
-                     $(n).remove(); 
+                     $(n).remove();
                   }
                }
                Engine.readyForNextScript = true;
@@ -3598,13 +3598,13 @@ var Engine = Engine.extend(/** @lends Engine.prototype */{
             loadingDialog += gameDisplayName + "...<div id='engine-load-progress'></div><span id='engine-load-info'></span></div>";
             loadingDialog += "</td></tr></table></span>";
 
-            $("body",document).append($(loadingDialog)); 
+            $("body",document).append($(loadingDialog));
          }
       });
 
       // We'll wait for the Engine to be ready before we load the game
       var engine = this;
-	
+
 		// Load engine options for browsers
 		Engine.loadEngineOptions();
 
@@ -3630,10 +3630,10 @@ var Engine = Engine.extend(/** @lends Engine.prototype */{
                      clearInterval(Engine.gameRunTimer);
 
                      Console.warn("Starting: " + gameObjectName);
-                     
+
                      // Remove the "loading" message (if we provided it)
                      $("#loading.intrinsic").remove();
-                     
+
                      // Start the game
                      window[gameObjectName].setup();
                   }
@@ -3644,10 +3644,10 @@ var Engine = Engine.extend(/** @lends Engine.prototype */{
    },
 
 	loadEngineOptions: function() {
-		
+
 		// Load the default configuration for all browsers, then load one specific to the browser type
 		Engine.optionsLoaded = false;
-	
+
 		// Load the options specific to the browser.  Whether they load, or not,
 		// the game will continue to load.
 		Engine.loadJSON(Engine.getEnginePath() + "/engine/configs/" + EngineSupport.sysInfo().browser + ".config", function(bData, status) {
@@ -3658,10 +3658,10 @@ var Engine = Engine.extend(/** @lends Engine.prototype */{
 				// Log an error (most likely a 404)
 				Console.log("Engine options for: " + EngineSupport.sysInfo().browser + " responded with " + status);
 			}
-			
-			Engine.optionsLoaded = true;	
+
+			Engine.optionsLoaded = true;
 		});
-		
+
 	},
 
    /**
@@ -3769,11 +3769,11 @@ var Engine = Engine.extend(/** @lends Engine.prototype */{
    clearScriptCache: function() {
       this.loadedScripts = {};
    }
-   
+
 });
 /**
  * The Render Engine
- * 
+ *
  * An extension to the engine for metrics processing and display.
  *
  * @author: Brett Fattori (brettf@renderengine.com)
@@ -3782,17 +3782,17 @@ var Engine = Engine.extend(/** @lends Engine.prototype */{
  * @version: $Revision: 1449 $
  *
  * Copyright (c) 2010 Brett Fattori (brettf@renderengine.com)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -3825,7 +3825,7 @@ var Engine = Engine.extend({
    droppedFrames: 0,          // Non-rendered frames/frames dropped
    profilePos: 0,
    profiles: {},
-   
+
 
    /**
     * Toggle the display of the metrics window.  Any metrics
@@ -3843,7 +3843,7 @@ var Engine = Engine.extend({
    showMetrics: function() {
       this.showMetricsWindow = true;
    },
-   
+
    /**
     * Show a graph of the engine profile
     * @memberOf Engine
@@ -3859,7 +3859,7 @@ var Engine = Engine.extend({
    hideMetrics: function() {
       this.showMetricsWindow = false;
    },
-   
+
    manMetrics: function() {
       if ($("div.metric-button.minimize").length > 0) {
          $("div.metric-button.minimize").removeClass("minimize").addClass("maximize").attr("title", "maximize");
@@ -3898,7 +3898,7 @@ var Engine = Engine.extend({
          this.metricDisplay.append($("<div class='items'/>"));
          this.metricDisplay.appendTo($("body"));
       }
-      
+
       if ((this.showMetricsWindow || this.showMetricsProfile) && this.lastMetricSample-- == 0)
       {
          // Add some metrics to assist the developer
@@ -3914,13 +3914,13 @@ var Engine = Engine.extend({
          this.updateMetrics();
          this.lastMetricSample = this.metricSampleRate;
       }
-      
+
       if (this.showMetricsProfile && EngineSupport.sysInfo().browser == "msie" &&
 			 parseFloat(EngineSupport.sysInfo().version) < 9) {
          // Profiler not supported in IE
          this.showMetricsProfile = false;
       }
-      
+
       if (this.showMetricsProfile && !this.profileDisplay) {
          this.profileDisplay = $("<canvas width='150' height='100'/>").addClass("engine-profile");
          this.profileDisplay.appendTo($("body"));
@@ -4033,10 +4033,10 @@ var Engine = Engine.extend({
             this.profiles[color] = (100 - val < 1 ? 1 : 100 - val);
          }
       } catch(ex) {
-         
+
       }
    },
-   
+
    moveProfiler: function() {
       var ctx = this.profileDisplay[0].getContext('2d');
       var imgData = ctx.getImageData(1,0,149,100);
@@ -4051,7 +4051,7 @@ var Engine = Engine.extend({
     * @private
     * @memberOf Engine
     */
-   doMetrics: function() { 
+   doMetrics: function() {
       // Output any metrics
       if (Engine.showMetricsWindow || Engine.showMetricsProfile) {
          Engine.renderMetrics();
@@ -4060,7 +4060,7 @@ var Engine = Engine.extend({
          Engine.metricDisplay = null;
       }
    }
-   
+
 });
 
 if (EngineSupport.checkBooleanParam("metrics"))

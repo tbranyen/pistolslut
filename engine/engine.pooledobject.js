@@ -36,8 +36,8 @@ Engine.initObject("PooledObject", null, function() {
 
 /**
  * @class Pooled objects are created as needed, and reused from a static pool
- *        of all objects, organized by classname.  When an object is created, if one 
- *        is not available in the pool, a new object is created.  When the object 
+ *        of all objects, organized by classname.  When an object is created, if one
+ *        is not available in the pool, a new object is created.  When the object
  *        is destroyed, it is returned to the pool so it can be used again.  This has the
  *        effect of minimizing the requirement for garbage collection, reducing
  *        cycles needed to clean up dead objects.
@@ -53,10 +53,10 @@ var PooledObject = Base.extend(/** @scope PooledObject.prototype */{
 
    // The name of the object
    name: "",
-	
+
 	_destroyed: false,
-	
-	
+
+
 
    /**
     * @private
@@ -69,7 +69,7 @@ var PooledObject = Base.extend(/** @scope PooledObject.prototype */{
 
    /**
     * When a pooled object is destroyed, its <tt>release()</tt> method will be called
-    * so it has a chance to can clean up instance variables before being put back into 
+    * so it has a chance to can clean up instance variables before being put back into
     * the pool for reuse. The variables should be returned to an "uninitialized" state.
     */
    release: function() {
@@ -79,7 +79,7 @@ var PooledObject = Base.extend(/** @scope PooledObject.prototype */{
 
    /**
     * Destroy this object instance (remove it from the Engine).  The object's release
-    * method is called after destruction so it will be returned to the pool of objects 
+    * method is called after destruction so it will be returned to the pool of objects
     * to be used again.
     */
    destroy: function() {
@@ -130,7 +130,7 @@ var PooledObject = Base.extend(/** @scope PooledObject.prototype */{
    },
 
 	toString: function() {
-      return this.getId() + " [" + this.constructor.getClassName() + "]";   
+      return this.getId() + " [" + this.constructor.getClassName() + "]";
 	},
 
    /**
@@ -151,7 +151,7 @@ var PooledObject = Base.extend(/** @scope PooledObject.prototype */{
       xml += "/>\n";
       return xml;
    },
-	
+
 	/**
 	 * Returns <tt>true</tt> if the object has been destroyed.  For objects which are
 	 * being updated by containers, this method is used to determine if the object should
@@ -166,14 +166,14 @@ var PooledObject = Base.extend(/** @scope PooledObject.prototype */{
 	isDestroyed: function() {
 		return this._destroyed;
 	},
-	
+
 	/**
 	 * Get the model data associated with an object.  If <tt>key</tt> is provided, only the
 	 * data for <tt>key</tt> will be returned.  If the data has not yet been assigned,
 	 * an empty object will be created to contain the data.
-	 * 
+	 *
 	 * @param [key] {String} Optional key which contains the data, or <tt>null</tt> for the
-	 * 	entire data model. 
+	 * 	entire data model.
 	 */
 	getObjectDataModel: function(key) {
 		var mData = this[PooledObject.DATA_MODEL];
@@ -183,10 +183,10 @@ var PooledObject = Base.extend(/** @scope PooledObject.prototype */{
 		}
 		return key ? mData[key] : mData;
 	},
-	
+
 	/**
 	 * Set a key, within the object's data model, to a specific value.
-	 * 
+	 *
 	 * @param key {String} The key to set the data for
 	 * @param value {Object} The value to assign to the key
 	 */
@@ -194,14 +194,14 @@ var PooledObject = Base.extend(/** @scope PooledObject.prototype */{
 		var mData = this.getObjectDataModel();
 		mData[key] = value;
 	},
-	
+
 	/**
 	 * Clear all of the spatial container model data.
 	 */
 	clearObjectDataModel: function() {
 		this[PooledObject.DATA_MODEL] = null;
 	}
-	
+
 }, /** @scope PooledObject.prototype **/{
 
    /**
@@ -227,10 +227,10 @@ var PooledObject = Base.extend(/** @scope PooledObject.prototype */{
     * @type {Number}
     */
    poolSize: 0,
-   
-   /* pragma:DEBUG_START */
+
+   /* pragma:DEBUG_START
    classPool: {},
-   /* pragma:DEBUG_END */
+    pragma:DEBUG_END */
 
    /**
     * Similar to a constructor, all pooled objects implement this method.
@@ -251,25 +251,25 @@ var PooledObject = Base.extend(/** @scope PooledObject.prototype */{
          var obj = PooledObject.objectPool[this.getClassName()].shift();
          obj.constructor.apply(obj, arguments);
 
-         /* pragma:DEBUG_START */ 
+         /* pragma:DEBUG_START
          PooledObject.classPool[this.getClassName()][1]++;
          PooledObject.classPool[this.getClassName()][2]--;
-         /* pragma:DEBUG_END */
+          pragma:DEBUG_END */
 
          return obj;
       } else {
          PooledObject.poolNew++;
          Engine.addMetric("poolNew", PooledObject.poolNew, false, "#");
-         
-         /* pragma:DEBUG_START */
+
+         /* pragma:DEBUG_START
          if (PooledObject.classPool[this.getClassName()]) {
             PooledObject.classPool[this.getClassName()][0]++;
          } else {
-            // 0: new, 1: in use, 2: pooled
+             // 0: new, 1: in use, 2: pooled
             PooledObject.classPool[this.getClassName()] = [1,0,0];
          }
-         /* pragma:DEBUG_END */
-         
+         pragma:DEBUG_END */
+
          // TODO: Any more than 15 arguments and construction will fail!
          return new this(arguments[0],arguments[1],arguments[2],arguments[3],arguments[4],
                          arguments[5],arguments[6],arguments[7],arguments[8],arguments[9],
@@ -294,13 +294,15 @@ var PooledObject = Base.extend(/** @scope PooledObject.prototype */{
       PooledObject.poolSize++;
       PooledObject.objectPool[obj.constructor.getClassName()].push(obj);
 
-      /* pragma:DEBUG_START */
+       /* pragma:DEBUG_START
+       if(PooledObject.classPool[obj.constructor.getClassName()] === undefined)
+           console.log(obj.constructor.getClassName())
       if (PooledObject.classPool[obj.constructor.getClassName()][1] != 0) {
          PooledObject.classPool[obj.constructor.getClassName()][1]--;
       }
       PooledObject.classPool[obj.constructor.getClassName()][2]++;
-      /* pragma:DEBUG_END */
-         
+      pragma:DEBUG_END */
+
 
       Engine.addMetric("pooledObjects", PooledObject.poolSize, false, "#");
    },
@@ -322,7 +324,7 @@ var PooledObject = Base.extend(/** @scope PooledObject.prototype */{
       }
       return "PooledObject";
    },
-	
+
 	/**
 	 * @private
 	 */

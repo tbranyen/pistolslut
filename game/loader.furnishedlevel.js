@@ -151,19 +151,19 @@ Engine.initObject("FurnishedLevel", "Level", function() {
 		addBlockFurniture: function(renderContext) {
 			var data = this.levelResource.info.objects.blockFurniture;
 			for(var i in data)
-				this.createPieceOfBlockFurniture(renderContext, data[i].name, data[i].shape)
+				this.createPieceOfBlockFurniture(renderContext, data[i].name, data[i].shape, data[i].visible);
 		},
 
 		// automatically adds block furniture to cover bottom of level and add sides to stop player running outside level
 		addLevelBlockers: function(renderContext) {
 			var floorBlockHeight = 34;
 			var shapeData = { x: 0, y: this.getHeight() - floorBlockHeight, w: this.getWidth(), h: floorBlockHeight };
-			var furniturePiece = this.createPieceOfBlockFurniture(renderContext, "floor", shapeData);
+			var furniturePiece = this.createPieceOfBlockFurniture(renderContext, "floor", shapeData, true);
 			furniturePiece.setZIndex(this.field.frontZIndex);
 		},
 
-		createPieceOfBlockFurniture: function(renderContext, name, shapeData) {
-			var furnitureBlock = BlockFurniture.create("block", shapeData);
+		createPieceOfBlockFurniture: function(renderContext, name, shapeData, visible) {
+			var furnitureBlock = BlockFurniture.create("block", shapeData, visible);
 			this.furniture[this.furniture.length] = furnitureBlock;
 			renderContext.add(furnitureBlock);
 			return furnitureBlock;
@@ -287,7 +287,7 @@ Engine.initObject("FurnishedLevel", "Level", function() {
 			var lifts = this.levelResource.info.objects.lifts;
 			for(var i in lifts)
 			{
-				this.lifts[i] = new Lift(this.field, Point2D.create(lifts[i].startX, lifts[i].startY), lifts[i].distance);
+				this.lifts[i] = new Lift(this.field, Point2D.create(lifts[i].startX, lifts[i].startY), lifts[i].distance, lifts[i].width);
 				renderContext.add(this.lifts[i]);
 			}
 		},

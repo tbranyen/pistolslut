@@ -4,7 +4,7 @@
 	bitmapImage: "level1.gif", bitmapWidth: 6000, bitmapHeight: 430, collisionMap: [],
 
     player: {
-        startPosition: { x: 50, y: 344 },
+        startPosition: { x: 1900, y: 344 },
     },
 
 	objects: {
@@ -32,30 +32,31 @@
 
 		spriteFurniture: [
 			{ x: 0, y: 328, spriteName: "fenceleft.gif" },
-			{ x: 170, y: 369, spriteName: "bin.gif" },
 			{ x: 370, y: 369, spriteName: "bin.gif" },
 			{ x: 775, y: 370, spriteName: "sandbags.gif" },
 			{ x: 1100, y: 369, spriteName: "bin.gif" },
 			{ x: 2000, y: 370, spriteName: "sandbags.gif" },
-			{ x: 2315, y: 369, spriteName: "bin.gif" },
-			{ x: 2665, y: 369, spriteName: "bin.gif" },
             { x: 4000, y: 369, spriteName: "drystonewall1.gif" },
             { x: 4400, y: 369, spriteName: "drystonewall2.gif" },
 			{ x: 5989, y: 328, spriteName: "fenceright.gif" },
 		],
 
 		blockFurniture: [
-			{ name: "longbuildingbody1", shape: { x: 2300, y: 196, w: 400, h: 112 } },
+			{ name: "bridgebody", shape: { x: 2364, y: 207, w: 487, h: 20 }, visible: false },
+			{ name: "bridgebollard1", shape: { x: 2400, y: 369, w: 20, h: 27 }, visible: true },
+			{ name: "bridgebollard2", shape: { x: 2600, y: 369, w: 20, h: 27 }, visible: true },
+			{ name: "bridgebollard3", shape: { x: 2800, y: 369, w: 20, h: 27 }, visible: true },
 		],
 
 		enemies: [
 			{ name: "enemy", clazz: Enemy, x: 795, y: 350, type: "cannonfodder", direction: "Right" },
 			{ name: "enemy", clazz: Enemy, x: 1120, y: 350, type: "grenadier" },
 			{ name: "enemy", clazz: Enemy, x: 1190, y: 350, type: "mortarer" },
-			{ name: "enemy", clazz: Enemy, x: 2400, y: 350, type: "cannonfodder" },
-			{ name: "enemy", clazz: Enemy, x: 2350, y: 130, type: "cannonfodder" },
-			{ name: "enemy", clazz: Enemy, x: 2400, y: 130, type: "mortarer" },
-			{ name: "enemy", clazz: Enemy, x: 2700, y: 350, type: "captain" },
+			{ name: "enemy", clazz: Enemy, x: 2400, y: 130, type: "cannonfodder" },
+			{ name: "enemy", clazz: Enemy, x: 2450, y: 130, type: "mortarer" },
+			{ name: "enemy", clazz: Enemy, x: 2510, y: 350, type: "cannonfodder" },
+			{ name: "enemy", clazz: Enemy, x: 2625, y: 350, type: "grunt" },
+			{ name: "enemy", clazz: Enemy, x: 2900, y: 350, type: "captain" },
 			{ name: "enemy", clazz: Enemy, x: 4020, y: 350, type: "cannonfodder" },
 			{ name: "enemy", clazz: Enemy, x: 4340, y: 350, type: "mortarer" },
 			{ name: "enemy", clazz: Enemy, x: 4420, y: 350, type: "captain" },
@@ -73,7 +74,7 @@
 		],
 
 		fires: [
-			{ name: "fire1", x: 174, y: 368, width: 14 }
+			{ name: "fire1", x: 374, y: 368, width: 14 }
 		],
 
 		fireworkLaunchers: [
@@ -83,7 +84,7 @@
 		sky: { startColor: ["26", "26", "26"], transformations: null },
 
 		lifts: [
-			{ name: "longbuildinglift", startX: 2259, startY: 400, distance: 204 },
+			{ name: "longbuildinglift", startX: 2299, startY: 400, distance: 193, width: 64 },
 		],
 
         barrels: [
@@ -125,12 +126,8 @@
 				sprite: { bitmapImage: "floorsign.gif", sprites: { "main": { "f" : [0, 0, 151, 99] } } }
 			},
 			{
-				name: "longbuilding", x: 2300, y: 196, scrollAttenuation: 0, zIndex: 2000,
-				sprite: { bitmapImage: "longbuilding.png", sprites: { "main": { "f" : [0, 0, 400, 200] } } }
-			},
-            {
-				name: "longbuildingfence", x: 2300, y: 176, scrollAttenuation: 0, zIndex: 2000,
-				sprite: { bitmapImage: "longbuildingfence.png", sprites: { "main": { "f" : [0, 0, 400, 20] } } }
+				name: "bridge", x: 2300, y: 30, scrollAttenuation: 0, zIndex: 2001,
+				sprite: { bitmapImage: "bridge.png", sprites: { "main": { "f" : [0, 0, 613, 400] } } }
 			},
 			{
 				name: "closestlight1", x: 1350, y: 92, scrollAttenuation: 0, zIndex: 2000,

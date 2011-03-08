@@ -60,7 +60,7 @@ Engine.initObject("Player", "Human", function() {
 	    },
 
 	    // if walking when pressed crouch, save direction of walk
-	    // for future resuption.  A workaround for weird keyboard handling.
+	    // for future resumption.  A workaround for weird keyboard handling.
 	    walkPaused: false,
 	    handlePausedWalk: function() {
 		    if(this.walking)

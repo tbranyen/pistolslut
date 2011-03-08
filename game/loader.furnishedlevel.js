@@ -120,8 +120,8 @@ Engine.initObject("FurnishedLevel", "Level", function() {
 			this.addBlockFurniture(renderContext);
 			this.addEnemies(renderContext);
 			this.addSigns(renderContext);
-			this.addFires();
-			this.addFireworkLaunchers(renderContext);
+			//this.addFires();
+			//this.addFireworkLaunchers(renderContext);
 			this.addSky(renderContext);
 			this.addParallaxes(renderContext);
 			this.addLanterns(renderContext);
@@ -158,15 +158,31 @@ Engine.initObject("FurnishedLevel", "Level", function() {
 		addLevelBlockers: function(renderContext) {
 			var floorBlockHeight = 34;
 			var shapeData = { x: 0, y: this.getHeight() - floorBlockHeight, w: this.getWidth(), h: floorBlockHeight };
-			var furniturePiece = this.createPieceOfBlockFurniture(renderContext, "floor", shapeData, true);
-			furniturePiece.setZIndex(this.field.frontZIndex);
+			this.createPieceOfBlockFurniture(renderContext, "floor", shapeData, true, this.field.frontZIndex);
 		},
 
 		createPieceOfBlockFurniture: function(renderContext, name, shapeData, visible) {
-			var furnitureBlock = BlockFurniture.create("block", shapeData, visible);
-			this.furniture[this.furniture.length] = furnitureBlock;
-			renderContext.add(furnitureBlock);
-			return furnitureBlock;
+            var x = shapeData.x;
+            var y = shapeData.y;
+            while(y < shapeData.y + shapeData.h)
+            {
+                var curBlockH = Math.min((shapeData.y + shapeData.h) - y, this.field.maxBlockDimension);
+                while(x < shapeData.x + shapeData.w)
+                {
+                    var curBlockW = Math.min((shapeData.x + shapeData.w) - x, this.field.maxBlockDimension);
+                    var curShapeData = { x: x, y: y, w: curBlockW, h: curBlockH };
+
+			        var furnitureBlock = BlockFurniture.create("block", curShapeData, visible);
+			        this.furniture[this.furniture.length] = furnitureBlock;
+			        renderContext.add(furnitureBlock);
+                    if(this.field.frontZIndex)
+			            furnitureBlock.setZIndex(this.field.frontZIndex);
+
+                    x += curBlockW;
+                }
+
+                y += curBlockH;
+            }
 		},
 
 		// creates Enemy render objects for each piece of furniture loaded from

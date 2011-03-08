@@ -341,11 +341,6 @@ var RenderContext = Container.extend(/** @scope RenderContext.prototype */{
     */
    render: function(time) {
 
-		/* pragma:DEBUG_START */
-		try {
-			Profiler.enter("RenderContext.render(time)");
-		/* pragma:DEBUG_END */
-
 			// Push the world transform
 			this.pushTransform();
 
@@ -368,12 +363,6 @@ var RenderContext = Container.extend(/** @scope RenderContext.prototype */{
 			if (this.safeRemoveList.length > 0) {
 				this._safeRemove();
 			}
-
-		/* pragma:DEBUG_START */
-		} finally {
-			Profiler.exit();
-		}
-		/* pragma:DEBUG_END */
    },
 
    /**
@@ -382,18 +371,8 @@ var RenderContext = Container.extend(/** @scope RenderContext.prototype */{
     * @param time {Number} The world time, in milliseconds
     */
    renderObject: function(obj, time) {
-		/* pragma:DEBUG_START */
-		try {
-			Profiler.enter("RenderContext.renderObject(obj, time)");
-		/* pragma:DEBUG_END */
 
 			obj.update(this, time);
-
-		/* pragma:DEBUG_START */
-		} finally {
-			Profiler.exit();
-		}
-		/* pragma:DEBUG_END */
    },
 
    /**

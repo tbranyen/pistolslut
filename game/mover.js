@@ -123,6 +123,10 @@ Engine.initObject("Mover", "Object2D", function() {
 		getVelocity: function() { return this.getComponent("move").getVelocity(); },
 		setVelocity: function(vector) { return this.getComponent("move").setVelocity(vector); },
 
+		setRectBecauseStatic: function() {
+			this.staticRect = new CheapRect(this);
+		},
+
 		// holds obj at passed X
 		block: function(newX) {
 			if(newX != null)

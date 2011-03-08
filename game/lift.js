@@ -38,8 +38,11 @@ Engine.initObject("Lift", "Mover", function() {
 		},
 
 		update: function(renderContext, time) {
-			if(this.moving == true)
-				this.handlePossibleChangeOfDirection();
+            if(!this.field.inView(this))
+                return;
+
+		    if(this.moving == true)
+			    this.handlePossibleChangeOfDirection();
 
 			renderContext.pushTransform();
 			this.base(renderContext, time);

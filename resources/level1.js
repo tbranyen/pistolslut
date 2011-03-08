@@ -2,7 +2,7 @@
 	bitmapImage: "level1.gif", bitmapWidth: 6000, bitmapHeight: 430, collisionMap: [],
 
     player: {
-        startPosition: { x: 1900, y: 344 },
+        startPosition: { x: 50, y: 344 },
     },
 
 	objects: {

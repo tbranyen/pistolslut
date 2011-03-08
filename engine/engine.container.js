@@ -47,11 +47,11 @@ Engine.initObject("Iterator", "PooledObject", function() {
  * for (var itr = Iterator.create(containerObj); itr.hasNext(); ) {
  *    // Get the next object in the container
  *    var o = itr.next();
- *    
+ *
  *    // Do something with the object
  *    o.doSomething();
  * }
- * 
+ *
  * // Destroy the iterator when done
  * itr.destroy();
  * </pre>
@@ -109,11 +109,6 @@ var Iterator = PooledObject.extend(/** @scope Iterator.prototype */{
     * @throws {Error} An error if called when no more elements are available
     */
    next: function() {
-   
-		/* pragma:DEBUG_START */
-		try {
-			Profiler.enter("Iterator.next()");
-		/* pragma:DEBUG_END */
 
 			if (this.c.isDestroyed()) {
 				throw new Error("Invalid iterator over destroyed container!");
@@ -128,12 +123,6 @@ var Iterator = PooledObject.extend(/** @scope Iterator.prototype */{
 			} else {
 				throw new Error("Index out of range");
 			}
-
-		/* pragma:DEBUG_START */
-		} finally {
-			Profiler.exit();
-		}
-		/* pragma:DEBUG_END */
    },
 
    /**
@@ -152,7 +141,7 @@ var Iterator = PooledObject.extend(/** @scope Iterator.prototype */{
       return false;
    }
 
-}, /** @scope Iterator.prototype */{ 
+}, /** @scope Iterator.prototype */{
    /**
     * Get the class name of this object
     *
@@ -239,7 +228,7 @@ var Container = BaseObject.extend(/** @scope Container.prototype */{
 		};
 		return o;
 	},
-	
+
 	/**
 	 * Find the list node at the given index.  No bounds checking
 	 * is performed with this function.
@@ -254,12 +243,12 @@ var Container = BaseObject.extend(/** @scope Container.prototype */{
 		}
 		return (c > 0 ? null : n);
 	},
-	
+
 	/**
 	 * Look through the list to find the given object.  If the object is
 	 * found, the  list node is returned.  If no object is found, the method
 	 * returns <code>null</code>.
-	 * 
+	 *
 	 * @param obj {Object} The object to find
 	 * @private
 	 */
@@ -294,11 +283,11 @@ var Container = BaseObject.extend(/** @scope Container.prototype */{
          Console.log("Added ", obj.getId(), "[", obj, "] to ", this.getId(), "[", this, "]");
       }
 		this.sz++;
-		
+
 		// Return the list node that was added
 		return n;
    },
-	
+
 	/**
 	 * Add all of the objects in the container or array to this container, at the end
 	 * of this container.  If "arr" is a container, the head of "arr" is joined to the
@@ -306,7 +295,7 @@ var Container = BaseObject.extend(/** @scope Container.prototype */{
 	 * performed on a container, is just joining the two lists, no duplication of
 	 * elements from the container is performed.  As such, removing elements from the
 	 * new container will affect this container as well.
-	 * 
+	 *
 	 * @param arr {Container|Array} A container or array of objects
 	 */
 	addAll: function(arr) {
@@ -332,9 +321,9 @@ var Container = BaseObject.extend(/** @scope Container.prototype */{
 		c.addAll(this.getAll());
 		return c;
 	},
-	
+
 	/**
-	 * Concatenate a container or array to the end of this container, 
+	 * Concatenate a container or array to the end of this container,
 	 * returning a new container with all of the elements.  The
 	 * array or container will be <i>deep copied</i> and appended to this
 	 * container.  While the actual pointers to the objects aren't deep copied,
@@ -358,7 +347,7 @@ var Container = BaseObject.extend(/** @scope Container.prototype */{
     * index is out of bounds for the container.  The index must be greater than
     * or equal to zero, and less than or equal to the size of the container minus one.
     * The effect is to extend the length of the container by one.
-    * 
+    *
     * @param index {Number} The index to insert the object at.
     * @param obj {Object} The object to insert into the container
     */
@@ -366,21 +355,21 @@ var Container = BaseObject.extend(/** @scope Container.prototype */{
       Assert(!(index < 0 || index > this.size()), "Index out of range when inserting object!");
 		var o = this._find(index);
 		var n = this._new(obj);
-		
+
 		n.prev = o.prev;
 		n.prev.next = n;
 		n.next = o;
 		o.prev = n;
 		this.sz++;
-		
+
 		// Return the list node that was inserted
 		return n;
    },
-   
+
    /**
     * Replaces the given object with the new object.  If the old object is
     * not found, no action is performed.
-    * 
+    *
     * @param oldObj {Object} The object to replace
     * @param newObj {Object} The object to put in place
     * @return {Object} The object which was replaced
@@ -389,17 +378,17 @@ var Container = BaseObject.extend(/** @scope Container.prototype */{
 		var o = this._peek(oldObj), r = null;
 		if (o.ptr != null) {
 			r = o.ptr;
-			o.ptr = newObj;		
+			o.ptr = newObj;
 		}
-      return r;      
+      return r;
    },
-   
+
    /**
     * Replaces the object at the given index, returning the object that was there
-    * previously. Asserts if the index is out of bounds for the container.  The index 
-    * must be greater than or equal to zero, and less than or equal to the size of the 
+    * previously. Asserts if the index is out of bounds for the container.  The index
+    * must be greater than or equal to zero, and less than or equal to the size of the
     * container minus one.
-    * 
+    *
     * @param index {Number} The index at which to replace the object
     * @param obj {Object} The object to put in place
     * @return {Object} The object which was replaced
@@ -409,9 +398,9 @@ var Container = BaseObject.extend(/** @scope Container.prototype */{
 		var o = this._find(index);
 		var r = o.ptr;
 		o.ptr = obj;
-      return r;      
+      return r;
    },
-   
+
    /**
     * Remove an object from the container.  The object is
     * not destroyed when it is removed from the container.
@@ -422,12 +411,12 @@ var Container = BaseObject.extend(/** @scope Container.prototype */{
    remove: function(obj) {
 		var o = this._peek(obj);
 		//AssertWarn(o != null, "Removing object from collection which is not in collection");
-		
+
 		if (o != null) {
 			if (o === this._head && o === this._tail) {
 				this.clear();
 				this.sz = 0;
-				return;	
+				return;
 			}
 
 			if (o === this._head) {
@@ -438,7 +427,7 @@ var Container = BaseObject.extend(/** @scope Container.prototype */{
 					return;
 				}
 			}
-			
+
 			if (o === this._tail) {
 				this._tail = o.prev;
 			}
@@ -452,7 +441,7 @@ var Container = BaseObject.extend(/** @scope Container.prototype */{
 	         Console.log("Removed ", obj.getId(), "[", obj, "] from ", this.getId(), "[", this, "]");
 	      }
 
-			return o.ptr;		
+			return o.ptr;
 		}
 		return null;
    },
@@ -478,7 +467,7 @@ var Container = BaseObject.extend(/** @scope Container.prototype */{
 		if (o.prev) o.prev.next = o.next;
 		o.prev = o.next = null;
 		var r = o.ptr;
-		
+
       Console.log("Removed ", r.getId(), "[", r, "] from ", this.getId(), "[", this, "]");
 		this.sz--;
       return r;
@@ -489,7 +478,7 @@ var Container = BaseObject.extend(/** @scope Container.prototype */{
 	 * is larger than the size of this container, no operation is performed.  Setting <code>length</code>
 	 * to zero is effectively the same as calling {@link #clear}.  Objects which would logically
 	 * fall after <code>length</code> are not automatically destroyed.
-	 * 
+	 *
 	 * @param length {Number} The maximum number of elements
 	 * @return {Container} The subset of elements being removed
 	 */
@@ -508,14 +497,14 @@ var Container = BaseObject.extend(/** @scope Container.prototype */{
 		for (var i in a) {
 			this.add(a[i]);
 		}
-		return sub;		
+		return sub;
 	},
 
 	/**
 	 * A new <code>Container</code> which is a subset of the current container
 	 * from the starting index (inclusive) to the ending index (exclusive).  Modifications
 	 * made to the objects in the subset will affect this container's objects.
-	 *  
+	 *
 	 * @param start {Number} The starting index in the container
 	 * @param end {Number} The engine index in the container
 	 * @return {Container} A subset of the container.
@@ -526,7 +515,7 @@ var Container = BaseObject.extend(/** @scope Container.prototype */{
 		for (var i = start; i < end; i++) {
 			c.add(a[i]);
 		}
-		return c;			
+		return c;
 	},
 
    /**
@@ -543,7 +532,7 @@ var Container = BaseObject.extend(/** @scope Container.prototype */{
       }
 		return this._find(idx).ptr;
    },
-	
+
 	/**
 	 * Get an array of all of the objects in this container.
 	 * @return {Array} An array of all of the objects in the container
@@ -564,7 +553,7 @@ var Container = BaseObject.extend(/** @scope Container.prototype */{
 	 * <p/>
 	 * Returning <tt>false</tt> from <tt>fn</tt> will immediately halt any
 	 * further iteration over the container.
-	 * 
+	 *
 	 * @param fn {Function} The function to execute for each object
 	 * @param [thisp] {Object} The object to use as <code>this</code> inside the function
 	 */
@@ -578,14 +567,14 @@ var Container = BaseObject.extend(/** @scope Container.prototype */{
 		}
 		itr.destroy();
 	},
-	
+
 	/**
 	 * Filters the container with the function, returning a new <code>Container</code>
 	 * with the objects that pass the test in the function.  If the object should be
 	 * included in the new <code>Container</code>, the function should return <code>true</code>.
 	 * The function takes one argument: the object being processed.
 	 * Unless otherwise specified, <code>this</code> refers to the container.
-	 * 
+	 *
 	 * @param fn {Function} The function to execute for each object
 	 * @param [thisp] {Object} The object to use as <code>this</code> inside the function
 	 * @return {Container}
@@ -594,9 +583,9 @@ var Container = BaseObject.extend(/** @scope Container.prototype */{
 		var arr = EngineSupport.filter(this.getAll(), fn, thisp || this);
 		var c = Container.create();
 		c.addAll(arr);
-		return c;		
+		return c;
 	},
-	
+
    /**
     * Remove all objects from the container.  None of the objects are
     * destroyed, only removed from this container.
@@ -671,7 +660,7 @@ var Container = BaseObject.extend(/** @scope Container.prototype */{
    sort: function(fn) {
       Console.log("Sorting ", this.getName(), "[" + this.getId() + "]");
 		var a = this.getAll().sort(fn);
-		
+
 		// Relink
 		this._head = this._new(a[0]);
 		var p=this._head;
@@ -724,13 +713,13 @@ var Container = BaseObject.extend(/** @scope Container.prototype */{
       xml += indent + "</" + this.constructor.getClassName() + ">\n";
       return xml;
    },
-   
+
    /**
     * Returns an iterator over the collection.
     * @return {Iterator} An iterator
     */
    iterator: function() {
-      return Iterator.create(this);   
+      return Iterator.create(this);
    }
 
 }, /** @scope Container.prototype */{
@@ -754,7 +743,7 @@ Engine.initObject("HashContainer", "Container", function() {
  * @class A hash container is a logical collection of objects.  A hash container
  *        is a container with a backing object for faster lookups.  Objects within
  *        the container must have unique names. When the container is destroyed, none of the
- *        objects within the container are destroyed with it.  Call {@link #cleanUp} to 
+ *        objects within the container are destroyed with it.  Call {@link #cleanUp} to
  *        destroy all of the objects in the container.
  *
  * @param containerName {String} The name of the container. Default: Container
@@ -813,17 +802,17 @@ var HashContainer = Container.extend(/** @scope HashContainer.prototype */{
       this.objHash["_" + String(key)] = obj;
       this.base(obj);
    },
-   
+
    /** @private */
    addAll: function() {
    	throw new Error("addAll() is unsupported in HashContainer");
    },
-   
+
    /** @private */
    clone: function() {
    	throw new Error("clone() is unsupported in HashContainer");
    },
-   
+
    /** @private */
    concat: function() {
    	throw new Error("concat() is unsupported in HashContainer");
@@ -933,10 +922,10 @@ return HashContainer;
 
 });
 
-/** 
+/**
  * The RedBlackNode is a private class which is used by the RedBlackTree class
  * to contain the data.  It is a simple container with basic structures
- * which are accessed directly.  Modification of this class should be done 
+ * which are accessed directly.  Modification of this class should be done
  * with care!!
  * @private
  */
@@ -945,13 +934,13 @@ var RedBlackNode = Base.extend({
 	left: null,
 	right: null,
 	color: 0,
-	
+
 	constructor: function(element, left, right) {
 		this.element = element;
 		this.left = left || null;
 		this.right = right || null;
 		this.color = 1;	// Starts BLACK
-	}	
+	}
 }, {
 	BLACK: 1,
 	RED: 0
@@ -995,48 +984,48 @@ var RedBlackTree = BaseObject.extend({
 		this.nullNode = new RedBlackNode(null);
 		this.nullNode.left = this.nullNode.right = this.nullNode;
 	},
-	
+
 	/**
     * Insert into the tree.  <code>item</code> must implement the <code>compareTo(t)</code>
     * method, otherwise insertion will fail with an assertion.
     *
     * @param item {Object} the item to insert.
-    */	
+    */
    insert: function(item) {
    	Assert(item.compareTo, "Items added to RedBlackTree must implement compareTo(t) method");
    	this.current = this.parent = this.grand = this.header;
    	this.nullNode.element = item;
-   	
+
    	while(RedBlackTree.compare(item, this.current) != 0) {
    		this.great = this.grand; this.grand = this.parent; this.parent = this.current;
    		this.current = RedBlackTree.compare(item, this.current) < 0 ?
    			this.current.left : this.current.right;
-   			
+
    		// Check if two red children; fix if so
    		if (this.current.left.color == RedBlackNode.RED &&
    			 this.current.right.color == RedBlackNode.RED) {
    			 	this.handleReorient(item);
    		}
    	}
-   	
+
    	// Insertion fails if item already present
    	Assert(this.current == this.nullNode, "RedBlackTree duplication exception: " + item.toString());
    	this.current = new RedBlackNode(item, this.nullNode, this.nullNode);
-   	
+
    	// Attach to parent
    	if (RedBlackTree.compare(item, this.parent) < 0) {
    		this.parent.left = this.current;
    	} else {
    		this.parent.right = this.current;
    	}
-   	
+
    	this.handleReorient(item);
    },
-   
+
    remove: function(item) {
    	// see: http://www.eternallyconfuzzled.com/tuts/datastructures/jsw_tut_rbtree.aspx
    },
-   
+
    /**
     * Replace the the item in the tree with the new item.
     * @param oldItem {Object} The object to find
@@ -1049,7 +1038,7 @@ var RedBlackTree = BaseObject.extend({
 	   	node.element = newItem;
 	   }
    },
-   
+
    /**
     * Find the smallest item  the tree.
     * @return the smallest item or null if empty.
@@ -1062,11 +1051,11 @@ var RedBlackTree = BaseObject.extend({
    		while (itr.left != this.nullNode) {
    			itr = itr.left;
    		}
-   		
+
    		return itr.element;
    	}
    },
-   
+
    /**
     * Find the largest item in the tree.
     * @return the largest item or null if empty.
@@ -1079,11 +1068,11 @@ var RedBlackTree = BaseObject.extend({
 			while (itr.right != this.nullNode) {
 				itr = itr.right;
 			}
-			
+
 			return itr.element;
 		}
    },
-   
+
    /**
     * Find an item in the tree. The item "x" must implement the <code>compareTo(t)</code>method.
     * @param x {Object} the item to search for.
@@ -1094,7 +1083,7 @@ var RedBlackTree = BaseObject.extend({
    	var node = this.findNode(x);
    	return node.element;
    },
-   
+
    /**
     * Find the node containing an item in the tree.
     * The item "x" must implement the <code>compareTo(t)</code>method.
@@ -1105,7 +1094,7 @@ var RedBlackTree = BaseObject.extend({
    	Assert(x.compareTo, "Cannot use findNode() in RedBlackTree if item doesn't have compareTo()");
    	this.nullNode.element = x;
    	this.current = this.header.right;
-   	
+
    	for ( ; ; ) {
    		if (x.compareTo(this.current.element) < 0) {
    			this.current = this.current.left;
@@ -1118,14 +1107,14 @@ var RedBlackTree = BaseObject.extend({
    		}
    	}
    },
-   
+
    /**
     * Make the tree logically empty.
     */
    makeEmpty: function() {
    	this.header.right = this.nullNode;
    },
-   
+
    /**
     * Test if the tree is logically empty.
     * @return true if empty, false otherwise.
@@ -1133,7 +1122,7 @@ var RedBlackTree = BaseObject.extend({
    isEmpty: function() {
    	return this.header.right == this.nullNode;
    },
-   
+
     /**
      * Internal routine that is called during an insertion
      * if a node has two red children. Performs flip and rotations.
@@ -1145,7 +1134,7 @@ var RedBlackTree = BaseObject.extend({
    	this.current.color = RedBlackNode.RED;
    	this.current.left.color = RedBlackNode.BLACK;
    	this.current.right.color = RedBlackNode.BLACK;
-   	
+
    	if (this.parent.color == RedBlackNode.RED) {		// Have to rotate
    		this.grand.color = RedBlackNode.RED;
    		if ((RedBlackTree.compare(item, this.grand) < 0) !=
@@ -1157,7 +1146,7 @@ var RedBlackTree = BaseObject.extend({
    	}
    	this.header.right.color = RedBlackNode.BLACK;
    },
-   
+
    /**
     * Internal routine that performs a single or double rotation.
     * Because the result is attached to the parent, there are four cases.
@@ -1199,7 +1188,7 @@ var RedBlackTree = BaseObject.extend({
 			return item.compareTo(t.element);
 		}
 	},
-	
+
    /**
     * Rotate binary tree node with left child.
     */

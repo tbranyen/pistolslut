@@ -4,7 +4,7 @@ Engine.initObject("BlockFurniture", "Furniture", function() {
 		constructor: function(name, shapeData, visible) {
 			this.base(name, Point2D.create(shapeData.x, shapeData.y));
 			this.setupGraphics(shapeData, visible);
-			this.finalSetup();
+            this.setRectBecauseStatic();
 		},
 
 		setupGraphics: function(s, visible) {

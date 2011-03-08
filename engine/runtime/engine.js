@@ -2925,10 +2925,6 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
          return;
       }
 
-		/* pragma:DEBUG_START */
-		try {
-			Profiler.enter("Engine.engineTimer()");
-		/* pragma:DEBUG_END */
 
 			var nextFrame = Engine.fpsClock;
 
@@ -2955,11 +2951,7 @@ var Engine = Base.extend(/** @scope Engine.prototype */{
 			// When the process is done, start all over again
 			Engine.globalTimer = setTimeout(function _engineTimer() { Engine.engineTimer(); }, nextFrame);
 
-		/* pragma:DEBUG_START */
-		} finally {
-			Profiler.exit();
-		}
-		/* pragma:DEBUG_END */
+
    },
 
 	// ======================================================

@@ -2,7 +2,7 @@
 	bitmapImage: "level1.gif", bitmapWidth: 6000, bitmapHeight: 430, collisionMap: [],
 
     player: {
-        startPosition: { x: 50, y: 344 },
+        startPosition: { x: 2000, y: 344 },
     },
 
 	objects: {
@@ -47,14 +47,14 @@
 		],
 
 		enemies: [
-			{ name: "enemy", clazz: Enemy, x: 795, y: 350, type: "cannonfodder", direction: "Right" },
+			{ name: "enemy", clazz: Enemy, x: 810, y: 350, type: "cannonfodder", direction: "Right" },
 			{ name: "enemy", clazz: Enemy, x: 1120, y: 350, type: "grenadier" },
 			{ name: "enemy", clazz: Enemy, x: 1190, y: 350, type: "mortarer" },
-			{ name: "enemy", clazz: Enemy, x: 2400, y: 130, type: "cannonfodder" },
-			{ name: "enemy", clazz: Enemy, x: 2450, y: 130, type: "mortarer" },
-			{ name: "enemy", clazz: Enemy, x: 2510, y: 350, type: "cannonfodder" },
-			{ name: "enemy", clazz: Enemy, x: 2625, y: 350, type: "grunt" },
-			{ name: "enemy", clazz: Enemy, x: 2900, y: 350, type: "captain" },
+			{ name: "bridgespotter", clazz: Enemy, x: 2400, y: 130, type: "cannonfodder" },
+			{ name: "bridgemortarer", clazz: Enemy, x: 2450, y: 130, type: "mortarer" },
+			{ name: "underbridge1", clazz: Enemy, x: 2510, y: 350, type: "cannonfodder" },
+			{ name: "underbridge2", clazz: Enemy, x: 2625, y: 350, type: "grunt" },
+			{ name: "underbridge3", clazz: Enemy, x: 2900, y: 350, type: "captain" },
 			{ name: "enemy", clazz: Enemy, x: 4020, y: 350, type: "cannonfodder" },
 			{ name: "enemy", clazz: Enemy, x: 4340, y: 350, type: "mortarer" },
 			{ name: "enemy", clazz: Enemy, x: 4420, y: 350, type: "captain" },
@@ -76,13 +76,13 @@
 		],
 
 		fireworkLaunchers: [
-			{ name: "fireworklauncher1", x: 180, y: 370, angle: 0, spread: 20, interval: 10000 }
+			{ name: "fireworklauncher1", x: 381, y: 370, angle: 0, spread: 20, interval: 10000 }
 		],
 
 		sky: { startColor: ["26", "26", "26"], transformations: null },
 
 		lifts: [
-			{ name: "longbuildinglift", startX: 2299, startY: 400, distance: 193, width: 64 },
+			{ name: "longbuildinglift", startX: 2301, startY: 400, distance: 193, width: 64 },
 		],
 
         barrels: [

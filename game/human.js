@@ -32,6 +32,7 @@ Engine.initObject("Human", "Mover", function() {
 
 			this.add(Mover2DComponent.create("move"));
 			this.stopWalk();
+            this.getVelocity().setY(-0.5);
 
             this.setupWeapons(weapons);
 
@@ -43,19 +44,6 @@ Engine.initObject("Human", "Mover", function() {
 			this.updateSprite();
 
 			this.getComponent("move").setCheckLag(false);
-		},
-
-		notifyGrenadeNearby: function(grenade) {
-			var add = true;
-			for(var i in this.nearbyGrenades)
-				if(this.nearbyGrenades[i] == grenade)
-				{
-					add = false;
-					break;
-				}
-
-			if(add == true)
-				this.nearbyGrenades.push(grenade);
 		},
 
 		update: function(renderContext, time) {
@@ -88,7 +76,7 @@ Engine.initObject("Human", "Mover", function() {
 
 			this.field.applyGravity(this);
             this.handleLift();
-			this.setPosition(this.getPosition().add(this.getVelocity()));
+			this.getPosition().add(this.getVelocity());
 		},
 
 		setOnLift: function(lift) {
@@ -111,21 +99,11 @@ Engine.initObject("Human", "Mover", function() {
             this.unsetSpotter();
 			this.stateOfBeing = Human.DYING;
 			this.setSprite(this.direction + Human.DYING + this.weapon.name);
-
-			this.throwBackwards(ordinance);
 		},
 
 		shoot: function() {
 			this.weapon.shoot();
 			this.updateSprite();
-		},
-
-		throwBackwardsUp: -3,
-		throwBackwardsTempering: 6,
-		throwBackwards: function(bullet) {
-			this.getVelocity().setX(bullet.getVelocity().x / this.throwBackwardsTempering);
-			this.getPosition().setY(this.getPosition().y - 5);
-			this.getVelocity().setY(this.throwBackwardsUp);
 		},
 
 		crouch: function() {
@@ -143,6 +121,8 @@ Engine.initObject("Human", "Mover", function() {
 				this.stopWalk();
 			}
 		},
+
+        isMobile: function() { return this.weapon.isMobile() && !this.isSpotter(); },
 
 		// delay on when human lowers their gun
 		delayBeforeLoweringGun: 400,

@@ -76,11 +76,11 @@ Engine.initObject("PistolSlut", "Game", function() {
 		notifier: null,
 
 		groundY: 395,
-		alwaysVisibleZIndex: 2001,
+		alwaysVisibleZIndex: 2002,
 		frontZIndex: 2000,
 		moverZIndex: 1000,
 
-        maxBlockDimension: 100,
+        maxBlockDimension: 50,
 
 		fieldWidth: 700,
 		fieldHeight: 430,
@@ -230,10 +230,14 @@ Engine.initObject("PistolSlut", "Game", function() {
 
 			this.playerObj = Player.create(this, this.level.playerData);
 			this.renderContext.add(this.playerObj);
-            this.addMeters();
+            //this.addMeters();
             this.updateFramePosition(null, this.playerObj);
 		},
 
+        ammoMeter: null,
+        spareClipsMeter: null,
+        healthMeter: null,
+        grenadeMeter: null,
         addMeters: function() {
 			this.ammoMeter = new VectorCaretMeter(this, this.renderContext, this.playerObj.weapon.clipCapacity, Point2D.create(85, 5), VectorCaret.WIDTH * 2, 30, "white", "black");
 			this.meters.push(this.ammoMeter);
@@ -255,9 +259,8 @@ Engine.initObject("PistolSlut", "Game", function() {
         },
 
 		applyGravity: function(obj) {
-            if(this.inView(obj))
-			    if(!this.collider.colliding(obj, this.collider.getPCL(obj), Furniture))
-				    obj.getVelocity().add(this.gravityVector);
+			if(!this.collider.colliding(obj, this.level.furniture))
+				obj.getVelocity().add(this.gravityVector);
         },
 
 	    waitForResources: function() {

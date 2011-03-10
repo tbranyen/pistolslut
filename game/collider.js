@@ -65,13 +65,11 @@ Engine.initObject("Collider", "Base", function() {
 			return this.field.collisionModel.getPCL(subject.getPosition());
 		},
 
-		// returns true if subject colliding with any of the objects
-		// if clazz supplied, only checks objects of that type
-		colliding: function(subject, objects, clazz) {
+		colliding: function(subject, objects) {
 			for(var i in objects)
-				if(clazz == null || objects[i] instanceof clazz)
-					if(CheapRect.gen(subject).isIntersecting(CheapRect.gen(objects[i])))
-						return true;
+                if(this.field.inView(objects[i]))
+				    if(CheapRect.gen(subject).isIntersecting(CheapRect.gen(objects[i])))
+					    return true;
 			return false;
 		},
 
@@ -86,22 +84,40 @@ Engine.initObject("Collider", "Base", function() {
 				return false;
 		},
 
-        getNearest: function(direction, object, objects) {
+        getNearest: function(direction, atSimilarHeight, object, objects) {
             var nearest = null;
+            var smallestDistance = null;
             for(var i in objects)
-                if(object.id != objects[i].id)
-                    if(nearest === null || this.xDistance(objects[i], object) < this.xDistance(nearest, object))
-                    {
-                        if(direction === null)
-                            nearest = objects[i];
-                        else
+            {
+                var otherObj = objects[i];
+                if(object.id != otherObj.id)
+                    if(this.field.inView(otherObj))
+                        if(atSimilarHeight !== true || this.yDistance(otherObj, object) < Collider.SIMILAR_HEIGHT_THRESHOLD)
                         {
-                            if(direction == Collider.LEFT && object.getPosition().x >= objects[i].getPosition().x)
-                                nearest = objects[i];
-                            else if(direction == Collider.RIGHT && object.getPosition().x <= objects[i].getPosition().x)
-                                nearest = objects[i];
+                            var curObjDistance = this.xDistance(otherObj, object);
+                            if(smallestDistance === null || curObjDistance < smallestDistance)
+                            {
+                                if(direction === null)
+                                {
+                                    nearest = otherObj;
+                                    smallestDistance = curObjDistance;
+                                }
+                                else
+                                {
+                                    if(direction == Collider.LEFT && this.getDirectionOf(object, otherObj) == Collider.LEFT)
+                                    {
+                                        nearest = otherObj;
+                                        smallestDistance = curObjDistance;
+                                    }
+                                    else if(direction == Collider.RIGHT && this.getDirectionOf(object, otherObj) == Collider.RIGHT)
+                                    {
+                                        nearest = otherObj;
+                                        smallestDistance = curObjDistance;
+                                    }
+                                }
+                            }
                         }
-                    }
+            }
 
             return nearest;
         },
@@ -114,10 +130,17 @@ Engine.initObject("Collider", "Base", function() {
         },
 
         xDistance: function(obj1, obj2) {
-            if(this.getDirectionOf(obj1, obj2) == Collider.RIGHT)
-                return Math.abs((obj1.getPosition().x + obj1.getBoundingBox().dims.x) - obj2.getPosition().x);
+            if(obj1.getPosition().x < obj2.getPosition().x)
+                return Math.abs(obj2.getPosition().x - (obj1.getPosition().x + obj1.getBoundingBox().dims.x));
             else
                 return Math.abs(obj1.getPosition().x - (obj2.getPosition().x + obj2.getBoundingBox().dims.x));
+        },
+
+        yDistance: function(obj1, obj2) {
+            if(obj1.getPosition().y < obj2.getPosition().y)
+                return Math.abs(obj2.getPosition().y - (obj1.getPosition().y + obj1.getBoundingBox().dims.y));
+            else
+                return Math.abs(obj1.getPosition().y - (obj2.getPosition().y + obj2.getBoundingBox().dims.y));
         },
 
 		moveToEdge: function(obj, objHit, sideHit) {
@@ -214,6 +237,9 @@ Engine.initObject("Collider", "Base", function() {
 		RIGHT: "Right",
 		TOP: "Top",
 		BOTTOM: "Bottom",
+
+        AT_SIMILAR_HEIGHT: true,
+        SIMILAR_HEIGHT_THRESHOLD: 50,
 	});
 
 	return Collider;

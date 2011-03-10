@@ -66,7 +66,7 @@ var Particle = PooledObject.extend(/** @scope Particle.prototype */{
       this.dead = false;
       this.pos = Point2D.create(0,0);
    },
-   
+
    /**
     * Destroy the particle
     */
@@ -107,7 +107,7 @@ var Particle = PooledObject.extend(/** @scope Particle.prototype */{
 	getPosition: function() {
 		return this.pos;
 	},
-	
+
 	/**
 	 * Set the X and Y world coordinates of the particle
 	 * @param x {Number} X world coordinate
@@ -123,9 +123,8 @@ var Particle = PooledObject.extend(/** @scope Particle.prototype */{
     * @param time {Number} The world time, in milliseconds
     */
    update: function(renderContext, time) {
-      if (time < this.life &&
-      		renderContext.getViewport().containsPoint(this.getPosition())) {
-	   	// if the particle is still alive, and it isn't outside the viewport
+      //if (time < this.life && renderContext.getViewport().containsPoint(this.getPosition())) {
+      if (time < this.life) { // removed viewport check - didn't work and prob faster w/o, anyway
          this.draw(renderContext, time);
          return true;
       } else {
@@ -149,7 +148,7 @@ var Particle = PooledObject.extend(/** @scope Particle.prototype */{
       return this.birth;
    },
 
-	
+
 
    /**
     * [ABSTRACT] Draw the particle
@@ -159,7 +158,7 @@ var Particle = PooledObject.extend(/** @scope Particle.prototype */{
    draw: function(renderContext, time) {
       // ABSTRACT
    }
-   
+
 }, /** @scope Particle.prototype */{
    /**
     * Get the class name of this object
@@ -219,7 +218,7 @@ var ParticleEngine = BaseObject.extend(/** @scope ParticleEngine.prototype */{
 		this.particles.cleanUp();
 		this.particles.destroy();
       this.base();
-   }, 
+   },
 
    /**
     * Releases the object back into the pool.
@@ -252,19 +251,19 @@ var ParticleEngine = BaseObject.extend(/** @scope ParticleEngine.prototype */{
 			discard.cleanUp();
 			discard.destroy();
       }
-      
+
       // Initialize all of the new particles
       for (var i = particles.iterator(); i.hasNext(); ) {
          i.next().init(this, this.lastTime);
       }
 		i.destroy();
-      
+
       // The maximum number of particles to animate
       var total = this.liveParticles + particles.size();
       if (total > this.maximum) {
          total = this.maximum;
       }
-      
+
 		// If we can fit the entire set of particles without overflowing,
 		// add all the particles and be done.
 		if (particles.size() <= this.maximum - this.liveParticles) {
@@ -298,7 +297,7 @@ var ParticleEngine = BaseObject.extend(/** @scope ParticleEngine.prototype */{
 			particle.destroy();
 		}
    },
-   
+
    /**
     * Set the absolute maximum number of particles the engine will allow.
     * @param maximum {Number} The maximum particles the particle engine allows
@@ -306,7 +305,7 @@ var ParticleEngine = BaseObject.extend(/** @scope ParticleEngine.prototype */{
    setMaximum: function(maximum) {
       var oldMax = this.maximum;
       this.maximum = maximum;
-      
+
       // Kill off particles if the size is reduced
       if (this.maximum < oldMax) {
          var discard = this.particles.reduce(this.maximum);
@@ -314,7 +313,7 @@ var ParticleEngine = BaseObject.extend(/** @scope ParticleEngine.prototype */{
 			discard.destroy();
       }
    },
-   
+
    /**
     * Get the maximum number of particles allowed in the particle engine.
     * @return {Number}
@@ -322,7 +321,7 @@ var ParticleEngine = BaseObject.extend(/** @scope ParticleEngine.prototype */{
    getMaximum: function() {
       return this.maximum;
    },
-   
+
    /**
     * Update a particle, removing it and nulling its reference
     * if it is dead.  Only live particles are updated
@@ -346,7 +345,7 @@ var ParticleEngine = BaseObject.extend(/** @scope ParticleEngine.prototype */{
       this.lastTime = time;
 
       Engine.addMetric("particles", this.liveParticles, false, "#");
-      
+
       // If there are no live particles, don't do anything
       if (this.liveParticles == 0) {
          return;
@@ -358,7 +357,7 @@ var ParticleEngine = BaseObject.extend(/** @scope ParticleEngine.prototype */{
 			this.runParticle(itr.next(), renderContext, time);
 		}
 		itr.destroy();
-      
+
       renderContext.popTransform();
       this.liveParticles = this.particles.size();
    },
@@ -386,7 +385,7 @@ var ParticleEngine = BaseObject.extend(/** @scope ParticleEngine.prototype */{
    getClassName: function() {
       return "ParticleEngine";
    },
-   
+
    /**
     * Default maximum number of particles in the system. To change
     * the value, see {@link ParticleEngine#setMaximum}

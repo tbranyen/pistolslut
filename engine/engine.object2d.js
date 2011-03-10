@@ -132,13 +132,16 @@ var Object2D = HostObject.extend(/** @scope Object2D.prototype */{
     * Get the bounding box in world coordinates.
     * @return {Rectangle2D} The world bounding rectangle
     */
-   getWorldBox: function() {
+    getWorldBox: function() {
+        //framechange
 		this.wBox.set(this.getBoundingBox());
-		var rPos = Point2D.create(this.getRenderPosition());
-		rPos.sub(this.origin);
-		this.wBox.offset(rPos);
-		rPos.destroy();
-      return this.wBox;
+      return this.wBox.offset(this.getRenderPosition());
+	  //   this.wBox.set(this.getBoundingBox());
+	  //   var rPos = Point2D.create(this.getRenderPosition());
+	  //   rPos.sub(this.origin);
+	  //   this.wBox.offset(rPos);
+	  //   rPos.destroy();
+      // return this.wBox;
    },
 
    /**

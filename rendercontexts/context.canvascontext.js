@@ -62,7 +62,7 @@ var CanvasContext = RenderContext2D.extend(/** @scope CanvasContext.prototype */
    	// Make sure the browser supports the canvas and 2D context!
    	Assert((EngineSupport.sysInfo().support.canvas.defined &&
    			  EngineSupport.sysInfo().support.canvas.contexts.ctx2D), "Browser does not support Canvas. Cannot construct CanvasContext!");
-      
+
       Assert((width != null && height != null), "Width and height must be specified in CanvasContext");
 
       this.setWidth(width);
@@ -74,7 +74,7 @@ var CanvasContext = RenderContext2D.extend(/** @scope CanvasContext.prototype */
 
       this.setViewport(Rectangle2D.create(0, 0, this.width, this.height));
       this.base(name || "CanvasContext", canvas);
-      
+
       canvas.id = this.getId();
       this.setWorldScale(this.getWorldScale());
    },
@@ -105,7 +105,7 @@ var CanvasContext = RenderContext2D.extend(/** @scope CanvasContext.prototype */
    /**
     * Set the scale of the world
     * @param scaleX {Number} The scale of the world along the X axis
-    * @param scaleY {Number} The scale of the world along the y axis 
+    * @param scaleY {Number} The scale of the world along the y axis
     */
    setWorldScale: function(scaleX, scaleY) {
       this.base(scaleX, scaleY);
@@ -453,14 +453,14 @@ var CanvasContext = RenderContext2D.extend(/** @scope CanvasContext.prototype */
       this.get2DContext().textBaseline = this.getFontBaseline();
       this.get2DContext().fillText(text, point.x, point.y);
    },
-   
+
    /**
     * Get a rectangle that will approximately enclose the text drawn by the render context.
     * @param text {String} The text to measure
     * @return {Rectangle2D}
     */
    getTextMetrics: function(text) {
-      var rect = this.base(text);   
+      var rect = this.base(text);
       this.get2DContext().font = this.getNormalizedFont();
       this.get2DContext().textBaseline = this.getFontBaseline();
       var metrics = this.get2DContext().measureText(text);
@@ -468,10 +468,10 @@ var CanvasContext = RenderContext2D.extend(/** @scope CanvasContext.prototype */
       rect.set(0, 0, metrics.width, this.getFontSize() * 1.25);
       return rect;
    },
-   
+
    /**
     * Draw stroked (outline) text on the context.
-    * 
+    *
     * @param point {Point2D}
     * @param text {String} The text to draw
     */
@@ -570,7 +570,7 @@ var CanvasContext = RenderContext2D.extend(/** @scope CanvasContext.prototype */
       this.get2DContext().arcTo(point1.x, point1.y, point2.x, point2.y, radius);
       this.base(point1, point2, radius);
    }
-	
+
 }, {
    /**
     * Get the class name of this object
@@ -580,7 +580,7 @@ var CanvasContext = RenderContext2D.extend(/** @scope CanvasContext.prototype */
    getClassName: function() {
       return "CanvasContext";
    }
-		
+
 });
 
 return CanvasContext;

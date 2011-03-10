@@ -60,6 +60,8 @@ Engine.initObject("Grenade", "Ordinance", function() {
 		handleBounce: function(obj) {
 			if(this.field.collider.objsColliding(this, obj) == true)
 			{
+                                    console.log(this.getPosition().x, this.getPosition().y)
+
                 var sideHit = this.field.collider.sideHit(this, obj);
 				if(sideHit !== null)
 				{

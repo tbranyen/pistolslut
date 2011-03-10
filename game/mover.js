@@ -100,7 +100,7 @@ Engine.initObject("Mover", "Object2D", function() {
 		},
 
 		handleLift: function() {
-			if(this.isOnLift())
+			if(this.isOnLift() === true)
 				this.getPosition().setY(this.lift.getStandY(this));
 		},
 

@@ -75,6 +75,7 @@ Engine.initObject("FurnishedLevel", "Level", function() {
 		triggers: [],
 		triggerableObjects: {},
 		signs: [],
+        cover: [],
 		furniture: [],
 		enemies: [],
 		fires: [],
@@ -120,8 +121,8 @@ Engine.initObject("FurnishedLevel", "Level", function() {
 			this.addBlockFurniture(renderContext);
 			this.addEnemies(renderContext);
 			this.addSigns(renderContext);
-			//this.addFires();
-			//this.addFireworkLaunchers(renderContext);
+			this.addFires();
+			this.addFireworkLaunchers(renderContext);
 			this.addSky(renderContext);
 			this.addParallaxes(renderContext);
 			this.addLanterns(renderContext);
@@ -143,7 +144,8 @@ Engine.initObject("FurnishedLevel", "Level", function() {
 			for(var i in data)
 			{
 				var furniturePiece = SpriteFurniture.create(data[i].spriteName, Point2D.create(data[i].x, data[i].y));
-				this.furniture[this.furniture.length] = furniturePiece;
+				this.furniture.push(furniturePiece);
+                this.cover.push(furniturePiece);
 				renderContext.add(furniturePiece);
 			}
 		},
@@ -151,7 +153,11 @@ Engine.initObject("FurnishedLevel", "Level", function() {
 		addBlockFurniture: function(renderContext) {
 			var data = this.levelResource.info.objects.blockFurniture;
 			for(var i in data)
-				this.createPieceOfBlockFurniture(renderContext, data[i].name, data[i].shape, data[i].visible);
+            {
+				var createdBlocks = this.createPieceOfBlockFurniture(renderContext, data[i].name, data[i].shape, data[i].visible);
+                for(var j in createdBlocks)
+                    this.cover.push(createdBlocks[j]);
+            }
 		},
 
 		// automatically adds block furniture to cover bottom of level and add sides to stop player running outside level
@@ -162,6 +168,7 @@ Engine.initObject("FurnishedLevel", "Level", function() {
 		},
 
 		createPieceOfBlockFurniture: function(renderContext, name, shapeData, visible) {
+            var createdBlocks = [];
             var x = shapeData.x;
             var y = shapeData.y;
             while(y < shapeData.y + shapeData.h)
@@ -172,8 +179,9 @@ Engine.initObject("FurnishedLevel", "Level", function() {
                     var curBlockW = Math.min((shapeData.x + shapeData.w) - x, this.field.maxBlockDimension);
                     var curShapeData = { x: x, y: y, w: curBlockW, h: curBlockH };
 
-			        var furnitureBlock = BlockFurniture.create("block", curShapeData, visible);
-			        this.furniture[this.furniture.length] = furnitureBlock;
+			        var furnitureBlock = BlockFurniture.create(name + x + "x" + y, curShapeData, visible);
+			        this.furniture.push(furnitureBlock);
+                    createdBlocks.push(furnitureBlock);
 			        renderContext.add(furnitureBlock);
                     if(this.field.frontZIndex)
 			            furnitureBlock.setZIndex(this.field.frontZIndex);
@@ -183,6 +191,8 @@ Engine.initObject("FurnishedLevel", "Level", function() {
 
                 y += curBlockH;
             }
+
+            return createdBlocks;
 		},
 
 		// creates Enemy render objects for each piece of furniture loaded from
@@ -328,6 +338,7 @@ Engine.initObject("FurnishedLevel", "Level", function() {
 			this.triggerableObjects = {};
 			this.signs = [];
 			this.furniture = [];
+            this.cover = [];
 			this.enemies = [];
 			this.fires = [];
 			this.fireworkLaunchers = [];

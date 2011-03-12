@@ -261,10 +261,10 @@ var SpatialGrid = SpatialContainer.extend(/** @scope SpatialGrid.prototype */{
 
 		// For highest number of checks, we'll include all eight surrounding nodes
 		if (this.accuracy == SpatialGrid.HIGH_ACCURACY) {
-			if (x > 0 && y > 0) { n = this.getNode(x - 1, y - 1); if (n.getCount() != 0) nodes.push(n); }
+			//if (x > 0 && y > 0) { n = this.getNode(x - 1, y - 1); if (n.getCount() != 0) nodes.push(n); }
 			if (x < this.divisions && y < this.divisions) { n = this.getNode(x + 1, y + 1); if (n.getCount() != 0) nodes.push(n); }
-			if (x > 0 && y < this.divisions) { n = this.getNode(x - 1, y + 1); if (n.getCount() != 0) nodes.push(n); }
-			if (x < this.divisions && y > 0) { n = this.getNode(x + 1, y - 1); if (n.getCount() != 0) nodes.push(n); }
+			//if (x > 0 && y < this.divisions) { n = this.getNode(x - 1, y + 1); if (n.getCount() != 0) nodes.push(n); }
+			//if (x < this.divisions && y > 0) { n = this.getNode(x + 1, y - 1); if (n.getCount() != 0) nodes.push(n); }
 		}
 
       for (var d = 0; d < nodes.length; d++) {

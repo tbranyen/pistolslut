@@ -2,7 +2,7 @@
 	bitmapImage: "level1.gif", bitmapWidth: 6000, bitmapHeight: 430, collisionMap: [],
 
     player: {
-        startPosition: { x: 50, y: 344 },
+        startPosition: { x: 2000, y: 344 },
     },
 
 	objects: {
@@ -123,10 +123,10 @@
 				name: "floorsign2", x: 1177, y: 297, scrollAttenuation: 0,
 				sprite: { bitmapImage: "floorsign.gif", sprites: { "main": { "f" : [0, 0, 151, 99] } } }
 			},
-			{
-				name: "bridge", x: 2300, y: 30, scrollAttenuation: 0, zIndex: 2001,
-				sprite: { bitmapImage: "bridge.png", sprites: { "main": { "f" : [0, 0, 613, 400] } } }
-			},
+			// {
+			// 	name: "bridge", x: 2300, y: 30, scrollAttenuation: 0, zIndex: 2001,
+			// 	sprite: { bitmapImage: "bridge.png", sprites: { "main": { "f" : [0, 0, 613, 400] } } }
+			// },
 			{
 				name: "closestlight1", x: 1350, y: 92, scrollAttenuation: 0, zIndex: 2000,
 				sprite: { bitmapImage: "closestlight.png", sprites: { "main": { "f" : [0, 0, 227, 304] } } }
